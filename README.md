@@ -114,7 +114,7 @@ Starting point (from the current site, **verify before publishing**):
 - **Other:** volunteer trip to Bulgaria (2024).
 - **Languages:** Dutch (native), Hungarian (native/bilingual), English (C1).
 - **Tools:** Python, R, SQL, Java, Power BI, Azure Databricks, Grafana.
-- **Links:** LinkedIn `visser-raymond`, GitHub `Halaszraymond`. Email on the site: `kalman@halaszraymond.com`, forwarded to Raymond's inbox via Cloudflare Email Routing (Raymond sets this up; see §6).
+- **Links:** LinkedIn `visser-raymond`, GitHub `Halaszraymond`. Email on the site: `raymond@halaszraymond.com`, forwarded to Raymond's inbox via Cloudflare Email Routing (see §6). Not `kalman@`, so nobody mistakes the mascot's name for Raymond's.
 - **CV:** one English CV (PDF) for all three languages; NL/HU versions optional later. The file itself is chosen in Phase 3.
 - **Photo:** yes, a small portrait in "Who I am" (possibly with Kálmán next to it), taken from Raymond's CV or LinkedIn photo. Raymond supplies the file in Phase 3.
 
@@ -252,7 +252,7 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 - **Repo:** `Halaszraymond/portfolio_site` (renamed from `personal_site`). The current site in the `halaszraymond.github.io` repo stays live until v2 is ready and serves as a fallback.
 - **Development:** locally in VS Code with Claude Code. `npm run dev` for the dev server.
 - **Previews:** connect the repo to Cloudflare Pages; every branch gets its own preview URL.
-- **Email:** `kalman@halaszraymond.com` via Cloudflare Email Routing, forwarded to Raymond's inbox. This adds MX/TXT records; Raymond sets it up himself, and the `stamlijst` record stays untouched.
+- **Email:** `raymond@halaszraymond.com` via Cloudflare Email Routing, forwarded to Raymond's inbox. Set up by Raymond (2026-10-25); it added MX/TXT records, and the `stamlijst` record stays untouched.
 - **Going live (end of Phase 3):**
   1. In Cloudflare Pages, add the custom domain `halaszraymond.com` (and `www`).
   2. In Cloudflare DNS, remove the four A records pointing to GitHub (185.199.108–111.153) and the `www` CNAME pointing to `halaszraymond.github.io`. Pages creates the right records.
@@ -278,7 +278,7 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 - [x] Record dive depth verified: 564 m, Guinness World Records (§2.3)
 - [x] Additional dive facts verified: 32.2 min longest dive, 50–225 m most profitable hunting depths (§2.3)
 - [ ] Fonts (§2.6): chosen with a font playground (specimen page with candidate pairs), like Kálmán
-- [x] Email address: `kalman@halaszraymond.com` (§3, §6)
+- [x] Email address: `raymond@halaszraymond.com` (§3, §6)
 - [x] CV: one English PDF (§3); the file itself follows in Phase 3
 - [x] Repo name: `portfolio_site` (§6)
 - [x] Photo of Raymond: yes, small, in "Who I am" (§3)
