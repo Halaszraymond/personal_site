@@ -19,6 +19,7 @@ The new version of halaszraymond.com: an employer-facing portfolio with real wow
 
 ### 2.1 The emperor (the character)
 
+- **Name:** **Keizer Kálmán** (*Emperor Kálmán* in English), Kálmán for short. Where the name comes from and how it reads in each language: see §2.2.
 - **Species:** emperor penguin (*Aptenodytes forsteri*).
 - **Style:** **stylised low-poly 3D**, built entirely in code (Three.js), no purchased model. He should read as design, not as a stock model.
 - **Original character:** Kálmán must not resemble existing penguin characters or mascots.
