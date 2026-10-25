@@ -89,7 +89,37 @@ Run them with `npm run <name>` (`npm test` works without `run`). They are define
 | `test` | Runs the Vitest unit tests once. |
 | `e2e` | Runs the Playwright tests against the built site. Run `npm run build` first. |
 
+| `size` | Checks the gzipped JavaScript in `dist/` against the 50 KB budget. Run `npm run build` first. |
+| `lhci` | Lighthouse CI: scores `/`, `/nl/`, `/hu/` and `/en/` (mobile, median of 3 runs) and fails below 90 in any category. Run `npm run build` first. |
+| `check` | The whole chain in CI order: `lint` → `typecheck` → `test` → `build` → `size` → `e2e` → `lhci`. Green here means green in CI. |
+
 On every commit, a **pre-commit hook** runs ESLint and Prettier on the files you are committing (`lint-staged`). A commit with a lint error is blocked. The full checks (type check, tests, build) run in CI.
+
+## Tests
+
+| Layer | Tool | Where | What it covers |
+|---|---|---|---|
+| Unit | Vitest | `tests/unit/` | Pure logic: language hint, render mode, alternates, bundle budget, the `_headers` parser. |
+| End-to-end | Playwright | `tests/e2e/*.spec.ts` | The built site in four browsers: desktop and mobile Chromium, mobile WebKit (iPhone), desktop Firefox. Routing, switcher, hint, 404, render mode. |
+| Accessibility | axe in Playwright | `tests/e2e/quality.spec.ts` | Every page in every language: zero WCAG 2.2 AA violations, no console errors. |
+| Visual regression | Playwright screenshots | `tests/e2e/visual.spec.ts` | `/`, `/nl/`, `/hu/`, `/en/` at 375 and 1280 px, compared with baselines in `tests/e2e/__screenshots__/`. **CI only** (see below). |
+| Performance & co | Lighthouse CI | `lighthouserc.json` | ≥ 90 for performance, accessibility, best practices and SEO. |
+| Bundle size | own script | `scripts/check-bundle-size.ts` | ≤ 50 KB gzipped JavaScript. |
+
+**Production headers in tests.** Astro's preview server ignores `public/_headers`. The fixture in `tests/e2e/fixtures.ts` reads that file and adds its headers to every response, so a CSP that would block our own scripts in production also fails the tests. All e2e specs import `test` from `./fixtures` instead of from `@playwright/test`.
+
+**Visual baselines are Linux-only.** Fonts render slightly differently per operating system, so screenshots from Windows would never match those from CI. Locally the visual tests show as *skipped*. The baselines are made by the manual GitHub workflow (see CI below).
+
+**Lighthouse locally** needs a Chrome. If none is installed, point it at Playwright's Chromium:
+
+```bash
+export CHROME_PATH="$LOCALAPPDATA/ms-playwright/chromium-1248/chrome-win64/chrome.exe"   # Git Bash
+npm run lhci
+```
+
+## Security headers
+
+`public/_headers` sets the headers Cloudflare Pages sends with every page. The file itself explains each one. The important one is the **CSP** (Content-Security-Policy): only files from our own domain may run or load, and inline scripts and styles are blocked. That is why `astro.config.ts` sets `inlineStylesheets: 'never'` and `assetsInlineLimit: 0`: Astro would otherwise put small scripts and styles straight into the HTML. HSTS deliberately leaves out `includeSubDomains`, so the `stamlijst` subdomain is never affected.
 
 ## Development on a work network
 

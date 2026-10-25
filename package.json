@@ -18,7 +18,8 @@
     "prepare": "simple-git-hooks",
     "e2e": "playwright test",
     "size": "node scripts/check-bundle-size.ts",
-    "lhci": "lhci autorun"
+    "lhci": "lhci autorun",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run size && npm run e2e && npm run lhci"
   },
   "dependencies": {
     "astro": "^7.4.2"

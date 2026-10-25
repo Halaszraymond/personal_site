@@ -33,8 +33,8 @@
 - [x] 4.3 Add the bundle-size budget as a pure function in `scripts/lib/budgets.ts` and the `scripts/check-bundle-size.ts` runner (50 KB gzipped base budget); verify with Vitest tests for under, exactly at and over the budget, and that `npm run size` prints the table
 - [x] 4.4 Add the Chromium-only `visual` Playwright project (`/`, `/nl/`, `/hu/`, `/en/` at 375 px and 1280 px, scene slot masked, platform-free snapshot paths, only runs when `CI` is set); verify a local run reports it as skipped
 - [x] 4.5 Add Lighthouse CI (`staticDistDir: ./dist`, the four URLs, mobile, 3 runs, ≥ 0.9 in all four categories); verify `npm run lhci` passes locally
-- [ ] 4.6 Add the `check` script that runs the whole chain in CI order; verify it passes locally
-- [ ] 4.7 Update `docs/glossary.md` (CSP, HSTS, axe, Lighthouse, visual regression, baseline) and `docs/architecture.md` (test layers and how to run them); verify every npm script is documented
+- [x] 4.6 Add the `check` script that runs the whole chain in CI order; verify it passes locally
+- [x] 4.7 Update `docs/glossary.md` (CSP, HSTS, axe, Lighthouse, visual regression, baseline) and `docs/architecture.md` (test layers and how to run them); verify every npm script is documented
 
 ## 5. CI and hosting
 

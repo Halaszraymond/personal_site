@@ -57,3 +57,25 @@ Frontend, 3D and tooling terms used in this repo, in plain language. Where it he
 **Init script (Playwright)**: code a test injects before the page's own scripts run, for example to pretend a browser has no WebGL2. Comparable to `unittest.mock.patch` in Python.
 
 **Mermaid**: a text format for diagrams (`flowchart TD`, arrows with `-->`). GitHub draws them automatically in Markdown files.
+
+**CSP (Content-Security-Policy)**: a header that tells the browser which sources may provide scripts, styles, images and so on. Ours says "only our own domain, nothing inline", so code injected into a page cannot run.
+
+**HSTS (Strict-Transport-Security)**: a header that tells the browser "only ever use HTTPS for this domain", for a set time. Protects against downgrade attacks on public Wi-Fi.
+
+**`_headers`**: Cloudflare Pages' file for setting HTTP headers: a path pattern, then indented `Name: value` lines.
+
+**XSS (cross-site scripting)**: an attack where someone gets their own JavaScript to run on your site. The CSP is the main defence.
+
+**axe**: an accessibility checker that tests a page against the WCAG rules (contrast, labels, landmarks, language attributes…). It runs inside the Playwright tests.
+
+**WCAG / AA**: the Web Content Accessibility Guidelines. AA is the middle of three levels and the usual legal and practical target.
+
+**Lighthouse**: Google's tool that scores a page from 0 to 100 on performance, accessibility, best practices and SEO. Lighthouse CI runs it automatically and fails below our threshold of 90.
+
+**Visual regression test**: a test that takes a screenshot and compares it pixel by pixel with an approved one, the **baseline**. Any unintended change in how the page looks fails the test.
+
+**Fixture (Playwright)**: setup code that runs around each test, like a pytest fixture. Ours adds the production headers to every response.
+
+**gzip**: a compression format. Servers send files gzipped, so the size that matters for loading speed is the gzipped size, which is what the bundle budget measures.
+
+**Bundle**: the JavaScript files the build produces for the browser. "Bundle size" is how much JavaScript a visitor has to download.
