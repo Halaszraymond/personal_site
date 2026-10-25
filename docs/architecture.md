@@ -100,6 +100,29 @@ The black back, the white belly and the bill stripe are **not** parameters: they
 
 **Validation** (`validateConfig()`) collects every problem at once: unknown keys, missing keys, wrong types, values outside the range or off the slider's step grid. **Import** (`importConfig()`) also checks the format version, so an old or foreign file fails with a clear message. A unit test validates the config file in the repo, so a bad paste fails CI.
 
+## The dev-only playground
+
+`/playground/` is where Raymond shapes Kálmán. While it is dev-only, it must never reach production, but it must work on his laptop, in CI and on Cloudflare branch previews (so he can use it on his phone).
+
+**How:** the page is not in `src/pages/`. It lives in `src/playground/PlaygroundPage.astro`, and a small integration in `astro.config.ts` adds it as a route only when `shouldIncludePlayground()` (`src/lib/playground-flag.ts`) says so:
+
+| Where | Command | Playground? |
+|---|---|---|
+| Your laptop | `npm run dev` | yes, always |
+| Your laptop | `npm run build` | no |
+| Your laptop | `npm run build:playground` | yes (sets `PLAYGROUND=1` from `.env.playground`) |
+| CI | production build, then playground build | first no (checked), then yes (tested) |
+| Cloudflare branch previews | `npm run build` with the **Preview** variable `PLAYGROUND=1` | yes |
+| Cloudflare production (`main`) | `npm run build`, no variable | no |
+
+Only exactly `PLAYGROUND=1` switches it on, so a typo never leaks it. Without the route, nothing imports Three.js, so it can't end up in the production bundle.
+
+**The proof:** `npm run check:production` (after `npm run build`) fails if `dist/` contains a `playground` folder or any JavaScript with Three.js's marker (`__THREE__`). The search is a pure function in `scripts/lib/production-check.ts`.
+
+**Cloudflare setup:** Pages project → Settings → Variables and Secrets → `PLAYGROUND` = `1`, for the **Preview** environment only. If it is ever missing, `/playground/` simply 404s on previews; nothing leaks.
+
+The playground's page is English only (`src/i18n/playground.ts`) while it is dev-only, has no language switcher, is marked `noindex`, and no public page links to it.
+
 ## How Kálmán is built
 
 `buildKalman(config)` in `src/scene/kalman/build-kalman.ts` turns a config into a Three.js `Group`. All the numbers come from pure functions in `src/lib/kalman-shape.ts`, so they are unit-tested without a browser; the build file only turns them into meshes. The playground and the future animated scene use the same function.
@@ -128,7 +151,9 @@ Run them with `npm run <name>` (`npm test` works without `run`). They are define
 | Script | What it does |
 |---|---|
 | `dev` | Starts the development server with live reload at <http://localhost:4321>. |
-| `build` | Builds the site into `dist/`. |
+| `build` | Builds the production site into `dist/` (without the playground). |
+| `build:playground` | Builds the site including the dev-only playground (`PLAYGROUND=1`). |
+| `check:production` | After `build`: fails if the playground or Three.js ended up in `dist/`. |
 | `preview` | Serves the built `dist/` locally, the way Cloudflare would. |
 | `lint` | ESLint (likely bugs) plus a Prettier check (formatting). Changes nothing. |
 | `format` | Fixes formatting with Prettier and fixable lint problems with ESLint. |
