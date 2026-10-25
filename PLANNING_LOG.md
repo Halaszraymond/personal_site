@@ -48,3 +48,6 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — Astro telemetry is switched off for the preview servers the tests start: it hangs for ~40 s on the work network, and it fits the site's no-tracking principle. Decided by: Claude.
 - 2026-10-25 — A placeholder favicon (deep-sea blue with the golden-orange accent) and a meta description per language, added because Lighthouse flagged both. Decided by: Claude.
 - 2026-10-25 — Lighthouse gate measures each page 5 times (instead of 3), taking turns between pages, because background load on the work laptop made single runs drop below 90. The threshold stays at 90. Decided by: Claude.
+- 2026-10-25 — The manual visual-baseline workflow goes to `main` ahead of the Phase 0 merge, because GitHub only offers "Run workflow" for workflows on the default branch. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — GitHub Actions on their current major versions (checkout v7, setup-node v7, cache v6, upload-artifact v7), which run on Node 24 instead of the deprecated Node 20. Decided by: Claude.
+- 2026-10-25 — Phase 0 is done: CI green on `change/phase-0-setup`, preview checked by Raymond on Cloudflare Pages. Decided by: Raymond (checks) and Claude (build).

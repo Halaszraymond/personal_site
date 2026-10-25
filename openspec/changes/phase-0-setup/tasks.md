@@ -24,7 +24,7 @@
 - [x] 3.1 Implement `chooseRenderMode()` in `src/lib/render-mode.ts`; verify with Vitest tests for every combination of reduced motion, WebGL2 and Save-Data, including a missing Save-Data setting
 - [x] 3.2 Render every page with `data-render-mode="fallback"` and an empty `aria-hidden` scene slot, and add the client script that detects the signals (WebGL2 inside `try/catch`, context released afterwards) and switches to `full`; verify `npm run build` output contains the fallback attribute on every page
 - [x] 3.3 Add Playwright tests for the render-mode scenarios with emulated reduced motion, stubbed WebGL2 (`null` and a fake context) and a stubbed Save-Data, plus JavaScript disabled; verify the mode attribute and that the text and links are identical in both modes
-- [ ] 3.4 Update `docs/architecture.md` (render-mode flow, Mermaid diagram) and `docs/glossary.md` (WebGL2, Save-Data, fallback, island); verify the diagram renders on GitHub
+- [x] 3.4 Update `docs/architecture.md` (render-mode flow, Mermaid diagram) and `docs/glossary.md` (WebGL2, Save-Data, fallback, island); verify the diagram renders on GitHub
 
 ## 4. Quality gates
 
@@ -38,17 +38,17 @@
 
 ## 5. CI and hosting
 
-- [ ] 5.1 Add `.github/workflows/ci.yml` (one job: `npm ci` → lint → typecheck → unit tests → build → bundle size → Playwright with cached browsers → Lighthouse, uploading the Playwright report on failure); verify the run on this branch is green
-- [ ] 5.2 Add `.github/workflows/update-visual-baselines.yml` (manual trigger, Linux, `--update-snapshots`, commits the images back to the branch) and ask Raymond to trigger it; verify the baselines are committed and the next CI run compares against them
+- [x] 5.1 Add `.github/workflows/ci.yml` (one job: `npm ci` → lint → typecheck → unit tests → build → bundle size → Playwright with cached browsers → Lighthouse, uploading the Playwright report on failure); verify the run on this branch is green
+- [x] 5.2 Add `.github/workflows/update-visual-baselines.yml` (manual trigger, Linux, `--update-snapshots`, commits the images back to the branch) and ask Raymond to trigger it; verify the baselines are committed and the next CI run compares against them
 - [ ] 5.3 Add `.github/dependabot.yml` (npm and GitHub Actions, weekly, dev dependencies grouped); verify GitHub shows it as valid under Insights → Dependency graph → Dependabot
 - [x] 5.4 Write step-by-step instructions for connecting the repo to Cloudflare Pages (Git integration, `npm run build`, `dist`, no custom domain) and ask Raymond to do it; verify a preview URL serves `/nl/`, `/hu/` and `/en/` with the security headers from `_headers`, and that `/does-not-exist` returns the 404 page with status 404
 - [x] 5.5 Document the CI chain, the baseline workflow and the Cloudflare settings in `docs/architecture.md`; verify the documented commands and settings match the files
 
 ## 6. Wrap-up
 
-- [ ] 6.1 Run the whole chain once more on the final branch state (`npm run check` locally and CI green, including the visual tests); verify every step is green
+- [x] 6.1 Run the whole chain once more on the final branch state (`npm run check` locally and CI green, including the visual tests); verify every step is green
 - [x] 6.2 Write `docs/making-of.md`: the concept phase (from `PLANNING_LOG.md`) and this change, with a screenshot of the start page in all three languages; verify the screenshots are committed and linked
-- [ ] 6.3 Tick off Phase 0 in README §7 and add a `PLANNING_LOG.md` line for every decision made during the build; verify both files are updated
+- [x] 6.3 Tick off Phase 0 in README §7 and add a `PLANNING_LOG.md` line for every decision made during the build; verify both files are updated
 
 ## Workflow follow-up
 

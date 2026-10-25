@@ -2,7 +2,7 @@
 
 The new version of halaszraymond.com: an employer-facing portfolio with real wow factor, built around one original character, **a fishing emperor penguin in 3D**.
 
-> Status: concept is final, build not started yet. This document is the source of truth. If a decision changes, update this file first.
+> Status: Phase 0 (setup) is done; Phase 1 (Keizer Kálmán) is next. This document is the source of truth. If a decision changes, update this file first.
 
 ---
 
@@ -261,7 +261,7 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 
 ## 7. Phases
 
-- [ ] **Phase 0: setup.** Repo, Astro skeleton (TS strict), all tooling and the full CI pipeline from §5.4 (starting with one empty test page, so everything has to stay green from day 1), Cloudflare Pages preview, `docs/making-of.md`, `docs/architecture.md`. Plus the two skeletons everything else builds on, so CI tests them from day 1:
+- [x] **Phase 0: setup.** Repo, Astro skeleton (TS strict), all tooling and the full CI pipeline from §5.4 (starting with one empty test page, so everything has to stay green from day 1), Cloudflare Pages preview, `docs/making-of.md`, `docs/architecture.md`. Plus the two skeletons everything else builds on, so CI tests them from day 1:
   - **i18n routing:** `/nl`, `/hu`, `/en`, one test string per language and a working language switcher.
   - **Fallback switch:** detects `prefers-reduced-motion` and missing WebGL and serves the static path. With no 3D yet, it's just an empty scene slot.
 
