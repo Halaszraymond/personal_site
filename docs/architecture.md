@@ -54,6 +54,26 @@ The 404 page has no canonical or alternates and says `noindex`, so it stays out 
 
 Dismissing the hint stores English, so it doesn't come back.
 
+## Full mode or fallback
+
+Every visitor gets either the **full** experience (the 3D scene, from Phase 1) or the static **fallback**. The rule from README §5.2: never a broken or empty page. So the fallback is the starting point, and full mode has to be earned.
+
+```mermaid
+flowchart TD
+    A[Cloudflare Pages serves the static HTML] --> B["html data-render-mode = fallback<br/>all content already readable"]
+    B --> C{JavaScript runs?}
+    C -- no --> F[Stays in fallback]
+    C -- yes --> D["RenderModeSwitch collects 3 signals:<br/>reduced motion · WebGL2 · Save-Data"]
+    D --> E{"chooseRenderMode()<br/>src/lib/render-mode.ts"}
+    E -- any check fails --> F
+    E -- all checks pass --> G["data-render-mode = full<br/>scene slot shown, empty until Phase 1"]
+```
+
+- **The decision** is a pure function, `chooseRenderMode()` in `src/lib/render-mode.ts`, unit-tested for all 8 combinations of the three signals.
+- **The browser glue** is `src/components/RenderModeSwitch.astro`: it reads `prefers-reduced-motion`, tries to create a WebGL2 context (and releases it immediately), reads `navigator.connection.saveData` (Chromium only; missing means "no"), and writes the result to `data-render-mode` on `<html>`.
+- **The scene slot** is an empty `<div aria-hidden="true">`: decorative only, hidden in fallback mode. All text and links live in the HTML around it, identical in both modes. The e2e tests compare the two.
+- **Still to come in Phase 1:** step 3 of README §5.2 (measuring frame time once the scene runs) and the "lite mode" switch in the footer.
+
 ## npm scripts
 
 Run them with `npm run <name>` (`npm test` works without `run`). They are defined in `package.json`, a bit like targets in a Makefile.

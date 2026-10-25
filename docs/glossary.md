@@ -39,3 +39,21 @@ Frontend, 3D and tooling terms used in this repo, in plain language. Where it he
 **Endonym**: a language's own name for itself: "Magyar", not "Hungarian". Language switchers use endonyms, so visitors recognise their own language.
 
 **404**: the HTTP status code for "this page doesn't exist". A real 404 (instead of showing the home page with status 200) tells browsers and search engines the truth.
+
+**Fallback**: the static version of the site: all content, no 3D. Visitors get it with reduced motion, without WebGL2, with Save-Data, or without JavaScript. Never a broken page.
+
+**Full mode**: the version with the 3D scene. Only switched on when every check passes.
+
+**WebGL / WebGL2**: the browser's interface to the graphics card, used to draw 3D in a `<canvas>`. Three.js builds on it. WebGL2 is the newer version, available in all modern browsers but not on every old or locked-down device.
+
+**`prefers-reduced-motion`**: an operating-system setting ("reduce motion" / "remove animations") that websites can read. People with motion sensitivity or vestibular disorders use it, so we respect it with the calm fallback.
+
+**Save-Data**: a browser setting that asks websites to use less data. Only Chromium-based browsers report it (`navigator.connection.saveData`).
+
+**Island**: in Astro, an interactive part of an otherwise static page. Only that part loads JavaScript; the rest stays plain HTML. Kálmán's 3D scene will be an island.
+
+**`data-` attribute**: a custom attribute on an HTML element, such as `data-render-mode="full"`. CSS, scripts and tests can read it; in JavaScript it appears as `element.dataset.renderMode`.
+
+**Init script (Playwright)**: code a test injects before the page's own scripts run, for example to pretend a browser has no WebGL2. Comparable to `unittest.mock.patch` in Python.
+
+**Mermaid**: a text format for diagrams (`flowchart TD`, arrows with `-->`). GitHub draws them automatically in Markdown files.
