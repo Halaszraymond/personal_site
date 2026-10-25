@@ -17,7 +17,7 @@
 - [x] 2.4 Implement `chooseLanguageHint()` in `src/lib/language-hint.ts`; verify with Vitest tests for every hint scenario in the spec (stored choice wins, browser language, English means no hint, region subtags such as `hu-HU`)
 - [x] 2.5 Add the dismissible language hint to `/` (Dutch and Hungarian versions in the HTML, `hidden` and with their own `lang`, revealed by the client script); verify with Playwright the Hungarian-browser, English-browser, dismiss and stored-choice scenarios, and that no hint appears on `/nl/`, `/hu/` or `/en/`
 - [x] 2.6 Add `src/pages/404.astro` with text in all three languages and links to `/nl/`, `/hu/` and `/en/`; verify with Playwright that `/does-not-exist` returns status 404 with those links
-- [ ] 2.7 Update `docs/architecture.md` (routing) and `docs/glossary.md` (hreflang, canonical URL, `x-default`, localStorage) and ask Raymond to review the placeholder strings and hint copy in all three languages; verify the docs describe every URL the site serves
+- [x] 2.7 Update `docs/architecture.md` (routing) and `docs/glossary.md` (hreflang, canonical URL, `x-default`, localStorage) and ask Raymond to review the placeholder strings and hint copy in all three languages; verify the docs describe every URL the site serves
 
 ## 3. Render fallback
 
@@ -32,7 +32,7 @@
 - [x] 4.2 Add the Playwright fixture that applies the headers from `public/_headers` to HTML responses, and a "no console errors" check plus axe (zero violations) on every page in all three languages, for desktop Chromium, mobile Chromium, mobile WebKit and desktop Firefox; verify `npm run e2e` passes and fails when a deliberate CSP violation is added
 - [x] 4.3 Add the bundle-size budget as a pure function in `scripts/lib/budgets.ts` and the `scripts/check-bundle-size.ts` runner (50 KB gzipped base budget); verify with Vitest tests for under, exactly at and over the budget, and that `npm run size` prints the table
 - [x] 4.4 Add the Chromium-only `visual` Playwright project (`/`, `/nl/`, `/hu/`, `/en/` at 375 px and 1280 px, scene slot masked, platform-free snapshot paths, only runs when `CI` is set); verify a local run reports it as skipped
-- [x] 4.5 Add Lighthouse CI (`staticDistDir: ./dist`, the four URLs, mobile, 3 runs, ≥ 0.9 in all four categories); verify `npm run lhci` passes locally
+- [x] 4.5 Add the Lighthouse gate (`scripts/run-lighthouse.ts` with `lighthouse` 13: the four URLs, mobile, 5 runs, median ≥ 0.9 in all four categories); verify `npm run lighthouse` passes locally and fails with an impossible threshold
 - [x] 4.6 Add the `check` script that runs the whole chain in CI order; verify it passes locally
 - [x] 4.7 Update `docs/glossary.md` (CSP, HSTS, axe, Lighthouse, visual regression, baseline) and `docs/architecture.md` (test layers and how to run them); verify every npm script is documented
 

@@ -43,3 +43,8 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — Phase 0 proposal approved, including its 17 packages, by running `/opsx:apply`. Decided by: Raymond.
 - 2026-10-25 — TypeScript 6 (6.0.3) instead of the new TypeScript 7: `typescript-eslint` and `@astrojs/check` don't support 7 yet, and Astro itself uses 6. Revisit when they do. Decided by: Claude.
 - 2026-10-25 — Add `@types/node` (v24, matching the Node version) as a dev dependency, so the Playwright config and Node scripts can be type-checked. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Replace `@lhci/cli` (no release since June 2025, 16 known vulnerabilities via old dependencies) with `lighthouse` 13.5 and a short gate script of our own (median of 3 runs, ≥ 90 per category). Decided by: Raymond (options proposed by Claude).
+- 2026-10-25 — Phase 0 placeholder texts approved: test sentences, language hint and meta descriptions in NL/HU/EN. Decided by: Raymond.
+- 2026-10-25 — Astro telemetry is switched off for the preview servers the tests start: it hangs for ~40 s on the work network, and it fits the site's no-tracking principle. Decided by: Claude.
+- 2026-10-25 — A placeholder favicon (deep-sea blue with the golden-orange accent) and a meta description per language, added because Lighthouse flagged both. Decided by: Claude.
+- 2026-10-25 — Lighthouse gate measures each page 5 times (instead of 3), taking turns between pages, because background load on the work laptop made single runs drop below 90. The threshold stays at 90. Decided by: Claude.

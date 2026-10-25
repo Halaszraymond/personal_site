@@ -6,7 +6,7 @@ dist/
 # Test and Lighthouse output
 test-results/
 playwright-report/
-.lighthouseci/
+.lighthouse/
 coverage/
 
 # Local environment and editor files

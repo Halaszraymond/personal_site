@@ -70,7 +70,7 @@ Frontend, 3D and tooling terms used in this repo, in plain language. Where it he
 
 **WCAG / AA**: the Web Content Accessibility Guidelines. AA is the middle of three levels and the usual legal and practical target.
 
-**Lighthouse**: Google's tool that scores a page from 0 to 100 on performance, accessibility, best practices and SEO. Lighthouse CI runs it automatically and fails below our threshold of 90.
+**Lighthouse**: Google's tool that scores a page from 0 to 100 on performance, accessibility, best practices and SEO. `npm run lighthouse` runs it five times per page and fails when the median is below our threshold of 90.
 
 **Visual regression test**: a test that takes a screenshot and compares it pixel by pixel with an approved one, the **baseline**. Any unintended change in how the page looks fails the test.
 

@@ -33,6 +33,8 @@ export default defineConfig({
     url: BASE_URL,
     // Locally, reuse a preview server you already have running.
     reuseExistingServer: !isCI,
+    // Astro's anonymous usage report can hang for ~40 s on a filtered (work) network.
+    env: { ASTRO_TELEMETRY_DISABLED: '1' },
   },
   // Baselines without the platform in their name (Playwright's default adds `-win32` or
   // `-linux`): they are only ever made and compared on Linux, so one set is enough.

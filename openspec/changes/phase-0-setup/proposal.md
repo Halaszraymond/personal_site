@@ -10,7 +10,7 @@ The concept for halaszraymond.com v2 is final (README), but the repo has no code
 - **i18n routing:** `/nl/`, `/hu/` and `/en/` each show one placeholder page with a test string in that language. `/` shows the English page without redirecting. A language switcher on every page, `hreflang` links, and a small language hint on `/` for Dutch and Hungarian browsers that remembers the visitor's choice.
 - **Fallback switch:** a pure function decides between the full (3D) path and the static fallback, based on `prefers-reduced-motion`, WebGL2 support and Save-Data. With no 3D yet, the full path is an empty scene slot. Without JavaScript, the visitor gets the fallback.
 - **A plain 404 page** (three languages on one page), so unknown URLs return a real 404 instead of the home page. Kálmán's ice-floe 404 stays in Phase 5.
-- **Tooling:** ESLint + Prettier, `astro check` for type checking, Vitest for unit tests, Playwright for end-to-end, accessibility (axe) and visual tests, Lighthouse CI, and a bundle-size check. Pre-commit hooks run lint and format on staged files.
+- **Tooling:** ESLint + Prettier, `astro check` for type checking, Vitest for unit tests, Playwright for end-to-end, accessibility (axe) and visual tests, a Lighthouse gate, and a bundle-size check. Pre-commit hooks run lint and format on staged files.
 - **CI (GitHub Actions)** on every push and pull request: lint → type check → unit tests → build → bundle size → Playwright → Lighthouse. Plus a manually triggered workflow that regenerates the visual baselines on Linux. Dependabot keeps dependencies up to date.
 - **Security headers** (`_headers` for Cloudflare Pages): CSP, HSTS and friends.
 - **Cloudflare Pages preview:** the repo is connected, so every branch gets a preview URL. (Raymond does this step in the Cloudflare dashboard.)
@@ -29,7 +29,7 @@ Each one has to earn its place (README §5.4). All are dev-only except `astro`.
 | `prettier`, `prettier-plugin-astro`, `eslint-config-prettier` | Formatting; the last one stops ESLint and Prettier from fighting. |
 | `vitest` | Unit tests for the pure logic in `src/lib/` (like pytest). |
 | `@playwright/test`, `@axe-core/playwright` | End-to-end, visual and accessibility tests in a real browser. |
-| `@lhci/cli` | Lighthouse CI: the hard ≥ 90 gate. |
+| `lighthouse` | The hard ≥ 90 Lighthouse gate, run by a short script of our own. Replaced `@lhci/cli` during the build (outdated, 16 known vulnerabilities), approved by Raymond. |
 | `simple-git-hooks`, `lint-staged` | Pre-commit hooks: lint and format only the files you are committing. |
 
 No package for the bundle-size check: a short script of our own does it (see design.md).

@@ -64,7 +64,7 @@ The mode is decided once per page load. Reacting to a live change of the reduced
 - **Line endings:** `.gitattributes` with `* text=auto eol=lf` and Prettier `endOfLine: 'lf'`, so files written on Windows match CI.
 - **Node:** `.nvmrc` with `24` and `engines.node` in `package.json`. Cloudflare Pages reads `.nvmrc` too.
 - **Pre-commit:** `simple-git-hooks` runs `lint-staged` (ESLint `--fix` and Prettier on staged files only). Type check and tests stay in CI, to keep commits fast. *Alternatives:* Husky does the same with more files; the Python `pre-commit` framework would add a Python requirement to a TypeScript-only repo.
-- **Scripts** (`package.json`): `dev`, `build`, `preview`, `lint`, `format`, `typecheck` (`astro check`), `test` (Vitest), `size`, `e2e` (Playwright), `lhci`, and `check`, which runs the whole chain in CI order.
+- **Scripts** (`package.json`): `dev`, `build`, `preview`, `lint`, `format`, `typecheck` (`astro check`), `test` (Vitest), `size`, `e2e` (Playwright), `lighthouse`, and `check`, which runs the whole chain in CI order.
 
 ### 5. Bundle-size check without a package
 
@@ -79,7 +79,7 @@ The mode is decided once per page load. Reacting to a live change of the reduced
 - **Security headers in tests:** the preview server ignores `_headers`. A Playwright fixture reads `public/_headers` and adds those headers to every HTML response via `page.route()`, so a CSP that would break the page in production also breaks the tests.
 - **Render-mode scenarios** are made deterministic with init scripts: `emulateMedia({ reducedMotion: 'reduce' })`, a `getContext` stub that returns `null` for `webgl2`, a stub that returns a fake context for the "capable" case, and a stubbed `navigator.connection`. Real-GPU rendering is out of scope until there is a scene.
 - **Visual regression (layer 2):** a separate Chromium-only `visual` project screenshots `/`, `/nl/`, `/hu/` and `/en/` at 375 px and 1280 px, with the scene slot masked. The snapshot path leaves out the platform, and the project only runs when `CI` is set, so Windows never writes or compares baselines. The baselines come from `update-visual-baselines.yml`, a manually triggered workflow that runs with `--update-snapshots` on Linux and commits the images to the branch it ran on.
-- **Lighthouse CI:** `staticDistDir: ./dist`, URLs `/`, `/nl/`, `/hu/`, `/en/`, mobile preset, 3 runs (median), and an assertion of ≥ 0.9 for performance, accessibility, best practices and SEO.
+- **Lighthouse:** `scripts/run-lighthouse.ts` starts the preview server, runs `lighthouse` 13 (CLI, mobile by default) 5 times per page on `/`, `/nl/`, `/hu/`, `/en/`, taking turns between pages so a burst of background load is spread out, and fails when the median of any category is below 0.9. The median and threshold logic is a pure function in `scripts/lib/lighthouse-scores.ts`. *Replaced during the build:* `@lhci/cli` worked, but has not been released since June 2025 and pulled in 16 known vulnerabilities through old dependencies; `lighthouse` itself has none and stays current. Astro telemetry is switched off for the servers the tests start, because it can hang for ~40 s on the work network.
 
 ### 7. CI
 

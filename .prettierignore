@@ -5,7 +5,7 @@ node_modules/
 package-lock.json
 playwright-report/
 test-results/
-.lighthouseci/
+.lighthouse/
 
 # Files written by tools (OpenSpec, Claude Code): formatted by those tools.
 .claude/

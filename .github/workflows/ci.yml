@@ -75,7 +75,7 @@ jobs:
 
       # GitHub's Ubuntu runners come with Google Chrome, which Lighthouse uses.
       - name: Lighthouse
-        run: npm run lhci
+        run: npm run lighthouse
 
       - name: Upload Playwright report
         if: failure()
@@ -85,4 +85,13 @@ jobs:
           path: |
             playwright-report/
             test-results/
+          retention-days: 14
+
+      # The Lighthouse reports are useful also when everything passes: they show the trend.
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-reports
+          path: .lighthouse/
           retention-days: 14
