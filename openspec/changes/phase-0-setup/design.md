@@ -41,7 +41,7 @@ UI strings live in `src/i18n/ui.ts` as `Record<Locale, UiStrings>`. TypeScript t
 
 ### 2. Language hint: pure decision + thin client script
 
-`src/lib/language-hint.ts` exports `chooseLanguageHint({ storedChoice, browserLanguages }): 'nl' | 'hu' | null`. The rules come straight from the spec: the stored choice wins, then the first of `navigator.languages` whose primary subtag is `nl` or `hu`, and English (stored or preferred) means no hint.
+`src/lib/language-hint.ts` exports `chooseLanguageHint({ storedChoice, browserLanguages }): 'nl' | 'hu' | null`. The rules come straight from the spec: the stored choice wins; otherwise the first of `navigator.languages` that we support (`nl`, `hu` or `en`, by primary subtag) is the preferred language. English (stored or preferred) means no hint, so `['en', 'hu']` gives no hint, while `['de', 'hu']` offers Hungarian.
 
 The root page renders both the Dutch and the Hungarian hint in the HTML, each with its own `lang` attribute and the `hidden` attribute. A small client script reads storage and `navigator.languages`, calls the function and un-hides at most one hint. Without JavaScript, no hint is shown, which is the right default.
 
