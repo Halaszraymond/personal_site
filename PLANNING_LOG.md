@@ -8,3 +8,29 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — Enable all 12 OpenSpec workflows (custom profile: adds new, continue, ff, bulk-archive, verify, onboard). Decided by: Raymond.
 - 2026-10-25 — Document OpenSpec in README §5.4 and require `/opsx:propose` + Raymond's review before building a new feature (CLAUDE.md). Decided by: Raymond (to mention it); wording and the "review before apply" rule by Claude.
 - 2026-10-25 — Upgrade OpenSpec from 1.14.1 to the latest version, 1.15.0. Decided by: Raymond.
+- 2026-10-25 — Move i18n routing and the fallback switch into Phase 0; every later phase ships in three languages with fallbacks; Phase 4 becomes tuning and verifying only. Decided by: Raymond (to move it); wording by Claude.
+- 2026-10-25 — Kálmán's name per language: Keizer Kálmán (NL), Császár Kálmán (HU, name order to mirror Halász Raymond), Emperor Kálmán (EN). Decided by: Raymond.
+- 2026-10-25 — Kálmán has a dual personality (goofy and professional); tone of voice: humor in the wrapping, seriousness in the content, jokes written per language; small fish flee from the cursor. Decided by: Raymond (tone principle proposed by Claude).
+- 2026-10-25 — Hero: "catch of the day" board + express-dive depth gauge (goofy side) and Kálmán handing over the CV fish (professional side), so recruiters see the key information at first sight. Decided by: Raymond (options proposed by Claude).
+- 2026-10-25 — Personality switching: the visitor's action decides (CV click = tie and bow, case study = reading glasses), with the hero showing both sides and following the cursor. Decided by: Raymond (options proposed by Claude).
+- 2026-10-25 — r-Frica Predicts is written in R; its predictions are exported once as JSON and shown statically, with no interactive model. Decided by: Raymond.
+- 2026-10-25 — No Python in this repo for now: the "Who I am" data is static JSON content, and the Pi endpoint's repo location is decided in Phase 5. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Repo name: `portfolio_site` (renamed from `personal_site`). Decided by: Raymond.
+- 2026-10-25 — `/` shows English with a language hint for NL/HU browsers; no automatic redirect. Decided by: Raymond (options proposed by Claude).
+- 2026-10-25 — Lighthouse in CI: a hard ≥ 90 gate on the fallback version; the 3D version runs as a non-blocking report; real-device check in Phase 4. Decided by: Raymond (options proposed by Claude).
+- 2026-10-25 — Testing strategy: logic as pure functions in `src/lib/`, 4 test layers, Linux-only baselines through a manual GitHub Action. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Weak-device fallback: three-step check (reduced motion; no WebGL2 or Save-Data; median frame time > 33 ms → lower quality, then fallback), plus a "lite mode" switch in the footer. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Contact comes after an "ascent" stretch: scrolling continues down while the depth gauge counts back to 0. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — No smooth-scroll library (Lenis dropped); GSAP ScrollTrigger on native scroll. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Sonar: a Pages Function `/api/sonar` with a 60 s cache and the last reading in Cloudflare KV; the Pi endpoint lives in its own repo. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — The "original character" rule is added to README §2.1. Decided by: Raymond.
+- 2026-10-25 — Dive facts verified: 32.2 min longest dive (Guinness, Goetz et al. 2018); "normal dives 100–200 m" replaced by 50–225 m most profitable hunting depths (Zimmer et al. 2010). Decided by: Raymond (to verify); research by Claude.
+- 2026-10-25 — The playground is dev-only in Phase 1 and later a public `/playground` linked from the making-of case study. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Fallback stills are rendered by a Playwright script from the Kálmán config and carry the config hash; a test fails if they are stale. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Go live after Phase 3; Phase 4 polish happens on the live site. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Site email: `kalman@halaszraymond.com` via Cloudflare Email Routing, set up by Raymond. Decided by: Raymond.
+- 2026-10-25 — CV: one English PDF for all languages; NL/HU versions optional later. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Photo: a small portrait of Raymond in "Who I am", from his CV or LinkedIn photo. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Fonts are chosen with a font playground (specimen page with candidate pairs). Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Font playground candidates: (1) Fraunces + Recursive, morphing with Kálmán's mood; (2) Recursive only; (3) Bricolage Grotesque + Inter + JetBrains Mono; (4) Fraunces + Atkinson Hyperlegible Next + Mono. Decided by: Raymond (candidates proposed by Claude).
+- 2026-10-25 — GitHub repo renamed to `Halaszraymond/portfolio_site`. Done by: Raymond.
