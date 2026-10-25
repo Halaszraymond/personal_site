@@ -2,8 +2,8 @@
 
 ## 1. Foundation
 
-- [ ] 1.1 Install `three` and `@types/three` (versions matching each other) and verify `npm ci`, `npm run typecheck` and `npm audit` stay clean
-- [ ] 1.2 Move `detectWebGL2()` from `RenderModeSwitch.astro` into `src/scene/webgl.ts` and use it there; verify the existing render-mode e2e tests still pass unchanged
+- [x] 1.1 Install `three` and `@types/three` (versions matching each other) and verify `npm ci`, `npm run typecheck` and `npm audit` stay clean
+- [x] 1.2 Move `detectWebGL2()` from `RenderModeSwitch.astro` into `src/scene/webgl.ts` and use it there; verify the existing render-mode e2e tests still pass unchanged
 
 ## 2. Kálmán's config
 

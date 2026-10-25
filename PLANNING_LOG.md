@@ -61,3 +61,4 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — The dev-only playground interface is English only, a deliberate exception to the three-languages rule; it gets NL/HU/EN when it becomes the public `/playground/`. Decided by: Raymond (proposed by Claude).
 - 2026-10-25 — Chosen playground values become the config via a "Copy config" button (JSON), committed by Claude and validated by tests. Decided by: Raymond (proposed by Claude).
 - 2026-10-25 — Claude may start the "Update visual baselines" workflow itself (via `gh`) for intended visual changes, telling Raymond when it does. Decided by: Raymond.
+- 2026-10-25 — `kalman-playground` approved, including `three` and `@types/three`; Cloudflare `PLAYGROUND=1` set for Preview only. Decided by: Raymond.
