@@ -1,3 +1,4 @@
+@AGENTS.md
 # Working agreements for Claude Code
 
 - **Read `README.md` first.** It holds the concept, all decisions and the phases. It is the source of truth: if a decision changes, update the README first.
