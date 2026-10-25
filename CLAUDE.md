@@ -1,18 +1,18 @@
-# Werkafspraken voor Claude Code
+# Working agreements for Claude Code
 
-- **Lees eerst `README.md`.** Daar staan het concept, alle besluiten en de fases. Het is de bron van waarheid: wijzigt er een besluit, werk dan eerst de README bij.
-- **Taal:** praat Nederlands met Raymond. Code, commits en codecommentaar zijn in het Engels. Sitecontent komt in NL, HU en EN.
-- **Werk per fase** (README §7) en vink af wat klaar is. Begin niet aan een volgende fase zonder akkoord.
-- **De keizer bouwen we samen:** maak eerst de speelplaats met schuifjes (fase 1) en laat Raymond kiezen. Leg zijn gekozen waarden vast in een config-bestand.
-- **Origineel personage:** de keizer mag niet lijken op bestaande pinguïnpersonages of -mascottes.
-- **Bouwlogboek:** noteer na elke werksessie in `docs/making-of.md` wat er besloten en gebouwd is, met screenshots waar mogelijk. Dit wordt later de case study "deze website".
-- **Kwaliteit:** respecteer `prefers-reduced-motion`, houd inhoud in HTML (niet alleen in canvas), test op mobiele breedte, en mik op Lighthouse ≥ 90.
-- **Codeerafspraken (README §5.4) zijn verplicht.** De belangrijkste:
-  - Raymond moet elke regel kunnen begrijpen en uitleggen. Hij kent Python/R/SQL goed en TypeScript minder: schrijf duidelijk, met een kopcommentaar per bestand, *waarom*-commentaar, en waar nuttig een vergelijking met Python. Leesbaarheid gaat nooit ten koste van kwaliteit.
-  - TypeScript `strict`, geen `any`. Python met Ruff + mypy.
-  - Elke nieuwe logica komt met tests. Een taak is pas klaar als lint, type check, alle tests, de build, Playwright en Lighthouse groen zijn.
-  - Houd `docs/architecture.md` en `docs/glossary.md` bij als de structuur verandert of er nieuwe begrippen bijkomen.
-  - Voeg geen dependency toe zonder het aan Raymond te vragen en uit te leggen waarom.
-- **Leg uit wat je bouwt:** sluit elke taak af met een korte uitleg in gewone taal van hoe het werkt, zodat Raymond het leert en het kan navertellen.
-- **Commits:** kleine, beschrijvende commits. Werk op een feature-branch en push alleen als Raymond dat vraagt.
-- **Raak het `stamlijst`-subdomein of de bestaande DNS niet aan** zonder expliciete vraag.
+- **Read `README.md` first.** It holds the concept, all decisions and the phases. It is the source of truth: if a decision changes, update the README first.
+- **Language:** everything in the repo is in English: code, comments, commits, docs and README. Talk to Raymond in whichever language he writes in (Dutch or English). Site content comes in NL, HU and EN.
+- **Work phase by phase** (README §7) and tick off what's done. Don't start the next phase without his go-ahead.
+- **We build the emperor together:** start with the playground with sliders (phase 1) and let Raymond choose. Store his chosen values in a config file.
+- **Original character:** the emperor must not resemble existing penguin characters or mascots.
+- **Build log:** after each work session, record in `docs/making-of.md` what was decided and built, with screenshots where possible. This later becomes the "this website" case study.
+- **Quality:** respect `prefers-reduced-motion`, keep content in HTML (not only in canvas), test at mobile width, and aim for Lighthouse ≥ 90.
+- **The coding requirements (README §5.4) are mandatory.** The most important ones:
+  - Raymond must be able to understand and explain every line. He knows Python/R/SQL well and TypeScript less: write clearly, with a header comment per file, *why* comments, and a comparison with Python where useful. Readability never comes at the cost of quality.
+  - TypeScript `strict`, no `any`. Python with Ruff + mypy.
+  - All new logic comes with tests. A task is only done when lint, type check, all tests, the build, Playwright and Lighthouse are green.
+  - Keep `docs/architecture.md` and `docs/glossary.md` up to date when the structure changes or new concepts appear.
+  - Don't add a dependency without asking Raymond and explaining why.
+- **Explain what you build:** end every task with a short plain-language explanation of how it works, so Raymond learns it and can explain it himself.
+- **Commits:** small, descriptive commits. Work on a feature branch and only push when Raymond asks.
+- **Don't touch the `stamlijst` subdomain or the existing DNS** without an explicit request.

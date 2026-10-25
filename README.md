@@ -1,219 +1,219 @@
 # halaszraymond.com — portfolio v2
 
-De nieuwe versie van halaszraymond.com: een portfolio met een echte wow-factor, gericht op werkgevers, rond één origineel personage: **een vissende keizerspinguïn in 3D**.
+The new version of halaszraymond.com: an employer-facing portfolio with real wow factor, built around one original character, **a fishing emperor penguin in 3D**.
 
-> Status: concept staat vast, bouw nog niet begonnen. Dit document is de bron van waarheid. Wijzigt er een besluit, pas dan eerst dit bestand aan.
+> Status: concept is final, build not started yet. This document is the source of truth. If a decision changes, update this file first.
 
 ---
 
-## 1. Doel en publiek
+## 1. Goal and audience
 
-- **Wat:** een portfoliosite die mensen onthouden en doorsturen.
-- **Voor wie:** werkgevers en recruiters (data / data science / analytics), plus iedereen die Raymond wil leren kennen.
-- **Wat ze moeten meenemen:** Raymond vindt patronen in rommelige data, bouwt dingen zelf van begin tot eind, en doet dat in drie talen.
-- **Must-haves voor werkgevers:** case studies (probleem → aanpak → resultaat), een duidelijke contactroute en een cv-download.
+- **What:** a portfolio site people remember and pass on.
+- **Who it's for:** employers and recruiters (data / data science / analytics), plus anyone who wants to get to know Raymond.
+- **What they should take away:** Raymond finds patterns in messy data, builds things himself from start to finish, and does it in three languages.
+- **Must-haves for employers:** case studies (problem → approach → result), a clear way to get in touch, and a CV download.
 
-## 2. Het concept: de vissende pinguïn
+## 2. The concept: the fishing penguin
 
-**De kern.** *Visser* (Nederlands) en *Halász* (Hongaars) betekenen allebei "visser". Raymond vist patronen uit data. Een keizerspinguïn jaagt door te duiken: hij is de diepst duikende vogel ter wereld en komt tot meer dan 500 meter. De site is daarom **één duik**, en de pinguïn neemt de bezoeker mee naar beneden.
+**The core idea.** *Visser* (Dutch) and *Halász* (Hungarian) both mean "fisherman". Raymond fishes patterns out of data. An emperor penguin hunts by diving: it is the deepest-diving bird in the world and reaches more than 500 metres. So the site is **one dive**, and the penguin takes the visitor down with him.
 
-### 2.1 De keizer (het personage)
+### 2.1 The emperor (the character)
 
-- **Soort:** keizerspinguïn (*Aptenodytes forsteri*).
-- **Stijl:** **gestileerd low-poly 3D**, volledig in code gebouwd (Three.js), geen gekocht model. Hij moet lezen als design, niet als stockmodel.
-- **Herkenningspunten** om te behouden in de stilering: zwarte kop en rug, witte buik, de **goud-oranje oorvlekken** die naar de borst toe vervagen, en een slanke snavel met een oranje/roze streep op de ondersnavel.
-- **Eerst bouwen we de speelplaats:** een pagina met de keizer en schuifjes voor de lijfvorm, de grootte van kop en snavel, de kleur en intensiteit van de nekvlek, de hoekigheid (aantal polygonen) en de zwembeweging. Raymond speelt ermee tot hij goed voelt, en die waarden worden de definitieve config.
-- **Animaties:** staan op het ijs (idle), duiken, zwemmen (vleugelslag), een vis najagen, buigen bij een klik, met de kop de cursor volgen, en zich als finale uit het water lanceren met een spoor van luchtbelletjes.
+- **Species:** emperor penguin (*Aptenodytes forsteri*).
+- **Style:** **stylised low-poly 3D**, built entirely in code (Three.js), no purchased model. He should read as design, not as a stock model.
+- **Features to keep through the stylisation:** black head and back, white belly, the **golden-orange ear patches** that fade towards the chest, and a slender bill with an orange/pink stripe on the lower mandible.
+- **We build the playground first:** a page with the emperor and sliders for body shape, head and bill size, the colour and intensity of the neck patch, the faceting (polygon count) and the swimming motion. Raymond plays with it until it feels right, and those values become the final config.
+- **Animations:** standing on the ice (idle), diving, swimming (flipper strokes), chasing a fish, bowing when clicked, following the cursor with his head, and, as the finale, launching out of the water with a trail of air bubbles.
 
-### 2.2 Naam: Keizer Kálmán ✅
+### 2.2 Name: Keizer Kálmán ✅
 
-Nederlands "keizer" + de Hongaarse naam Kálmán. Rudolf Kálmán was een Hongaarse wiskundige; het **Kalman-filter** schat uit ruisende data waar iets heen beweegt, precies wat een jagende pinguïn doet met een vis. Dat verhaal mag terugkomen in de "Wie ik ben"-sectie of in de making-of.
+Dutch *keizer* ("emperor") + the Hungarian name Kálmán. Rudolf Kálmán was a Hungarian mathematician; the **Kalman filter** estimates from noisy data where something is moving, which is exactly what a hunting penguin does with a fish. That story can come back in the "Who I am" section or in the making-of.
 
-In de rest van dit document: **Kálmán** of **de keizer**.
+In the rest of this document: **Kálmán** or **the emperor**.
 
-### 2.3 De duik: verhaallijn en secties
+### 2.3 The dive: storyline and sections
 
-Scrollen = duiken. Een **dieptemeter** aan de zijkant loopt mee.
+Scrolling = diving. A **depth gauge** on the side follows along.
 
-| Diepte | Sectie | Inhoud | Sfeer |
+| Depth | Section | Content | Mood |
 |---|---|---|---|
-| 0 m | **Het ijs (hero)** | De keizer op de ijsrand, met een school lichtgevende vissen onder water die samen "Raymond Visser / Halász Raymond" vormen. Duikt bij de eerste scroll. | Ijsblauw, zuiderlicht (aurora australis) |
-| 0–100 m | **Wie ik ben** | Visser = Halász, Nederland → Boedapest, drie talen. Vissen ordenen zich tot grafieken (zie 2.4). | Licht valt nog door het water |
-| 100–250 m | **Werk** | FrieslandCampina, Leger des Heils, eerder EY. | Schemerzone |
-| 250–400 m | **Studie** | ELTE MSc, Windesheim BSc + Honours. | Bijna donker |
-| 400–564 m | **De vangst** | Projecten (zie §4), lichtgevend zoals diepzeedieren. Plus de **sonar** met live Pi-cijfers. | Inktzwart, bioluminescent |
-| ↑ | **Contact** | De keizer schiet omhoog en lanceert zich uit het water het ijs op. LinkedIn, GitHub, e-mail, cv-download. | Terug naar het licht |
+| 0 m | **The ice (hero)** | The emperor on the ice edge, with a school of glowing fish underwater that together form "Raymond Visser / Halász Raymond". He dives at the first scroll. | Ice blue, southern lights (aurora australis) |
+| 0–100 m | **Who I am** | Visser = Halász, Netherlands → Budapest, three languages. The fish arrange themselves into charts (see 2.4). | Light still filters through the water |
+| 100–250 m | **Work** | FrieslandCampina, Leger des Heils (Salvation Army NL), earlier EY. | Twilight zone |
+| 250–400 m | **Education** | ELTE MSc, Windesheim BSc + Honours. | Almost dark |
+| 400–564 m | **The catch** | Projects (see §4), glowing like deep-sea creatures. Plus the **sonar** with live Pi stats. | Ink black, bioluminescent |
+| ↑ | **Contact** | The emperor shoots up and launches himself out of the water onto the ice. LinkedIn, GitHub, email, CV download. | Back to the light |
 
-**De bodem ligt op 564 m** ✅: de diepste nauwkeurig gemeten duik van een vogel ooit, door een keizerspinguïn voor de kust van Oost-Antarctica. Het onderzoek, met 93 pinguïns met diepte-tijdrecorders, kwam van de Australian Antarctic Division en Phillip Island Nature Park en werd gepubliceerd in *Polar Biology* (2006). Bron: [Guinness World Records – Deepest dive by a bird](https://www.guinnessworldrecords.com/world-records/deepest-dive-by-a-bird). Idee: onderaan een klein bordje "564 m · wereldrecord · keizerspinguïn".
+**The bottom is at 564 m** ✅: the deepest accurately measured dive by any bird, by an emperor penguin off eastern Antarctica. The study, which fitted 93 penguins with time-depth recorders, was a collaboration between the Australian Antarctic Division and Phillip Island Nature Park and was published in *Polar Biology* (2006). Source: [Guinness World Records – Deepest dive by a bird](https://www.guinnessworldrecords.com/world-records/deepest-dive-by-a-bird). Idea: a small sign at the bottom reading "564 m · world record · emperor penguin".
 
-Aanvullend (bron: [BBC Science Focus](https://www.sciencefocus.com/planet-earth/penguin-depth-swim), nog verifiëren): een gezenderde keizer bleef **ruim een half uur** onder water, en normale duiken gaan naar **100–200 m**, precies de diepte van de sectie "Werk", waar de keizer dagelijks jaagt.
+Additional facts (source: [BBC Science Focus](https://www.sciencefocus.com/planet-earth/penguin-depth-swim), still to verify): a tagged emperor stayed underwater for **over half an hour**, and normal dives go to **100–200 m**, exactly the depth of the "Work" section, where the emperor hunts every day.
 
-### 2.4 Het datastuk (wat de site "data" maakt)
+### 2.4 The data layer (what makes the site "data")
 
-- **Duikprofiel:** de dieptemeter tekent tijdens het scrollen een lijn, net als echte grafieken van gezenderde keizerspinguïns. Het bezoek van de gebruiker wordt zo een dataset. Onderaan of bij contact kan het eigen profiel getoond worden ("jouw duik: 2:14 min, max 564 m — Kálmán houdt het ruim een half uur vol").
-- **Vissen worden grafieken:** de school die de keizer bijeendrijft, valt in "Wie ik ben" op zijn plek als visualisaties van talen (NL/HU/EN), tools (Python, R, SQL, Java, Power BI, Databricks, Grafana) en de route Nederland → Boedapest.
-- **Sonar:** live cijfers van Raymonds Raspberry Pi-homeserver (uptime, door Pi-hole geblokkeerde verzoeken, eventueel temperatuur), weergegeven als sonarmeting. Zie §5.3 voor de veilige opzet.
+- **Dive profile:** while scrolling, the depth gauge draws a line, just like real charts from tagged emperor penguins. The visitor's own visit becomes a dataset. At the bottom or at contact, their profile can be shown ("your dive: 2:14 min, max 564 m — Kálmán can hold his breath for over half an hour").
+- **Fish become charts:** the school the emperor herds together falls into place in "Who I am" as visualisations of languages (NL/HU/EN), tools (Python, R, SQL, Java, Power BI, Databricks, Grafana) and the route Netherlands → Budapest.
+- **Sonar:** live stats from Raymond's Raspberry Pi home server (uptime, requests blocked by Pi-hole, possibly temperature), displayed as a sonar reading. See §5.3 for the secure setup.
 
-### 2.5 Persoonlijkheid en verrassingen
+### 2.5 Personality and surprises
 
-- De keizer volgt de cursor met zijn kop en buigt als je hem aanklikt.
-- Als de bezoeker stopt met scrollen, zweeft hij rustig en jaagt hij af en toe een visje na.
-- Geheime toetscombinatie (bijv. de Konami-code) → een hele kolonie op het ijs.
-- **404-pagina:** de keizer dobbert verdwaald op een ijsschots.
-- Optioneel onderwatergeluid, **standaard uit**, met een duidelijke knop.
+- The emperor follows the cursor with his head and bows when you click him.
+- When the visitor stops scrolling, he floats calmly and now and then chases a small fish.
+- Secret key combination (e.g. the Konami code) → a whole colony on the ice.
+- **404 page:** the emperor drifts, lost, on an ice floe.
+- Optional underwater sound, **off by default**, with a clear toggle.
 
-### 2.6 Kleur en typografie
+### 2.6 Colour and typography
 
-- **Palet:** ijswit → diepzeeblauw → inktzwart (de kleur volgt de diepte), met het **goud-oranje van de oorvlek** als enige accentkleur: knoppen, dieptemeter, kernwoorden.
-- Alle tekst moet WCAG AA-contrast halen, ook in de donkerste laag.
-- **Typografie:** nog te kiezen. Richting: één karaktervol display-font voor koppen en namen, één heel leesbaar font voor tekst, plus een monospace voor de dieptemeter en data-labels. Moet Hongaarse tekens goed weergeven (ő, ű, á, é).
+- **Palette:** ice white → deep-sea blue → ink black (the colour follows the depth), with the **golden orange of the ear patch** as the only accent colour: buttons, depth gauge, key words.
+- All text must meet WCAG AA contrast, including in the darkest layer.
+- **Typography:** still to choose. Direction: one characterful display font for headings and names, one highly readable font for body text, plus a monospace for the depth gauge and data labels. Must render Hungarian characters well (ő, ű, á, é).
 
-## 3. Inhoud over Raymond
+## 3. Content about Raymond
 
-Uitgangspunt (van de huidige site, **laten verifiëren voor publicatie**):
+Starting point (from the current site, **verify before publishing**):
 
-- **Naam:** Raymond Visser / Halász Raymond. Woont en werkt in Boedapest.
-- **Studie:**
-  - MSc Survey Statistics and Data Analytics, ELTE Boedapest (2025–2027), VSBfonds-beurs.
-  - BSc ICT – Applied Data Science & AI, Windesheim (2022–2025), met Honours Programme Technology & Society (2023–2024).
-  - Eerder: accountancy aan Windesheim (niet afgerond).
-- **Werk:**
-  - HR Trainee, HR Time & Attendance, FrieslandCampina Boedapest (parttime, sinds sep 2026).
-  - Junior AI Specialist + afstudeerstage, Leger des Heils (data engineering en analytics in Azure Databricks en Grafana, opzet van een datascienceteam, Luisterlijn, Elasticsearch).
-  - Auditstage EY, Utrecht (2020).
-- **Overig:** vrijwilligersreis Bulgarije (2024).
-- **Talen:** Nederlands (moedertaal), Hongaars (moedertaal/tweetalig), Engels (C1).
+- **Name:** Raymond Visser / Halász Raymond. Lives and works in Budapest.
+- **Education:**
+  - MSc Survey Statistics and Data Analytics, ELTE Budapest (2025–2027), VSBfonds scholarship.
+  - BSc ICT – Applied Data Science & AI, Windesheim (2022–2025), with Honours Programme Technology & Society (2023–2024).
+  - Earlier: accountancy at Windesheim (not completed).
+- **Work:**
+  - HR Trainee, HR Time & Attendance, FrieslandCampina Budapest (part-time, since Sep 2026).
+  - Junior AI Specialist + graduation internship, Leger des Heils (data engineering and analytics in Azure Databricks and Grafana, setting up a data science team, Luisterlijn, Elasticsearch).
+  - Audit internship, EY Utrecht (2020).
+- **Other:** volunteer trip to Bulgaria (2024).
+- **Languages:** Dutch (native), Hungarian (native/bilingual), English (C1).
 - **Tools:** Python, R, SQL, Java, Power BI, Azure Databricks, Grafana.
-- **Links:** LinkedIn `visser-raymond`, GitHub `Halaszraymond`. E-mailadres op de site: nog te kiezen.
+- **Links:** LinkedIn `visser-raymond`, GitHub `Halaszraymond`. Email address on the site: still to choose.
 
-## 4. Projecten: de vangst
+## 4. Projects: the catch
 
-Alle code is van Raymond en mag gebruikt worden als bron voor de case studies.
+All code is Raymond's own and may be used as a source for the case studies.
 
-### Uitgelicht (3 volledige case studies)
+### Featured (3 full case studies)
 
-1. **r-Frica Predicts:** voorspelt de uitslagen van de Afrika Cup (AFCON). Idee: een interactief element, bijvoorbeeld de voorspelde kansen per wedstrijd.
-2. **Raspberry Pi-homeserver:** Pi-hole, Tailscale, Jellyfin, Uptime Kuma met WhatsApp-meldingen, Cloudflare Tunnel, SSH-hardening, en een kiosk-dashboard. Met de live sonar.
-3. **Deze website:** vibe-codingproject, gebouwd met Claude Code. Een "making of": van concept tot de keizer, met screenshots van de speelplaats en tussenversies. **Houd daarom vanaf dag 1 een bouwlogboek bij** (`docs/making-of.md`) met beslissingen en screenshots.
+1. **r-Frica Predicts:** predicts the results of the Africa Cup of Nations (AFCON). Idea: an interactive element, e.g. the predicted probabilities per match.
+2. **Raspberry Pi home server:** Pi-hole, Tailscale, Jellyfin, Uptime Kuma with WhatsApp alerts, Cloudflare Tunnel, SSH hardening, and a kiosk dashboard. With the live sonar.
+3. **This website:** a vibe-coding project, built with Claude Code. A "making of": from concept to the emperor, with screenshots of the playground and intermediate versions. **So keep a build log from day 1** (`docs/making-of.md`) with decisions and screenshots.
 
-Vorm per case study: één zin pitch · probleem · aanpak · resultaat/impact · tools · links (repo/demo) · 1–3 beelden.
+Format per case study: one-line pitch · problem · approach · result/impact · tools · links (repo/demo) · 1–3 images.
 
-### Meer vangst (kaarten)
+### More catch (cards)
 
-- **Blocky:** eigen applicatie (onder meer een instellingen-tab met thema's en lettertypes).
-- **Notificatiesystemen:** automatische meldingen bij wijzigingen op webpagina's en prijsalerts als een product onder een drempelprijs komt.
-- **Veiligheidsregio IJsselland:** datascienceproject.
-- **4Vitae:** datascienceproject.
-- **Leger des Heils:** datascienceproject (patronen in zorg- en ondersteuningstrajecten).
+- **Blocky:** Raymond's own application (including a settings tab with themes and fonts).
+- **Notification systems:** automatic alerts when web pages change, and price alerts when a product drops below a threshold price.
+- **Veiligheidsregio IJsselland** (Dutch safety region): data science project.
+- **4Vitae:** data science project.
+- **Leger des Heils:** data science project (patterns in care and support trajectories).
 
-### Materiaal nog nodig (per project)
+### Material still needed (per project)
 
-- [ ] Repo-link(s) of toegang tot de code
-- [ ] Probleem, aanpak, resultaat in een paar zinnen
-- [ ] Screenshots / grafieken / demo
-- [ ] Wat er wel en niet publiek mag (namen van opdrachtgevers mogen; ruwe data niet tonen)
+- [ ] Repo link(s) or access to the code
+- [ ] Problem, approach, result in a few sentences
+- [ ] Screenshots / charts / demo
+- [ ] What may and may not be public (client names are fine; never show raw data)
 
-## 5. Techniek
+## 5. Technology
 
 ### 5.1 Stack
 
-| Onderdeel | Keuze | Waarom |
+| Part | Choice | Why |
 |---|---|---|
-| Framework | **Astro** | Snel, statisch, goede i18n-routing, islands voor het 3D-deel |
-| 3D | **Three.js** | De keizer, de visschool en het water |
-| Scroll/animatie | **GSAP + ScrollTrigger**, eventueel Lenis voor smooth scroll | Dieptegestuurde animaties |
-| Talen | **NL / HU / EN** via Astro i18n | `/nl`, `/hu`, `/en`; standaard op basis van de browsertaal, met een schakelaar |
-| Grafieken | D3 of eigen SVG | Datavisualisaties in "Wie ik ben" en het duikprofiel |
-| Hosting | **Cloudflare Pages** | Domein staat al bij Cloudflare; previewlink per branch |
-| Taal (site) | **TypeScript (strict)** | Zie §5.4 waarom geen Python in de browser |
-| Taal (data) | **Python** in `data/` | Scripts die bij het bouwen de data voor grafieken en r-Frica-voorspellingen als JSON genereren |
-| Taal (Pi) | **Python (FastAPI)** | Het read-only sonar-eindpunt op de Raspberry Pi |
-| Analytics | **Cloudflare Web Analytics** | Zonder cookies, dus geen cookiebanner. Eén schakelaar in Cloudflare Pages |
+| Framework | **Astro** | Fast, static, good i18n routing, islands for the 3D part |
+| 3D | **Three.js** | The emperor, the fish school and the water |
+| Scroll/animation | **GSAP + ScrollTrigger**, possibly Lenis for smooth scroll | Depth-driven animations |
+| Languages | **NL / HU / EN** via Astro i18n | `/nl`, `/hu`, `/en`; default based on browser language, with a switcher |
+| Charts | D3 or custom SVG | Visualisations in "Who I am" and the dive profile |
+| Hosting | **Cloudflare Pages** | Domain is already at Cloudflare; preview link per branch |
+| Language (site) | **TypeScript (strict)** | See §5.4 for why not Python in the browser |
+| Language (data) | **Python** in `data/` | Scripts that generate chart data and r-Frica predictions as JSON at build time |
+| Language (Pi) | **Python (FastAPI)** | The read-only sonar endpoint on the Raspberry Pi |
+| Analytics | **Cloudflare Web Analytics** | Cookieless, so no cookie banner. One switch in Cloudflare Pages |
 
-### 5.2 Kwaliteitseisen
+### 5.2 Quality requirements
 
-- **Prestaties:** Lighthouse ≥ 90 op mobiel. Het 3D-deel wordt lui geladen; de eerste weergave is direct zichtbaar zonder te wachten op WebGL.
-- **Fallback:** bij `prefers-reduced-motion`, geen WebGL of een zwak toestel krijg je een mooie statische versie (gerenderde stills van de keizer). Nooit een kapotte of lege site.
-- **Toegankelijkheid:** alle inhoud is gewone, leesbare HTML (niet in canvas), toetsenbord-navigeerbaar, met alt-teksten en AA-contrast.
-- **Mobiel:** eerst ontworpen voor telefoons, met touch in plaats van een cursor.
-- **SEO/delen:** goede titel, beschrijving en Open Graph-afbeelding (de keizer op het ijs), per taal.
+- **Performance:** Lighthouse ≥ 90 on mobile. The 3D part is lazy-loaded; the first paint is visible immediately, without waiting for WebGL.
+- **Fallback:** with `prefers-reduced-motion`, no WebGL or a weak device, you get a good-looking static version (rendered stills of the emperor). Never a broken or empty site.
+- **Accessibility:** all content is plain, readable HTML (not in canvas), keyboard-navigable, with alt text and AA contrast.
+- **Mobile:** designed for phones first, with touch instead of a cursor.
+- **SEO/sharing:** good title, description and Open Graph image (the emperor on the ice), per language.
 
-### 5.3 Live Pi-cijfers (sonar): veilige opzet
+### 5.3 Live Pi stats (sonar): secure setup
 
-- De Pi publiceert **alleen** een klein, read-only JSON-eindpunt met geaggregeerde cijfers (geen IP's, geen domeinnamen, geen logs).
-- Bereikbaar via een **Cloudflare Tunnel** op een eigen subdomein. Het bestaande `stamlijst`-subdomein en de tunnel daarvan blijven ongemoeid.
-- De site leest het eindpunt met caching (bijv. elke 60 s) en toont "laatste meting" als de Pi offline is, zodat de site nooit hapert.
+- The Pi publishes **only** a small, read-only JSON endpoint with aggregated numbers (no IPs, no domain names, no logs).
+- Reachable via a **Cloudflare Tunnel** on its own subdomain. The existing `stamlijst` subdomain and its tunnel stay untouched.
+- The site reads the endpoint with caching (e.g. every 60 s) and shows "last reading" when the Pi is offline, so the site never stalls.
 
-### 5.4 Codeerafspraken
+### 5.4 Coding requirements
 
-**Uitgangspunt:** topkwaliteit, en tegelijk zo geschreven dat Raymond (sterk in Python/R/SQL, nieuw in TypeScript) elke regel kan lezen en in een sollicitatiegesprek kan uitleggen. Werkgevers lezen deze repo ook.
+**Principle:** top quality, while written so that Raymond (strong in Python/R/SQL, new to TypeScript) can read every line and explain it in a job interview. Employers will read this repo too.
 
-**Waarom TypeScript voor de site en geen Python in de browser:** Python in de browser (PyScript/Pyodide) laadt eerst een Python-runtime van meerdere MB's. Dat is funest voor de eerste indruk en voor Lighthouse, en het heeft geen volwaardige 3D-bibliotheek. Server-frameworks zoals Streamlit of Reflex hebben een draaiende server nodig en zijn niet gemaakt voor dit soort WebGL-ervaringen. Python krijgt daarom de plekken waar het het sterkst is: de **datapijplijn** (`data/`) en het **Pi-eindpunt**. Zo laat de repo beide talen op hun best zien.
+**Why TypeScript for the site and not Python in the browser:** Python in the browser (PyScript/Pyodide) first loads a Python runtime of several MB. That kills the first impression and the Lighthouse score, and there is no full-featured 3D library for it. Server frameworks like Streamlit or Reflex need a running server and aren't made for this kind of WebGL experience. So Python goes where it is strongest: the **data pipeline** (`data/`) and the **Pi endpoint**. That way the repo shows both languages at their best.
 
-**Leesbaarheid**
-- TypeScript in `strict`-modus; geen `any`.
-- Elk bestand begint met een kort commentaarblok: wat het doet en hoe het in het geheel past.
-- Commentaar legt het *waarom* uit. Bij 3D- en animatiecode wordt ook de wiskunde of het concept kort uitgelegd (bijv. "quaternion = rotatie zonder gimbal lock").
-- Kleine functies met beschrijvende namen, benoemde constanten in plaats van magische getallen, en geen slimme one-liners als een duidelijke variant even goed is.
-- Waar TypeScript iets doet dat in Python anders werkt, een korte vergelijking in het commentaar ("zoals een dataclass in Python").
-- `docs/architecture.md`: een overzicht met diagram van hoe de onderdelen samenhangen (content → pagina's, scroll → diepte → scene, data-scripts → JSON → grafieken).
-- `docs/glossary.md`: 3D- en frontendbegrippen in gewone taal.
+**Readability**
+- TypeScript in `strict` mode; no `any`.
+- Every file starts with a short comment block: what it does and how it fits into the whole.
+- Comments explain the *why*. In 3D and animation code, the maths or concept is briefly explained too (e.g. "quaternion = rotation without gimbal lock").
+- Small functions with descriptive names, named constants instead of magic numbers, and no clever one-liners when a clear version works just as well.
+- Where TypeScript does something that works differently in Python, a short comparison in the comment ("like a dataclass in Python").
+- `docs/architecture.md`: an overview with a diagram of how the parts fit together (content → pages, scroll → depth → scene, data scripts → JSON → charts).
+- `docs/glossary.md`: 3D and frontend terms in plain language.
 
-**Structuur**
-- `src/content/`: teksten, projecten en vertalingen (Markdown/JSON, Astro content collections). Inhoud aanpassen = nooit code aanpassen.
-- `src/components/`: UI-componenten.
-- `src/scene/`: alles 3D, opgesplitst in `kalman/` (model, config, animaties), `school/` (vissen), `environment/` (water, licht, zuiderlicht) en `scroll/` (diepte → scene).
-- `src/i18n/`, `src/lib/` (pure logica, goed testbaar), `data/` (Python), `docs/`, `tests/`.
-- Kálmán is **config-gedreven**: vorm en kleur in één bestand (uitkomst van de speelplaats).
+**Structure**
+- `src/content/`: texts, projects and translations (Markdown/JSON, Astro content collections). Changing content = never changing code.
+- `src/components/`: UI components.
+- `src/scene/`: everything 3D, split into `kalman/` (model, config, animations), `school/` (fish), `environment/` (water, light, southern lights) and `scroll/` (depth → scene).
+- `src/i18n/`, `src/lib/` (pure logic, easy to test), `data/` (Python), `docs/`, `tests/`.
+- Kálmán is **config-driven**: shape and colour in one file (the output of the playground).
 
-**Kwaliteit en tooling**
-- ESLint + Prettier (TS), Ruff + mypy (Python). Automatisch bij opslaan en bij elke commit (pre-commit hooks).
-- Minimale dependencies: elk pakket moet zijn plek verdienen. Renovate/Dependabot houdt ze bij.
-- Prestatiebudgetten worden **afgedwongen**, niet alleen gehoopt: basis-JS ≈ 50 KB, Three.js en de scene in een aparte, uitgestelde chunk, Kálmán low-poly, de visschool via instancing, 60 fps op een gemiddelde telefoon, gecapte pixel ratio, en geen rendering als het tabblad niet zichtbaar is.
+**Quality and tooling**
+- ESLint + Prettier (TS), Ruff + mypy (Python). Automatic on save and on every commit (pre-commit hooks).
+- Minimal dependencies: every package has to earn its place. Renovate/Dependabot keeps them up to date.
+- Performance budgets are **enforced**, not just hoped for: base JS ≈ 50 KB, Three.js and the scene in a separate deferred chunk, Kálmán low-poly, the fish school via instancing, 60 fps on a mid-range phone, capped pixel ratio, and no rendering when the tab isn't visible.
 
-**Testen** (kwaliteit gaat voor; "overkill" bestaat niet)
-- **Unit tests (Vitest):** alle pure logica, zoals diepte-mapping, duikprofiel, i18n en config-validatie.
-- **Python-tests (pytest):** de data-scripts en het Pi-eindpunt.
-- **End-to-end (Playwright):** elke pagina in NL/HU/EN, zonder consolefouten, met werkende navigatie en taalschakelaar, de reduced-motion- en no-WebGL-fallback, en mobiele en desktop-breedte.
-- **Visuele regressie:** screenshot-baselines per sectie; een onbedoelde visuele wijziging laat de test falen.
-- **Toegankelijkheid:** axe-checks in Playwright op elke pagina.
-- **Lighthouse CI** met harde drempels (≥ 90 in alle vier categorieën) en een **bundle-size check**.
+**Testing** (quality comes first; "overkill" doesn't exist)
+- **Unit tests (Vitest):** all pure logic, such as depth mapping, dive profile, i18n and config validation.
+- **Python tests (pytest):** the data scripts and the Pi endpoint.
+- **End-to-end (Playwright):** every page in NL/HU/EN, no console errors, working navigation and language switcher, the reduced-motion and no-WebGL fallbacks, and mobile and desktop widths.
+- **Visual regression:** screenshot baselines per section; an unintended visual change fails the test.
+- **Accessibility:** axe checks in Playwright on every page.
+- **Lighthouse CI** with hard thresholds (≥ 90 in all four categories) and a **bundle-size check**.
 
-**CI en Git**
-- GitHub Actions bij elke push en PR: lint → type check → unit tests → Python-tests → build → Playwright → Lighthouse. Een rode build wordt niet gemerged.
-- `main` is altijd deploybaar en live. Werk gebeurt op feature-branches met een eigen Cloudflare-preview, via pull requests.
+**CI and Git**
+- GitHub Actions on every push and PR: lint → type check → unit tests → Python tests → build → Playwright → Lighthouse. A red build does not get merged.
+- `main` is always deployable and live. Work happens on feature branches with their own Cloudflare preview, via pull requests.
 - Conventional commits (`feat:`, `fix:`, `docs:`, `test:`).
 
-**Privacy en beveiliging**
-- Geen cookies en geen tracking behalve Cloudflare Web Analytics (cookieloos).
-- Security headers (CSP, HSTS, enz.) via een `_headers`-bestand in Cloudflare Pages.
-- Pi-eindpunt: alleen geaggregeerde cijfers (§5.3), met rate limiting.
+**Privacy and security**
+- No cookies and no tracking apart from Cloudflare Web Analytics (cookieless).
+- Security headers (CSP, HSTS, etc.) via a `_headers` file in Cloudflare Pages.
+- Pi endpoint: aggregated numbers only (§5.3), with rate limiting.
 
-## 6. Repo, hosting en live gaan
+## 6. Repo, hosting and going live
 
-- **Nieuwe repo** (bijv. `Halaszraymond/portfolio`). De huidige site in de `halaszraymond.github.io`-repo blijft live tot v2 klaar is en dient als fallback.
-- **Ontwikkelen:** lokaal in VS Code met Claude Code. `npm run dev` voor de dev-server.
-- **Previews:** de repo koppelen aan Cloudflare Pages; elke branch krijgt een eigen preview-URL.
-- **Live gaan (fase 4):**
-  1. In Cloudflare Pages het custom domain `halaszraymond.com` (en `www`) toevoegen.
-  2. In Cloudflare DNS de vier A-records naar GitHub (185.199.108–111.153) en de `www`-CNAME naar `halaszraymond.github.io` verwijderen. Pages maakt de juiste records aan.
-  3. Het `stamlijst`-record **niet** aanraken.
-  4. In de oude repo GitHub Pages uitzetten of het custom domain verwijderen, zodat er geen conflict ontstaat.
+- **New repo** (e.g. `Halaszraymond/portfolio`). The current site in the `halaszraymond.github.io` repo stays live until v2 is ready and serves as a fallback.
+- **Development:** locally in VS Code with Claude Code. `npm run dev` for the dev server.
+- **Previews:** connect the repo to Cloudflare Pages; every branch gets its own preview URL.
+- **Going live (phase 4):**
+  1. In Cloudflare Pages, add the custom domain `halaszraymond.com` (and `www`).
+  2. In Cloudflare DNS, remove the four A records pointing to GitHub (185.199.108–111.153) and the `www` CNAME pointing to `halaszraymond.github.io`. Pages creates the right records.
+  3. Do **not** touch the `stamlijst` record.
+  4. In the old repo, turn off GitHub Pages or remove the custom domain, so there's no conflict.
 
-## 7. Fases
+## 7. Phases
 
-- [ ] **Fase 0: opzet.** Repo, Astro-skelet (TS strict), alle tooling en de volledige CI-pijplijn uit §5.4 (eerst met één lege testpagina, zodat alles vanaf dag 1 groen moet blijven), Cloudflare Pages-preview, `docs/making-of.md`, `docs/architecture.md`.
-- [ ] **Fase 1: de keizer.** Speelplaats met schuifjes → Raymond kiest de vorm → definitieve config. Daarna de animaties (idle, duiken, zwemmen, lanceren). Naam: Keizer Kálmán.
-- [ ] **Fase 2: de duik.** Alle secties met dieptemeter, kleurverloop, visschool, en vissen die grafieken worden. Eerst met tijdelijke tekst.
-- [ ] **Fase 3: inhoud.** Echte teksten, de 3 case studies, de "meer vangst"-kaarten en een cv-download.
-- [ ] **Fase 4: afwerking.** NL/HU/EN, mobiel, fallback, prestaties, toegankelijkheid, SEO. Daarna live gaan.
-- [ ] **Fase 5: extra's.** Live Pi-sonar, kolonie-easter-egg, 404 op de ijsschots, geluid, duikprofiel van de bezoeker.
+- [ ] **Phase 0: setup.** Repo, Astro skeleton (TS strict), all tooling and the full CI pipeline from §5.4 (starting with one empty test page, so everything has to stay green from day 1), Cloudflare Pages preview, `docs/making-of.md`, `docs/architecture.md`.
+- [ ] **Phase 1: Keizer Kálmán.** Playground with sliders → Raymond picks the shape → final config. Then the animations (idle, dive, swim, launch).
+- [ ] **Phase 2: the dive.** All sections with depth gauge, colour gradient, fish school, and fish turning into charts. Placeholder text first.
+- [ ] **Phase 3: content.** Real texts, the 3 case studies, the "more catch" cards and a CV download.
+- [ ] **Phase 4: polish.** NL/HU/EN, mobile, fallback, performance, accessibility, SEO. Then go live.
+- [ ] **Phase 5: extras.** Live Pi sonar, colony easter egg, 404 on the ice floe, sound, the visitor's dive profile.
 
-## 8. Open beslissingen
+## 8. Open decisions
 
-- [x] Naam van de keizer: Keizer Kálmán (§2.2)
-- [x] Recordduikdiepte geverifieerd: 564 m, Guinness World Records (§2.3)
-- [ ] Lettertypes (§2.6)
-- [ ] E-mailadres en cv-bestand voor de contactsectie
-- [ ] Repo-naam
-- [ ] Eventueel: een foto van Raymond, ja of nee, en waar
+- [x] Name of the emperor: Keizer Kálmán (§2.2)
+- [x] Record dive depth verified: 564 m, Guinness World Records (§2.3)
+- [ ] Fonts (§2.6)
+- [ ] Email address and CV file for the contact section
+- [ ] Repo name
+- [ ] Optional: a photo of Raymond, yes or no, and where
