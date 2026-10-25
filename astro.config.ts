@@ -19,12 +19,19 @@ function kalmanPlayground(): AstroIntegration {
   return {
     name: 'kalman-playground',
     hooks: {
-      'astro:config:setup': ({ command, injectRoute }) => {
-        if (shouldIncludePlayground({ command, flag: process.env['PLAYGROUND'] })) {
+      'astro:config:setup': ({ command, injectRoute, logger }) => {
+        const flag = process.env['PLAYGROUND'];
+        if (shouldIncludePlayground({ command, flag })) {
           injectRoute({
             pattern: '/playground',
             entrypoint: './src/playground/PlaygroundPage.astro',
           });
+          logger.info('Kálmán playground: included at /playground/');
+        } else {
+          // Say why, so a missing preview variable is visible in the Cloudflare build log.
+          logger.info(
+            `Kálmán playground: excluded (PLAYGROUND is ${flag === undefined ? 'not set' : `"${flag}"`})`,
+          );
         }
       },
     },
