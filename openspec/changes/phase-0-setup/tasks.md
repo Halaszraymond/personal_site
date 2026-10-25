@@ -28,7 +28,7 @@
 
 ## 4. Quality gates
 
-- [ ] 4.1 Add `public/_headers` (CSP without inline scripts, HSTS, `nosniff`, Referrer-Policy, Permissions-Policy) and set `build.inlineStylesheets: 'never'`; verify `dist/` contains no inline `<script>` or `<style>` blocks
+- [x] 4.1 Add `public/_headers` (CSP without inline scripts, HSTS, `nosniff`, Referrer-Policy, Permissions-Policy) and set `build.inlineStylesheets: 'never'`; verify `dist/` contains no inline `<script>` or `<style>` blocks
 - [ ] 4.2 Add the Playwright fixture that applies the headers from `public/_headers` to HTML responses, and a "no console errors" check plus axe (zero violations) on every page in all three languages, for desktop Chromium, mobile Chromium, mobile WebKit and desktop Firefox; verify `npm run e2e` passes and fails when a deliberate CSP violation is added
 - [ ] 4.3 Add the bundle-size budget as a pure function in `scripts/lib/budgets.ts` and the `scripts/check-bundle-size.ts` runner (50 KB gzipped base budget); verify with Vitest tests for under, exactly at and over the budget, and that `npm run size` prints the table
 - [ ] 4.4 Add the Chromium-only `visual` Playwright project (`/`, `/nl/`, `/hu/`, `/en/` at 375 px and 1280 px, scene slot masked, platform-free snapshot paths, only runs when `CI` is set); verify a local run reports it as skipped
