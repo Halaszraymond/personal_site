@@ -3,10 +3,13 @@
  * The root `/`: the English home page, without a redirect (README §5.1).
  *
  * Its canonical URL is `/en/` (set by HomePage), so search engines treat `/` and `/en/`
- * as one page instead of two copies.
+ * as one page instead of two copies. Only this page has the language hint.
  */
 import HomePage from '../components/HomePage.astro';
+import LanguageHint from '../components/LanguageHint.astro';
 import { DEFAULT_LOCALE } from '../i18n/locales';
 ---
 
-<HomePage locale={DEFAULT_LOCALE} />
+<HomePage locale={DEFAULT_LOCALE}>
+  <LanguageHint slot="before-content" />
+</HomePage>
