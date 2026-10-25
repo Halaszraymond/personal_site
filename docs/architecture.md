@@ -123,6 +123,46 @@ npm run lighthouse
 
 `public/_headers` sets the headers Cloudflare Pages sends with every page. The file itself explains each one. The important one is the **CSP** (Content-Security-Policy): only files from our own domain may run or load, and inline scripts and styles are blocked. That is why `astro.config.ts` sets `inlineStylesheets: 'never'` and `assetsInlineLimit: 0`: Astro would otherwise put small scripts and styles straight into the HTML. HSTS deliberately leaves out `includeSubDomains`, so the `stamlijst` subdomain is never affected.
 
+## CI (GitHub Actions)
+
+Two workflows live in `.github/workflows/`:
+
+| Workflow | When | What |
+|---|---|---|
+| `ci.yml` | Every push to every branch, and by hand | One job, in this order: `npm ci` → lint → type check → unit tests → build → bundle size → Playwright (browsers cached between runs) → Lighthouse. Uploads the Playwright report when something fails, and the Lighthouse reports always. A red run does not get merged. |
+| `update-visual-baselines.yml` | Only by hand | Takes new screenshots on Linux and commits them to the branch it ran on. Use it only for an intended visual change, and look at the new images. |
+
+**Starting a workflow by hand:** Actions → pick the workflow on the left → **Run workflow** → pick the branch. GitHub only shows that button for workflows whose file is on `main`.
+
+**Commits made by a workflow don't start other workflows.** After the baseline workflow commits new screenshots, CI only runs again on the next push (or with CI's own "Run workflow" button).
+
+**Dependabot** (`.github/dependabot.yml`) checks npm packages and GitHub Actions weekly and opens a pull request per update (dev dependencies grouped into one). Each PR goes through CI like any other change. TypeScript 7 is skipped for now, because the lint and type-check tools don't support it yet.
+
+## Hosting (Cloudflare Pages)
+
+The site is the Cloudflare Pages project **`halaszraymond`**, connected to this GitHub repo with Cloudflare's Git integration. Cloudflare builds on every push itself; no deploy secrets live in GitHub.
+
+| Setting | Value |
+|---|---|
+| Production branch | `main` → `halaszraymond.pages.dev` (and `halaszraymond.com` from go-live) |
+| Other branches | Each gets a preview: `<branch-name>.halaszraymond.pages.dev`, e.g. `change-phase-0-setup.halaszraymond.pages.dev` (slashes become dashes) |
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Node version | From `.nvmrc` (not a dashboard variable), so it is versioned with the code |
+| Custom domain | None until go-live (README §6) |
+
+Cloudflare reads `public/_headers` from the build output: the build log says `Parsed 1 valid header rule`. It serves `404.html` with status 404 for unknown URLs.
+
+**Setting it up again from scratch** (e.g. a new account):
+
+1. Dashboard → **Compute** → **Workers & Pages** → **Create application** → the **Pages** tab (not Workers: the Workers form asks for a *Deploy command*) → **Import an existing Git repository**.
+2. Connect GitHub; allow the Cloudflare app on **Only select repositories** → `portfolio_site`.
+3. Project name `halaszraymond`, production branch `main`, build command `npm run build`, output directory `dist`. No environment variables needed.
+4. Settings → Builds → Branch control: preview branches = **All non-Production branches**.
+5. Don't add a custom domain before go-live.
+
 ## Development on a work network
 
 Zscaler on the work network inspects HTTPS traffic with its own certificate. Windows trusts it, but Node does not by default, so `npm install` fails with `UNABLE_TO_GET_ISSUER_CERT_LOCALLY`. The fix is to let Node use the Windows certificate store: set the environment variable `NODE_USE_SYSTEM_CA=1`. Never turn off certificate checks (`strict-ssl=false`) instead.
+
+Zscaler also blocks `*.pages.dev`, so preview deployments can't be opened on the work laptop: check them on a phone or at home. And Astro's anonymous telemetry hangs for ~40 s on this network; the test scripts switch it off. For your own `npm run dev`, run `npx astro telemetry disable` once.
