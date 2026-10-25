@@ -7,7 +7,7 @@
 - [x] 1.3 Configure ESLint (flat config, `typescript-eslint` strict, `no-explicit-any` as error, `eslint-plugin-astro`), Prettier (`prettier-plugin-astro`, LF) and `eslint-config-prettier`; verify `npm run lint` passes and fails on a deliberately added `any`
 - [x] 1.4 Add `typecheck` (`astro check`) and Vitest with one placeholder test; verify `npm run typecheck` and `npm test` pass
 - [x] 1.5 Add `simple-git-hooks` + `lint-staged` (ESLint `--fix` and Prettier on staged files); verify a commit with a lint error is blocked
-- [ ] 1.6 Write `docs/architecture.md` (folder structure and npm scripts) and start `docs/glossary.md` (pre-commit hook, type stripping, linting); verify every folder from 1.2 is described
+- [x] 1.6 Write `docs/architecture.md` (folder structure and npm scripts) and start `docs/glossary.md` (pre-commit hook, type stripping, linting); verify every folder from 1.2 is described
 
 ## 2. i18n routing
 
