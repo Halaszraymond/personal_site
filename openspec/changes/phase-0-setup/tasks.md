@@ -47,7 +47,7 @@
 ## 6. Wrap-up
 
 - [ ] 6.1 Run the whole chain once more on the final branch state (`npm run check` locally and CI green, including the visual tests); verify every step is green
-- [ ] 6.2 Write `docs/making-of.md`: the concept phase (from `PLANNING_LOG.md`) and this change, with a screenshot of the start page in all three languages; verify the screenshots are committed and linked
+- [x] 6.2 Write `docs/making-of.md`: the concept phase (from `PLANNING_LOG.md`) and this change, with a screenshot of the start page in all three languages; verify the screenshots are committed and linked
 - [ ] 6.3 Tick off Phase 0 in README §7 and add a `PLANNING_LOG.md` line for every decision made during the build; verify both files are updated
 
 ## Workflow follow-up
