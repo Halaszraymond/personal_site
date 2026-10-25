@@ -21,9 +21,9 @@
 
 ## 3. Render fallback
 
-- [ ] 3.1 Implement `chooseRenderMode()` in `src/lib/render-mode.ts`; verify with Vitest tests for every combination of reduced motion, WebGL2 and Save-Data, including a missing Save-Data setting
-- [ ] 3.2 Render every page with `data-render-mode="fallback"` and an empty `aria-hidden` scene slot, and add the client script that detects the signals (WebGL2 inside `try/catch`, context released afterwards) and switches to `full`; verify `npm run build` output contains the fallback attribute on every page
-- [ ] 3.3 Add Playwright tests for the render-mode scenarios with emulated reduced motion, stubbed WebGL2 (`null` and a fake context) and a stubbed Save-Data, plus JavaScript disabled; verify the mode attribute and that the text and links are identical in both modes
+- [x] 3.1 Implement `chooseRenderMode()` in `src/lib/render-mode.ts`; verify with Vitest tests for every combination of reduced motion, WebGL2 and Save-Data, including a missing Save-Data setting
+- [x] 3.2 Render every page with `data-render-mode="fallback"` and an empty `aria-hidden` scene slot, and add the client script that detects the signals (WebGL2 inside `try/catch`, context released afterwards) and switches to `full`; verify `npm run build` output contains the fallback attribute on every page
+- [x] 3.3 Add Playwright tests for the render-mode scenarios with emulated reduced motion, stubbed WebGL2 (`null` and a fake context) and a stubbed Save-Data, plus JavaScript disabled; verify the mode attribute and that the text and links are identical in both modes
 - [ ] 3.4 Update `docs/architecture.md` (render-mode flow, Mermaid diagram) and `docs/glossary.md` (WebGL2, Save-Data, fallback, island); verify the diagram renders on GitHub
 
 ## 4. Quality gates

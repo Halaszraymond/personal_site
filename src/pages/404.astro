@@ -15,8 +15,8 @@ import { UI } from '../i18n/ui';
 import { localeHomePath } from '../lib/alternates';
 ---
 
-<!-- No canonicalPath: an error page must not be indexed by search engines. -->
 <BaseLayout locale={DEFAULT_LOCALE} currentLocale={null}>
+  {/* No canonicalPath: an error page must not be indexed by search engines. */}
   <h1>404</h1>
   {LOCALES.map((locale) => (
     <section lang={locale}>
