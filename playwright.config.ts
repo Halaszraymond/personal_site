@@ -14,6 +14,15 @@ const isCI = process.env['CI'] !== undefined;
 /** The visual regression tests (screenshots), kept apart from the functional tests. */
 const VISUAL = /visual\.spec\.ts/;
 
+/**
+ * Chromium with SwiftShader, a WebGL that runs on the processor instead of a graphics card.
+ * CI machines have no GPU, and recent Chrome no longer falls back to it by itself. Using it
+ * everywhere (also locally) makes the 3D tests behave the same on every machine.
+ */
+const SOFTWARE_WEBGL = {
+  launchOptions: { args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] },
+};
+
 const PORT = 4321;
 const BASE_URL = `http://localhost:${PORT}`;
 
@@ -43,10 +52,22 @@ export default defineConfig({
   // mobile WebKit (the engine of every iPhone browser) and desktop Firefox.
   // The visual tests run in one browser only, so there is one baseline per screenshot.
   projects: [
-    { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: VISUAL },
-    { name: 'mobile-chromium', use: { ...devices['Pixel 7'] }, testIgnore: VISUAL },
+    {
+      name: 'desktop-chromium',
+      use: { ...devices['Desktop Chrome'], ...SOFTWARE_WEBGL },
+      testIgnore: VISUAL,
+    },
+    {
+      name: 'mobile-chromium',
+      use: { ...devices['Pixel 7'], ...SOFTWARE_WEBGL },
+      testIgnore: VISUAL,
+    },
     { name: 'mobile-webkit', use: { ...devices['iPhone 15'] }, testIgnore: VISUAL },
     { name: 'desktop-firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: VISUAL },
-    { name: 'visual', use: { ...devices['Desktop Chrome'] }, testMatch: VISUAL },
+    {
+      name: 'visual',
+      use: { ...devices['Desktop Chrome'], ...SOFTWARE_WEBGL },
+      testMatch: VISUAL,
+    },
   ],
 });

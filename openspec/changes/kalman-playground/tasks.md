@@ -28,13 +28,13 @@
 
 ## 5. The playground
 
-- [ ] 5.1 Implement `kalman-view.ts` (renderer with capped pixel ratio, camera, lights, `OrbitControls` with reset to the front, draw-on-demand loop, visibility pause, `data-frames` / `data-triangles` / `data-draw-calls` on the canvas); verify with a Playwright smoke test in Chromium with SwiftShader that the canvas draws within the triangle and draw-call budgets with no console errors
-- [ ] 5.2 Render the controls from the parameter table in `Controls.astro` (fieldsets per group, labelled ranges with outputs, switches, the tie colour) with English labels from `src/i18n/playground.ts`; verify with Playwright in all four browsers that there is exactly one control per parameter, with matching min/max/step, and that the keyboard changes a slider by one step
-- [ ] 5.3 Connect controls to the model: changes validate, rebuild and request one frame; verify with Playwright (Chromium) that moving a slider increases `data-frames` without a reload, and that idle adds no frames
-- [ ] 5.4 Add the swim preview with play/pause, paused at start under reduced motion and stopped while the tab is hidden; verify with Playwright that frames advance while playing, stop when paused or hidden, and that reduced motion starts paused
-- [ ] 5.5 Add Reset, Copy config (clipboard with a status message, plus the read-only JSON text) and storage of the current values; verify with Playwright Reset, the clipboard content validating in Chromium, the refused-clipboard message elsewhere, values surviving a reload, and outdated stored values falling back without errors
-- [ ] 5.6 Show the WebGL2 explanation instead of the canvas when WebGL2 is missing, with the controls still working; verify with Playwright (WebGL2 stubbed off) the message, working Copy config and no console errors
-- [ ] 5.7 Add axe and console-error checks for `/playground/` to the quality tests; verify zero violations in all four browsers
+- [x] 5.1 Implement `kalman-view.ts` (renderer with capped pixel ratio, camera, lights, `OrbitControls` with reset to the front, draw-on-demand loop, visibility pause, `data-frames` / `data-triangles` / `data-draw-calls` on the canvas); verify with a Playwright smoke test in Chromium with SwiftShader that the canvas draws within the triangle and draw-call budgets with no console errors
+- [x] 5.2 Render the controls from the parameter table in `Controls.astro` (fieldsets per group, labelled ranges with outputs, switches, the tie colour) with English labels from `src/i18n/playground.ts`; verify with Playwright in all four browsers that there is exactly one control per parameter, with matching min/max/step, and that the keyboard changes a slider by one step
+- [x] 5.3 Connect controls to the model: changes validate, rebuild and request one frame; verify with Playwright (Chromium) that moving a slider increases `data-frames` without a reload, and that idle adds no frames
+- [x] 5.4 Add the swim preview with play/pause, paused at start under reduced motion and stopped while the tab is hidden; verify with Playwright that frames advance while playing, stop when paused or hidden, and that reduced motion starts paused
+- [x] 5.5 Add Reset, Copy config (clipboard with a status message, plus the read-only JSON text) and storage of the current values; verify with Playwright Reset, the clipboard content validating in Chromium, the refused-clipboard message elsewhere, values surviving a reload, and outdated stored values falling back without errors
+- [x] 5.6 Show the WebGL2 explanation instead of the canvas when WebGL2 is missing, with the controls still working; verify with Playwright (WebGL2 stubbed off) the message, working Copy config and no console errors
+- [x] 5.7 Add axe and console-error checks for `/playground/` to the quality tests; verify zero violations in all four browsers
 
 ## 6. Budgets and CI
 

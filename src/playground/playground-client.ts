@@ -104,8 +104,14 @@ export function startPlayground(): void {
   // Without WebGL2, explain instead of showing an empty canvas; the controls keep working.
   let view: KalmanView | null = null;
   if (detectWebGL2()) {
-    view = createKalmanView(canvas, config);
-  } else {
+    try {
+      view = createKalmanView(canvas, config);
+    } catch {
+      // A browser can report WebGL2 and still fail to start it (old drivers, blocked GPU).
+      view = null;
+    }
+  }
+  if (view === null) {
     canvas.hidden = true;
     noWebGL.hidden = false;
     swimButton.disabled = true;

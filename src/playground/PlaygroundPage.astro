@@ -113,6 +113,11 @@ const config = repoConfig();
     touch-action: none; /* dragging turns Kálmán instead of scrolling the page */
   }
 
+  /* `display: block` above would otherwise override the `hidden` attribute (no WebGL2). */
+  .view canvas[hidden] {
+    display: none;
+  }
+
   .no-webgl {
     padding: 1rem;
     text-align: center;

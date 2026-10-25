@@ -7,7 +7,8 @@ import AxeBuilder from '@axe-core/playwright';
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 
-const PAGES = ['/', '/nl/', '/hu/', '/en/', '/does-not-exist/'];
+// The playground only exists in the playground build, which the e2e tests run against.
+const PAGES = ['/', '/nl/', '/hu/', '/en/', '/does-not-exist/', '/playground/'];
 
 /** Collects JavaScript errors and console errors while the page loads. */
 function collectErrors(page: Page): string[] {
