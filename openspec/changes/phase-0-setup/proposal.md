@@ -24,6 +24,7 @@ Each one has to earn its place (README §5.4). All are dev-only except `astro`.
 |---|---|
 | `astro` | The framework from README §5.1. |
 | `typescript`, `@astrojs/check` | Type checking for `.ts` and `.astro` files (`astro check`). |
+| `@types/node` | Type descriptions of Node's built-ins (`process`, `fs`, `zlib`) for the Playwright config and the Node scripts. Types only, no code. Added during the build, approved by Raymond. |
 | `eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-astro` | Linting, including the "no `any`" rule, for TS and Astro files. |
 | `prettier`, `prettier-plugin-astro`, `eslint-config-prettier` | Formatting; the last one stops ESLint and Prettier from fighting. |
 | `vitest` | Unit tests for the pure logic in `src/lib/` (like pytest). |

@@ -42,3 +42,4 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — The Node version for Cloudflare builds comes from `.nvmrc` in the repo, not a `NODE_VERSION` dashboard variable. Decided by: Claude.
 - 2026-10-25 — Phase 0 proposal approved, including its 17 packages, by running `/opsx:apply`. Decided by: Raymond.
 - 2026-10-25 — TypeScript 6 (6.0.3) instead of the new TypeScript 7: `typescript-eslint` and `@astrojs/check` don't support 7 yet, and Astro itself uses 6. Revisit when they do. Decided by: Claude.
+- 2026-10-25 — Add `@types/node` (v24, matching the Node version) as a dev dependency, so the Playwright config and Node scripts can be type-checked. Decided by: Raymond (proposed by Claude).

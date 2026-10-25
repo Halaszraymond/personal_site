@@ -1,18 +1,12 @@
 ---
 /**
- * Temporary start page, so the skeleton has something to build.
- * Replaced in task 2.2 by the English home page with language links.
+ * The root `/`: the English home page, without a redirect (README §5.1).
+ *
+ * Its canonical URL is `/en/` (set by HomePage), so search engines treat `/` and `/en/`
+ * as one page instead of two copies.
  */
+import HomePage from '../components/HomePage.astro';
+import { DEFAULT_LOCALE } from '../i18n/locales';
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Emperor Kálmán</title>
-  </head>
-  <body>
-    <h1>Emperor Kálmán is getting ready for the dive.</h1>
-  </body>
-</html>
+<HomePage locale={DEFAULT_LOCALE} />

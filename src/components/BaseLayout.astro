@@ -1,0 +1,84 @@
+---
+/**
+ * The frame around every page: <html>, <head> (title, canonical, language links)
+ * and the header with the language switcher. Pages put their content in the <slot />.
+ */
+import type { Locale } from '../i18n/locales';
+import { UI } from '../i18n/ui';
+import { homeAlternates } from '../lib/alternates';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+
+interface Props {
+  /** The page's language, for `<html lang>`. */
+  locale: Locale;
+  /** The language whose page this is, or `null` for the 404, which has no single language. */
+  currentLocale: Locale | null;
+  /** Path of the canonical URL, e.g. `/en/`. Leave out for pages search engines should not index. */
+  canonicalPath?: string;
+}
+
+const { locale, currentLocale, canonicalPath } = Astro.props;
+
+// `Astro.site` comes from `site` in astro.config.ts. It is always set there,
+// but TypeScript cannot know that, so we check instead of assuming.
+if (Astro.site === undefined) {
+  throw new Error('Set `site` in astro.config.ts: canonical and hreflang links need it.');
+}
+const site = Astro.site;
+const indexable = canonicalPath !== undefined;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{UI[locale].siteTitle}</title>
+    {indexable && <link rel="canonical" href={new URL(canonicalPath, site).href} />}
+    {indexable &&
+      homeAlternates(site).map(({ hreflang, href }) => (
+        <link rel="alternate" hreflang={hreflang} href={href} />
+      ))}
+    {!indexable && <meta name="robots" content="noindex" />}
+  </head>
+  <body>
+    <header>
+      <LanguageSwitcher currentLocale={currentLocale} labelLocale={locale} />
+    </header>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>
+
+<script>
+  /*
+   * Remember the language when a visitor clicks a link marked with `data-lang-choice`
+   * (the switcher and the language hint). The link itself navigates as usual.
+   */
+  import { isLocale } from '../i18n/locales';
+  import { storeChoice } from '../i18n/choice-storage';
+
+  for (const link of document.querySelectorAll<HTMLElement>('[data-lang-choice]')) {
+    link.addEventListener('click', () => {
+      // `dataset.langChoice` reads the `data-lang-choice` attribute.
+      const choice = link.dataset['langChoice'];
+      if (choice !== undefined && isLocale(choice)) {
+        storeChoice(choice);
+      }
+    });
+  }
+</script>
+
+<style is:global>
+  /* Minimal readable defaults. The real design (fonts, depth colours) comes in Phase 1 and 2. */
+  body {
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+    margin: 0 auto;
+    max-width: 40rem;
+    padding: 1rem;
+    color: #111;
+    background: #fff;
+  }
+</style>

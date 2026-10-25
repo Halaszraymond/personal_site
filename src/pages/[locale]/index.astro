@@ -1,0 +1,23 @@
+---
+/**
+ * The home pages `/nl/`, `/hu/` and `/en/`, built from one file.
+ *
+ * `[locale]` in the file name is a placeholder: `getStaticPaths()` lists its values,
+ * and Astro builds one HTML page per value at build time.
+ */
+import type { GetStaticPaths } from 'astro';
+import HomePage from '../../components/HomePage.astro';
+import { LOCALES, type Locale } from '../../i18n/locales';
+
+// `satisfies` checks the function against Astro's expected shape without changing its type.
+export const getStaticPaths = (() =>
+  LOCALES.map((locale) => ({ params: { locale }, props: { locale } }))) satisfies GetStaticPaths;
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+<HomePage locale={locale} />
