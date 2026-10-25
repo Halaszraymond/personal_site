@@ -51,3 +51,4 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — The manual visual-baseline workflow goes to `main` ahead of the Phase 0 merge, because GitHub only offers "Run workflow" for workflows on the default branch. Decided by: Raymond (proposed by Claude).
 - 2026-10-25 — GitHub Actions on their current major versions (checkout v7, setup-node v7, cache v6, upload-artifact v7), which run on Node 24 instead of the deprecated Node 20. Decided by: Claude.
 - 2026-10-25 — Phase 0 is done: CI green on `change/phase-0-setup`, preview checked by Raymond on Cloudflare Pages. Decided by: Raymond (checks) and Claude (build).
+- 2026-10-25 — Phase 0 change archived; `i18n-routing` and `render-fallback` are now the first agreed specs in `openspec/specs/`. Decided by: Raymond (sync), archive by Claude.
