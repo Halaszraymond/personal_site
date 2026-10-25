@@ -40,3 +40,5 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — Site email changes from `kalman@halaszraymond.com` to `raymond@halaszraymond.com`, so visitors don't think Raymond's name is Kálmán; changed in Cloudflare Email Routing, forwarding tested. Decided and done by: Raymond.
 - 2026-10-25 — Cloudflare Pages project `halaszraymond` (`halaszraymond.pages.dev`) connected to the repo, production branch `main`, build `npm run build` → `dist`. Done by: Raymond.
 - 2026-10-25 — The Node version for Cloudflare builds comes from `.nvmrc` in the repo, not a `NODE_VERSION` dashboard variable. Decided by: Claude.
+- 2026-10-25 — Phase 0 proposal approved, including its 17 packages, by running `/opsx:apply`. Decided by: Raymond.
+- 2026-10-25 — TypeScript 6 (6.0.3) instead of the new TypeScript 7: `typescript-eslint` and `@astrojs/check` don't support 7 yet, and Astro itself uses 6. Revisit when they do. Decided by: Claude.

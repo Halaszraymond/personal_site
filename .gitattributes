@@ -1,0 +1,12 @@
+# Store every text file with LF line endings, also when it is written on Windows.
+# Why: CI runs on Linux, and Prettier is set to LF. Without this, Git on Windows
+# (core.autocrlf=true) would check files out with CRLF and every file would look changed.
+* text=auto eol=lf
+
+# Binary files: never touch their bytes.
+*.png binary
+*.avif binary
+*.webp binary
+*.jpg binary
+*.pdf binary
+*.woff2 binary

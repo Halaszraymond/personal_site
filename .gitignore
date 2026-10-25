@@ -1,0 +1,16 @@
+# Dependencies and build output: always reproducible from package-lock.json and the source.
+node_modules/
+dist/
+.astro/
+
+# Test and Lighthouse output
+test-results/
+playwright-report/
+.lighthouseci/
+coverage/
+
+# Local environment and editor files
+.env
+.env.*
+.DS_Store
+npm-debug.log*
