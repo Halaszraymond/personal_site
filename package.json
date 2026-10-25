@@ -16,7 +16,8 @@
     "typecheck": "astro check",
     "test": "vitest run",
     "prepare": "simple-git-hooks",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "size": "node scripts/check-bundle-size.ts"
   },
   "dependencies": {
     "astro": "^7.4.2"
