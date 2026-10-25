@@ -53,3 +53,4 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — Phase 0 is done: CI green on `change/phase-0-setup`, preview checked by Raymond on Cloudflare Pages. Decided by: Raymond (checks) and Claude (build).
 - 2026-10-25 — Phase 0 change archived; `i18n-routing` and `render-fallback` are now the first agreed specs in `openspec/specs/`. Decided by: Raymond (sync), archive by Claude.
 - 2026-10-25 — Dependabot skips major versions of `@types/node`: the types must match the Node version in `.nvmrc` (24); both are updated together when moving to a new Node version. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Branch protection on `main`: changes only via a pull request with a green CI `check`, also for admins; no force-pushes or deletion; no approval needed (solo project). Decided by: Raymond (proposed by Claude); configured by Claude with `gh`.
