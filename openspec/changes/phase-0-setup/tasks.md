@@ -2,11 +2,11 @@
 
 ## 1. Project skeleton
 
-- [ ] 1.1 Scaffold Astro (TypeScript, `astro/tsconfigs/strictest`) with the approved dependencies only, plus `.nvmrc` (24), `engines.node` and `.gitattributes` (`eol=lf`); verify `npm ci` and `npm run build` succeed on a clean clone
-- [ ] 1.2 Create the folder structure from README §5.4 (`src/content/`, `src/components/`, `src/scene/`, `src/i18n/`, `src/lib/`, `scripts/`, `tests/`, `docs/`), with a header comment in every source file; verify `npm run build` still succeeds
-- [ ] 1.3 Configure ESLint (flat config, `typescript-eslint` strict, `no-explicit-any` as error, `eslint-plugin-astro`), Prettier (`prettier-plugin-astro`, LF) and `eslint-config-prettier`; verify `npm run lint` passes and fails on a deliberately added `any`
-- [ ] 1.4 Add `typecheck` (`astro check`) and Vitest with one placeholder test; verify `npm run typecheck` and `npm test` pass
-- [ ] 1.5 Add `simple-git-hooks` + `lint-staged` (ESLint `--fix` and Prettier on staged files); verify a commit with a lint error is blocked
+- [x] 1.1 Scaffold Astro (TypeScript, `astro/tsconfigs/strictest`) with the approved dependencies only, plus `.nvmrc` (24), `engines.node` and `.gitattributes` (`eol=lf`); verify `npm ci` and `npm run build` succeed on a clean clone
+- [x] 1.2 Create the folder structure from README §5.4 (`src/content/`, `src/components/`, `src/scene/`, `src/i18n/`, `src/lib/`, `scripts/`, `tests/`, `docs/`), with a header comment in every source file; verify `npm run build` still succeeds
+- [x] 1.3 Configure ESLint (flat config, `typescript-eslint` strict, `no-explicit-any` as error, `eslint-plugin-astro`), Prettier (`prettier-plugin-astro`, LF) and `eslint-config-prettier`; verify `npm run lint` passes and fails on a deliberately added `any`
+- [x] 1.4 Add `typecheck` (`astro check`) and Vitest with one placeholder test; verify `npm run typecheck` and `npm test` pass
+- [x] 1.5 Add `simple-git-hooks` + `lint-staged` (ESLint `--fix` and Prettier on staged files); verify a commit with a lint error is blocked
 - [ ] 1.6 Write `docs/architecture.md` (folder structure and npm scripts) and start `docs/glossary.md` (pre-commit hook, type stripping, linting); verify every folder from 1.2 is described
 
 ## 2. i18n routing
