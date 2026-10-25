@@ -39,8 +39,8 @@
 ## 6. Budgets and CI
 
 - [x] 6.1 Change the bundle check to per-page budgets (`scriptsInHtml()`, `reachableChunks()` in `scripts/lib/budgets.ts`): public pages 50 KB each, the playground its own budget; verify with Vitest on a small fake chunk graph, measure the real playground size, set its budget just above it and log the number in `PLANNING_LOG.md`
-- [ ] 6.2 Update `ci.yml` and `npm run check` to the new order (production build → production check → playground build → size → e2e → Lighthouse), with SwiftShader flags for the Chromium 3D tests; verify the CI run on this branch is green except for the missing 3D baseline
-- [ ] 6.3 Add the 3D snapshot of the default Kálmán to the `visual` project (front view, preview paused, small tolerance), make the baseline with the "Update visual baselines" workflow, and verify the next CI run is fully green
+- [x] 6.2 Update `ci.yml` and `npm run check` to the new order (production build → production check → playground build → size → e2e → Lighthouse), with SwiftShader flags for the Chromium 3D tests; verify the CI run on this branch is green except for the missing 3D baseline
+- [x] 6.3 Add the 3D snapshot of the default Kálmán to the `visual` project (front view, preview paused, small tolerance), make the baseline with the "Update visual baselines" workflow, and verify the next CI run is fully green
 - [ ] 6.4 Ask Raymond to add `PLAYGROUND=1` to the Cloudflare Pages project for the **Preview** environment only; verify `/playground/` works on the branch preview and that production still returns 404 for it
 - [x] 6.5 Update `docs/architecture.md` (CI order, per-page budgets, 3D test layers); verify every new npm script is documented
 
