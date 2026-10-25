@@ -11,6 +11,9 @@ import { defineConfig, devices } from '@playwright/test';
 // arbitrary strings (TypeScript's `strictest` asks for that, like `os.environ['CI']`).
 const isCI = process.env['CI'] !== undefined;
 
+/** The visual regression tests (screenshots), kept apart from the functional tests. */
+const VISUAL = /visual\.spec\.ts/;
+
 const PORT = 4321;
 const BASE_URL = `http://localhost:${PORT}`;
 
@@ -31,12 +34,17 @@ export default defineConfig({
     // Locally, reuse a preview server you already have running.
     reuseExistingServer: !isCI,
   },
+  // Baselines without the platform in their name (Playwright's default adds `-win32` or
+  // `-linux`): they are only ever made and compared on Linux, so one set is enough.
+  snapshotPathTemplate: '{testDir}/__screenshots__/{arg}{ext}',
   // Every functional test runs in four browsers: desktop and mobile Chromium (Chrome, Edge),
   // mobile WebKit (the engine of every iPhone browser) and desktop Firefox.
+  // The visual tests run in one browser only, so there is one baseline per screenshot.
   projects: [
-    { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile-chromium', use: { ...devices['Pixel 7'] } },
-    { name: 'mobile-webkit', use: { ...devices['iPhone 15'] } },
-    { name: 'desktop-firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: VISUAL },
+    { name: 'mobile-chromium', use: { ...devices['Pixel 7'] }, testIgnore: VISUAL },
+    { name: 'mobile-webkit', use: { ...devices['iPhone 15'] }, testIgnore: VISUAL },
+    { name: 'desktop-firefox', use: { ...devices['Desktop Firefox'] }, testIgnore: VISUAL },
+    { name: 'visual', use: { ...devices['Desktop Chrome'] }, testMatch: VISUAL },
   ],
 });
