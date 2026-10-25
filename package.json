@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:playground": "node --env-file=.env.playground node_modules/astro/bin/astro.mjs build",
     "preview": "astro preview",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write . && eslint --fix .",

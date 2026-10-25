@@ -1,0 +1,16 @@
+---
+/**
+ * The dev-only Kálmán playground at /playground/.
+ *
+ * Not a file in src/pages/: astro.config.ts adds this page as a route only in the
+ * development server and in builds with PLAYGROUND=1, so production never contains it
+ * (spec: kalman-playground). English only while dev-only; not indexed; no language switcher.
+ */
+import BaseLayout from '../components/BaseLayout.astro';
+import { PLAYGROUND_EN as TEXT } from '../i18n/playground';
+---
+
+<BaseLayout locale="en" currentLocale={null} showLanguageSwitcher={false} title={TEXT.title}>
+  <h1>{TEXT.heading}</h1>
+  <p>{TEXT.intro}</p>
+</BaseLayout>

@@ -4,11 +4,36 @@
  * Astro turns the pages in `src/pages/` into plain HTML files in `dist/`,
  * which Cloudflare Pages serves as-is (a "static" site: no server code per request).
  */
+import type { AstroIntegration } from 'astro';
 import { defineConfig } from 'astro/config';
 import { DEFAULT_LOCALE, LOCALES } from './src/i18n/locales';
+import { shouldIncludePlayground } from './src/lib/playground-flag';
+
+/**
+ * Adds the dev-only playground at /playground/, but only in the development server and in
+ * builds with PLAYGROUND=1 (CI, Cloudflare branch previews). In a production build the
+ * route doesn't exist, so nothing imports Three.js and it never ships.
+ * An integration is a plug-in that hooks into Astro's setup, a bit like a pytest plugin.
+ */
+function kalmanPlayground(): AstroIntegration {
+  return {
+    name: 'kalman-playground',
+    hooks: {
+      'astro:config:setup': ({ command, injectRoute }) => {
+        if (shouldIncludePlayground({ command, flag: process.env['PLAYGROUND'] })) {
+          injectRoute({
+            pattern: '/playground',
+            entrypoint: './src/playground/PlaygroundPage.astro',
+          });
+        }
+      },
+    },
+  };
+}
 
 export default defineConfig({
   site: 'https://halaszraymond.com',
+  integrations: [kalmanPlayground()],
   // One URL shape everywhere: `/nl/`, never `/nl`. Cloudflare Pages serves folders the same way.
   trailingSlash: 'always',
   build: {

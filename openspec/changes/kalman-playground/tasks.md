@@ -21,7 +21,7 @@
 
 ## 4. Dev-only availability
 
-- [ ] 4.1 Add `shouldIncludePlayground()` in `src/lib/playground-flag.ts` and the Astro integration that injects `/playground/` only when it returns true, plus `.env.playground` and the `build:playground` script; verify with Vitest all combinations (dev, build with and without the flag) and that `npm run build` has no `dist/playground/` while `npm run build:playground` does
+- [x] 4.1 Add `shouldIncludePlayground()` in `src/lib/playground-flag.ts` and the Astro integration that injects `/playground/` only when it returns true, plus `.env.playground` and the `build:playground` script; verify with Vitest all combinations (dev, build with and without the flag) and that `npm run build` has no `dist/playground/` while `npm run build:playground` does
 - [ ] 4.2 Add `scripts/check-production-build.ts` with its leak check as a pure function in `scripts/lib/`; verify with Vitest (clean build passes; a playground folder or a Three.js marker fails) and that the script passes on `npm run build`
 - [ ] 4.3 Give `BaseLayout` a `showLanguageSwitcher` prop (default on) and render the playground page shell with it off, `lang="en"`, `noindex` and no alternates; verify with Playwright the playground has no switcher, no hreflang links and `noindex`, and that the 404 still has no alternates (the modified i18n-routing scenarios)
 - [ ] 4.4 Document the flag (local, CI, Cloudflare Preview only) in `docs/architecture.md`; verify the documented commands work as written
