@@ -40,7 +40,7 @@
 
 - [x] 5.1 Add `.github/workflows/ci.yml` (one job: `npm ci` → lint → typecheck → unit tests → build → bundle size → Playwright with cached browsers → Lighthouse, uploading the Playwright report on failure); verify the run on this branch is green
 - [x] 5.2 Add `.github/workflows/update-visual-baselines.yml` (manual trigger, Linux, `--update-snapshots`, commits the images back to the branch) and ask Raymond to trigger it; verify the baselines are committed and the next CI run compares against them
-- [ ] 5.3 Add `.github/dependabot.yml` (npm and GitHub Actions, weekly, dev dependencies grouped); verify GitHub shows it as valid under Insights → Dependency graph → Dependabot
+- [x] 5.3 Add `.github/dependabot.yml` (npm and GitHub Actions, weekly, dev dependencies grouped); verify GitHub shows it as valid under Insights → Dependency graph → Dependabot
 - [x] 5.4 Write step-by-step instructions for connecting the repo to Cloudflare Pages (Git integration, `npm run build`, `dist`, no custom domain) and ask Raymond to do it; verify a preview URL serves `/nl/`, `/hu/` and `/en/` with the security headers from `_headers`, and that `/does-not-exist` returns the 404 page with status 404
 - [x] 5.5 Document the CI chain, the baseline workflow and the Cloudflare settings in `docs/architecture.md`; verify the documented commands and settings match the files
 
