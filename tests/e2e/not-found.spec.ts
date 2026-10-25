@@ -7,7 +7,7 @@
  * tested at `/does-not-exist/`, and the slash-less URL on its status only. The real
  * Cloudflare behaviour is checked on the preview deployment (task 5.4).
  */
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { LOCALES } from '../../src/i18n/locales';
 import { UI } from '../../src/i18n/ui';
 
@@ -24,7 +24,9 @@ test('an unknown URL returns 404 with links home in every language', async ({ pa
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
 });
 
-test('an unknown URL without a trailing slash also returns 404', async ({ page }) => {
-  const response = await page.goto('/does-not-exist');
-  expect(response?.status()).toBe(404);
+// A plain HTTP request, not a browser page: WebKit treats the preview server's notice as a
+// download, and only the status code matters here.
+test('an unknown URL without a trailing slash also returns 404', async ({ request }) => {
+  const response = await request.get('/does-not-exist');
+  expect(response.status()).toBe(404);
 });

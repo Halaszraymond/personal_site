@@ -31,5 +31,12 @@ export default defineConfig({
     // Locally, reuse a preview server you already have running.
     reuseExistingServer: !isCI,
   },
-  projects: [{ name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] } }],
+  // Every functional test runs in four browsers: desktop and mobile Chromium (Chrome, Edge),
+  // mobile WebKit (the engine of every iPhone browser) and desktop Firefox.
+  projects: [
+    { name: 'desktop-chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'mobile-chromium', use: { ...devices['Pixel 7'] } },
+    { name: 'mobile-webkit', use: { ...devices['iPhone 15'] } },
+    { name: 'desktop-firefox', use: { ...devices['Desktop Firefox'] } },
+  ],
 });

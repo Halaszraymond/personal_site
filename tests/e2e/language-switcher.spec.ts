@@ -2,7 +2,8 @@
  * End-to-end tests for the language switcher and the remembered choice
  * (spec: i18n-routing, "Language switcher on every page" and "The visitor's language choice is remembered").
  */
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const STORAGE_KEY = 'kalman.lang';
 
@@ -35,7 +36,9 @@ test('the current language is marked for assistive technology', async ({ page })
   await expect(dutch).toHaveAttribute('aria-current', 'page');
 });
 
-test('the switcher works with the keyboard', async ({ page }) => {
+test('the switcher works with the keyboard', async ({ page, isMobile }) => {
+  // Phones have no Tab key, and Safari skips links on Tab by default: desktop browsers only.
+  test.skip(isMobile, 'Keyboard navigation is tested on the desktop browsers.');
   await page.goto('/en/');
   const hungarian = switcher(page).getByRole('link', { name: 'Magyar' });
   // Tab through the page until the Hungarian link has focus, then press Enter.

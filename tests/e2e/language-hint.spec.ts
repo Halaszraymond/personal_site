@@ -3,7 +3,8 @@
  * The decision itself is unit-tested in tests/unit/language-hint.test.ts; these tests check
  * that the page shows, hides and remembers it correctly in a real browser.
  */
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { HINT } from '../../src/i18n/ui';
 
 const STORAGE_KEY = 'kalman.lang';

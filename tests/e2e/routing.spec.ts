@@ -4,7 +4,7 @@
  * Covers: one URL prefix per language, the root showing English without a redirect,
  * the canonical link and the hreflang alternates.
  */
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { LOCALES } from '../../src/i18n/locales';
 import { UI } from '../../src/i18n/ui';
 

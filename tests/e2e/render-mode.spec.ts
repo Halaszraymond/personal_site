@@ -6,7 +6,8 @@
  * `canvas.getContext('webgl2')` with a stub. That makes the tests deterministic.
  * Real WebGL rendering is tested once there is a scene (Phase 1).
  */
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 /** Makes `getContext('webgl2')` return a fake context (`true`) or nothing (`false`). */
 async function stubWebGL2(page: Page, available: boolean) {
@@ -117,13 +118,14 @@ async function contentOf(page: Page) {
 }
 
 for (const path of ['/', '/nl/', '/hu/', '/en/']) {
-  test(`${path} has the same text and links in both modes`, async ({ browser }) => {
-    const fallbackPage = await browser.newPage();
+  // Two pages in the test's own context, so both get the production headers from the fixture.
+  test(`${path} has the same text and links in both modes`, async ({ context }) => {
+    const fallbackPage = await context.newPage();
     await stubWebGL2(fallbackPage, false);
     await fallbackPage.goto(path);
     await expect(html(fallbackPage)).toHaveAttribute('data-render-mode', 'fallback');
 
-    const fullPage = await browser.newPage();
+    const fullPage = await context.newPage();
     await stubWebGL2(fullPage, true);
     await fullPage.goto(path);
     await expect(html(fullPage)).toHaveAttribute('data-render-mode', 'full');
