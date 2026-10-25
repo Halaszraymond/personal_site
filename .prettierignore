@@ -1,0 +1,15 @@
+# Generated output: never formatted.
+dist/
+.astro/
+node_modules/
+package-lock.json
+playwright-report/
+test-results/
+.lighthouse/
+
+# Files written by tools (OpenSpec, Claude Code): formatted by those tools.
+.claude/
+openspec/
+
+# Hand-written prose: Prettier would rewrite its emphasis and tables, so docs keep their own style.
+*.md

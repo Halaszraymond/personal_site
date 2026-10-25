@@ -1,0 +1,54 @@
+---
+/**
+ * The language switcher: one plain link per language.
+ *
+ * Plain links mean it works without JavaScript and with the keyboard.
+ * Each link carries `data-lang-choice`; the script in BaseLayout stores
+ * that choice when the link is clicked (spec: i18n-routing).
+ */
+import { LOCALES, type Locale } from '../i18n/locales';
+import { UI } from '../i18n/ui';
+import { localeHomePath } from '../lib/alternates';
+
+interface Props {
+  /** The language of the current page, or `null` on pages that have no single language (the 404). */
+  currentLocale: Locale | null;
+  /** The language the label is written in. */
+  labelLocale: Locale;
+}
+
+const { currentLocale, labelLocale } = Astro.props;
+---
+
+<nav class="language-switcher" aria-label={UI[labelLocale].switcherLabel}>
+  <ul>
+    {LOCALES.map((locale) => (
+      <li>
+        {/* `lang` lets screen readers pronounce "Magyar" in Hungarian; `hreflang` says where the link goes. */}
+        <a
+          href={localeHomePath(locale)}
+          hreflang={locale}
+          lang={locale}
+          data-lang-choice={locale}
+          aria-current={locale === currentLocale ? 'page' : undefined}
+        >
+          {UI[locale].languageName}
+        </a>
+      </li>
+    ))}
+  </ul>
+</nav>
+
+<style>
+  .language-switcher ul {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .language-switcher a[aria-current='page'] {
+    font-weight: 700;
+  }
+</style>

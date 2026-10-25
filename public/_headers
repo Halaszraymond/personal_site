@@ -1,0 +1,22 @@
+# Security headers for every page, applied by Cloudflare Pages.
+# Format: a path pattern, then indented "Header: value" lines. `/*` means: everything.
+# The e2e tests apply these same headers locally (tests/e2e/fixtures.ts), so a header
+# that would break the site in production also breaks the tests.
+#
+# Content-Security-Policy (CSP): the browser may only load scripts, styles, images and
+#   fonts from our own domain ('self'). Inline scripts and styles are blocked, which stops
+#   most injected code (XSS). Astro is configured to load all CSS and JS as files for this.
+#   object-src 'none' blocks old plugins; base-uri and form-action stop links and forms from
+#   being redirected elsewhere; frame-ancestors 'none' stops other sites from embedding ours.
+# Strict-Transport-Security (HSTS): browsers only use HTTPS for this domain for a year.
+#   Deliberately without includeSubDomains, so other subdomains (stamlijst) are not affected.
+# X-Content-Type-Options: browsers must trust our file types instead of guessing them.
+# Referrer-Policy: other sites only see our domain as the referrer, not the full URL.
+# Permissions-Policy: the site never uses the camera, microphone or location.
+
+/*
+  Content-Security-Policy: default-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()

@@ -1,0 +1,55 @@
+{
+  "name": "portfolio-site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "halaszraymond.com v2: a portfolio dive with Keizer Kálmán, a low-poly emperor penguin.",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write . && eslint --fix .",
+    "typecheck": "astro check",
+    "test": "vitest run",
+    "prepare": "simple-git-hooks",
+    "e2e": "playwright test",
+    "size": "node scripts/check-bundle-size.ts",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run size && npm run e2e && npm run lighthouse",
+    "lighthouse": "node scripts/run-lighthouse.ts"
+  },
+  "dependencies": {
+    "astro": "^7.4.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@axe-core/playwright": "^4.14.0",
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^24.19.2",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-astro": "^3.2.1",
+    "lighthouse": "^13.5.0",
+    "lint-staged": "^17.6.0",
+    "prettier": "^3.9.10",
+    "prettier-plugin-astro": "^1.1.2",
+    "simple-git-hooks": "^2.14.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.0",
+    "vitest": "^5.0.5"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,js,astro}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,yml,yaml,css}": "prettier --write"
+  }
+}

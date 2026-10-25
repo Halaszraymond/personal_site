@@ -1,0 +1,76 @@
+---
+/**
+ * The language hint on `/`: "Psst… Kálmán also speaks Dutch/Hungarian."
+ *
+ * Both versions (Dutch and Hungarian) are in the HTML, hidden. The script below
+ * decides which one to show, if any (logic in src/lib/language-hint.ts).
+ * Without JavaScript, no hint appears, which is the right default: `/` simply shows English.
+ */
+import type { HintLocale } from '../i18n/locales';
+import { HINT } from '../i18n/ui';
+import { localeHomePath } from '../lib/alternates';
+
+const HINT_LOCALES: HintLocale[] = ['nl', 'hu'];
+---
+
+{HINT_LOCALES.map((locale) => (
+  // `lang` on the whole hint, so screen readers read it in the right language.
+  <aside
+    class="language-hint"
+    data-language-hint={locale}
+    lang={locale}
+    aria-labelledby={`language-hint-${locale}`}
+    hidden
+  >
+    <p id={`language-hint-${locale}`}>{HINT[locale].message}</p>
+    <a href={localeHomePath(locale)} hreflang={locale} data-lang-choice={locale}>
+      {HINT[locale].accept}
+    </a>
+    <button type="button" data-hint-dismiss>
+      {HINT[locale].dismiss}
+    </button>
+  </aside>
+))}
+
+<script>
+  import { readStoredChoice, storeChoice } from '../i18n/choice-storage';
+  import { chooseLanguageHint } from '../lib/language-hint';
+
+  const hintLocale = chooseLanguageHint({
+    storedChoice: readStoredChoice(),
+    browserLanguages: navigator.languages,
+  });
+
+  if (hintLocale !== null) {
+    const hint = document.querySelector<HTMLElement>(`[data-language-hint="${hintLocale}"]`);
+    if (hint !== null) {
+      hint.hidden = false;
+      // Dismissing stores English as the choice, so the hint stays away on later visits.
+      hint.querySelector('[data-hint-dismiss]')?.addEventListener('click', () => {
+        storeChoice('en');
+        hint.hidden = true;
+      });
+    }
+  }
+</script>
+
+<style>
+  .language-hint {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid #555;
+    border-radius: 0.5rem;
+  }
+
+  /* `display: flex` above would otherwise override the `hidden` attribute. */
+  .language-hint[hidden] {
+    display: none;
+  }
+
+  .language-hint p {
+    margin: 0;
+  }
+</style>

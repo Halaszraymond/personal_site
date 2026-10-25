@@ -34,3 +34,20 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — Fonts are chosen with a font playground (specimen page with candidate pairs). Decided by: Raymond (proposed by Claude).
 - 2026-10-25 — Font playground candidates: (1) Fraunces + Recursive, morphing with Kálmán's mood; (2) Recursive only; (3) Bricolage Grotesque + Inter + JetBrains Mono; (4) Fraunces + Atkinson Hyperlegible Next + Mono. Decided by: Raymond (candidates proposed by Claude).
 - 2026-10-25 — GitHub repo renamed to `Halaszraymond/portfolio_site`. Done by: Raymond.
+- 2026-10-25 — Phase 0 is planned as one OpenSpec change, `phase-0-setup`, with two new capabilities: `i18n-routing` and `render-fallback`. Its dependency list and design choices wait for Raymond's review. Decided by: Claude.
+- 2026-10-25 — The ice-floe 404 stays in Phase 5; Phase 0 ships a plain 404 page in three languages. Decided by: Raymond (plain 404 proposed by Claude).
+- 2026-10-25 — Cloudflare Email Routing set up: `kalman@halaszraymond.com` forwards to Raymond's inbox. Done by: Raymond.
+- 2026-10-25 — Site email changes from `kalman@halaszraymond.com` to `raymond@halaszraymond.com`, so visitors don't think Raymond's name is Kálmán; changed in Cloudflare Email Routing, forwarding tested. Decided and done by: Raymond.
+- 2026-10-25 — Cloudflare Pages project `halaszraymond` (`halaszraymond.pages.dev`) connected to the repo, production branch `main`, build `npm run build` → `dist`. Done by: Raymond.
+- 2026-10-25 — The Node version for Cloudflare builds comes from `.nvmrc` in the repo, not a `NODE_VERSION` dashboard variable. Decided by: Claude.
+- 2026-10-25 — Phase 0 proposal approved, including its 17 packages, by running `/opsx:apply`. Decided by: Raymond.
+- 2026-10-25 — TypeScript 6 (6.0.3) instead of the new TypeScript 7: `typescript-eslint` and `@astrojs/check` don't support 7 yet, and Astro itself uses 6. Revisit when they do. Decided by: Claude.
+- 2026-10-25 — Add `@types/node` (v24, matching the Node version) as a dev dependency, so the Playwright config and Node scripts can be type-checked. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — Replace `@lhci/cli` (no release since June 2025, 16 known vulnerabilities via old dependencies) with `lighthouse` 13.5 and a short gate script of our own (median of 3 runs, ≥ 90 per category). Decided by: Raymond (options proposed by Claude).
+- 2026-10-25 — Phase 0 placeholder texts approved: test sentences, language hint and meta descriptions in NL/HU/EN. Decided by: Raymond.
+- 2026-10-25 — Astro telemetry is switched off for the preview servers the tests start: it hangs for ~40 s on the work network, and it fits the site's no-tracking principle. Decided by: Claude.
+- 2026-10-25 — A placeholder favicon (deep-sea blue with the golden-orange accent) and a meta description per language, added because Lighthouse flagged both. Decided by: Claude.
+- 2026-10-25 — Lighthouse gate measures each page 5 times (instead of 3), taking turns between pages, because background load on the work laptop made single runs drop below 90. The threshold stays at 90. Decided by: Claude.
+- 2026-10-25 — The manual visual-baseline workflow goes to `main` ahead of the Phase 0 merge, because GitHub only offers "Run workflow" for workflows on the default branch. Decided by: Raymond (proposed by Claude).
+- 2026-10-25 — GitHub Actions on their current major versions (checkout v7, setup-node v7, cache v6, upload-artifact v7), which run on Node 24 instead of the deprecated Node 20. Decided by: Claude.
+- 2026-10-25 — Phase 0 is done: CI green on `change/phase-0-setup`, preview checked by Raymond on Cloudflare Pages. Decided by: Raymond (checks) and Claude (build).

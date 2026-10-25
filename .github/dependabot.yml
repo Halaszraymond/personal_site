@@ -1,0 +1,21 @@
+# Dependabot: opens pull requests when a dependency has a new version (README §5.4).
+# Each PR runs through CI like any other change, so an update that breaks something stays red.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      # All dev tools in one weekly PR instead of a dozen small ones.
+      dev-dependencies:
+        dependency-type: development
+    # Not TypeScript 7 yet: typescript-eslint and @astrojs/check don't support it (PLANNING_LOG).
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

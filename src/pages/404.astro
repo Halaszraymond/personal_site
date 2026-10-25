@@ -1,0 +1,30 @@
+---
+/**
+ * The 404 page for every URL that doesn't exist.
+ *
+ * Astro builds it as `404.html`; Cloudflare Pages serves that file with status 404.
+ * Without it, Pages would answer every unknown URL with the home page and status 200,
+ * which confuses visitors and search engines.
+ *
+ * A visitor who lands here may speak any of our languages, so the page shows all three.
+ * Kálmán's ice-floe 404 replaces this plain version in Phase 5 (README §2.5).
+ */
+import BaseLayout from '../components/BaseLayout.astro';
+import { DEFAULT_LOCALE, LOCALES } from '../i18n/locales';
+import { UI } from '../i18n/ui';
+import { localeHomePath } from '../lib/alternates';
+---
+
+<BaseLayout locale={DEFAULT_LOCALE} currentLocale={null}>
+  {/* No canonicalPath: an error page must not be indexed by search engines. */}
+  <h1>404</h1>
+  {LOCALES.map((locale) => (
+    <section lang={locale}>
+      <h2>{UI[locale].notFoundTitle}</h2>
+      <p>{UI[locale].notFoundText}</p>
+      <a href={localeHomePath(locale)} hreflang={locale}>
+        {UI[locale].notFoundLink}
+      </a>
+    </section>
+  ))}
+</BaseLayout>
