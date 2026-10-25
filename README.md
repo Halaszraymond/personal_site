@@ -179,6 +179,13 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 - **Accessibility:** axe checks in Playwright on every page.
 - **Lighthouse CI** with hard thresholds (≥ 90 in all four categories) and a **bundle-size check**.
 
+**Planning with OpenSpec**
+- Features are agreed on before they are built, with [OpenSpec](https://github.com/Fission-AI/OpenSpec) (installed globally via npm, configured for Claude Code).
+- `openspec/specs/` holds the agreed specs: what the site does, as requirements. `openspec/changes/` holds proposed changes (proposal, design, spec deltas, tasks); finished changes move to `openspec/changes/archive/`.
+- Flow: `/opsx:explore` (think it through) → `/opsx:propose` (write the change) → Raymond reviews → `/opsx:apply` (build it) → `/opsx:verify` (check it against the spec) → `/opsx:archive` (merge into the specs).
+- Other workflows: `/opsx:new` + `/opsx:continue` (build a change one artifact at a time), `/opsx:ff` (fast-forward through all planning artifacts), `/opsx:update` (revise a change's plan), `/opsx:sync` (merge spec deltas without archiving), `/opsx:bulk-archive` and `/opsx:onboard` (a guided tutorial).
+- This README stays the source of truth for the concept and decisions; the specs describe the concrete behaviour that follows from it.
+
 **CI and Git**
 - GitHub Actions on every push and PR: lint → type check → unit tests → Python tests → build → Playwright → Lighthouse. A red build does not get merged.
 - `main` is always deployable and live. Work happens on feature branches with their own Cloudflare preview, via pull requests.
