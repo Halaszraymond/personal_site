@@ -47,7 +47,7 @@
 ## 7. Review and wrap-up
 
 - [ ] 7.1 Review the default Kálmán with Raymond on the branch preview, specifically checking that he does not resemble existing penguin characters or mascots; adjust the shape functions until Raymond agrees, and record the outcome in `PLANNING_LOG.md`
-- [ ] 7.2 Add the Phase 1 playground session to `docs/making-of.md` with screenshots of the playground and of Kálmán at a few slider settings; verify the images are committed and linked
+- [x] 7.2 Add the Phase 1 playground session to `docs/making-of.md` with screenshots of the playground and of Kálmán at a few slider settings; verify the images are committed and linked
 - [ ] 7.3 Run `npm run check` locally and confirm CI is green on the final branch state
 
 ## Workflow follow-up
