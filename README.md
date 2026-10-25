@@ -282,3 +282,10 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 - [x] CV: one English PDF (§3); the file itself follows in Phase 3
 - [x] Repo name: `portfolio_site` (§6)
 - [x] Photo of Raymond: yes, small, in "Who I am" (§3)
+
+## 9. License
+
+The repo is public, so that employers can read how it's built. Code and content are licensed differently:
+
+- **Code: [MIT](LICENSE).** Everything that is software: `src/` (except the content listed below), `scripts/`, `tests/`, `.github/` and the config files. Reuse it freely, with attribution.
+- **Content: © Raymond Visser, all rights reserved.** The texts (`src/content/` and the UI texts in `src/i18n/ui.ts`), the documentation prose (this README and `docs/`), all images and screenshots, the CV, the photo, and the **Keizer Kálmán** character: his name, look and configuration. Not to be reused without permission.
