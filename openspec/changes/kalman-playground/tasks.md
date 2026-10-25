@@ -10,7 +10,7 @@
 - [x] 2.1 Add the parameter table, the derived `KalmanConfig` type and `validateConfig()` in `src/lib/kalman-config.ts`; verify with Vitest that defaults validate and that out-of-range, wrong-type, missing and unknown parameters fail with every offending key named
 - [x] 2.2 Add `exportConfig()` / `importConfig()` with a format version; verify with Vitest the round trip and the clear failure on an unknown version or invalid JSON
 - [x] 2.3 Add `src/scene/kalman/kalman.config.json` with the starting proposal (equal to the defaults); verify with a Vitest test that the file in the repo validates
-- [ ] 2.4 Add the config terms to `docs/glossary.md` (config, parameter table, JSON schema version) and a "Kálmán's config" section to `docs/architecture.md`; verify every parameter group is described
+- [x] 2.4 Add the config terms to `docs/glossary.md` (config, parameter table, JSON schema version) and a "Kálmán's config" section to `docs/architecture.md`; verify every parameter group is described
 
 ## 3. Shape and model
 

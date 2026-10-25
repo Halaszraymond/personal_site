@@ -74,6 +74,32 @@ flowchart TD
 - **The scene slot** is an empty `<div aria-hidden="true">`: decorative only, hidden in fallback mode. All text and links live in the HTML around it, identical in both modes. The e2e tests compare the two.
 - **Still to come in Phase 1:** step 3 of README §5.2 (measuring frame time once the scene runs) and the "lite mode" switch in the footer.
 
+## Kálmán's config
+
+Kálmán's shape and colours come from one config: `src/scene/kalman/kalman.config.json`. It is exactly the JSON the playground's **Copy config** button produces:
+
+```json
+{ "version": 1, "values": { "bodyHeight": 1, "headSize": 1, "tieOn": false, "...": "..." } }
+```
+
+**One table drives everything.** `KALMAN_PARAMETERS` in `src/lib/kalman-config.ts` lists every parameter once: its key, group, kind (`range`, `switch` or `colour`), range, step and default. From that table come the `KalmanConfig` type, the defaults, the validation and (in the playground) the controls, so they can never disagree. Adding a parameter is one line.
+
+| Group | Parameters | Note |
+|---|---|---|
+| Body | `bodyHeight`, `bodyGirth`, `bellyRoundness` | sizes are multipliers, 1 = the starting proposal |
+| Head | `headSize` | |
+| Bill | `billLength`, `billThickness`, `billDroop` | |
+| Ear patch | `earPatchHue`, `earPatchIntensity`, `earPatchSpread` | hue limited to golden-orange (30–50°), intensity never zero |
+| Facets | `faceting` | 0–3, whole steps: how many flat faces he has |
+| Flippers | `flipperLength` | |
+| Swim preview | `strokeAmplitude`, `strokeSpeed` | degrees, strokes per second |
+| Tie | `tieOn`, `tieColour`, `tieSize` | his professional side |
+| Glasses | `glassesOn`, `glassesSize` | his professional side |
+
+The black back, the white belly and the bill stripe are **not** parameters: they are what makes him an emperor penguin, so no setting can remove them.
+
+**Validation** (`validateConfig()`) collects every problem at once: unknown keys, missing keys, wrong types, values outside the range or off the slider's step grid. **Import** (`importConfig()`) also checks the format version, so an old or foreign file fails with a clear message. A unit test validates the config file in the repo, so a bad paste fails CI.
+
 ## npm scripts
 
 Run them with `npm run <name>` (`npm test` works without `run`). They are defined in `package.json`, a bit like targets in a Makefile.

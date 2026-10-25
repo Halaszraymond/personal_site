@@ -79,3 +79,11 @@ Frontend, 3D and tooling terms used in this repo, in plain language. Where it he
 **gzip**: a compression format. Servers send files gzipped, so the size that matters for loading speed is the gzipped size, which is what the bundle budget measures.
 
 **Bundle**: the JavaScript files the build produces for the browser. "Bundle size" is how much JavaScript a visitor has to download.
+
+**Config (Kálmán's)**: the set of values that describes Kálmán's shape and colours, stored as JSON in `src/scene/kalman/kalman.config.json`. Change the config, and he changes: no code involved.
+
+**Parameter table**: the list `KALMAN_PARAMETERS`, with one entry per setting (key, kind, range, step, default). Like a schema: the config type, the validation and the playground's sliders are all generated from it.
+
+**Format version**: the `"version": 1` field in the config JSON. If the format ever changes in a way old files can't follow, the version goes up, and an old file is refused with a clear message instead of being misread.
+
+**Union type**: a TypeScript type that is one of several shapes, such as `RangeDefinition | SwitchDefinition | ColourDefinition`. The `kind` field tells them apart, and the type checker knows which fields exist after checking it. Like `Union[...]` with a `Literal` tag in Python.
