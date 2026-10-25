@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "values": {
+    "bodyHeight": 1,
+    "bodyGirth": 1,
+    "bellyRoundness": 0.5,
+    "headSize": 1,
+    "billLength": 1,
+    "billThickness": 1,
+    "billDroop": 0.35,
+    "earPatchHue": 40,
+    "earPatchIntensity": 0.9,
+    "earPatchSpread": 0.5,
+    "faceting": 1,
+    "flipperLength": 1,
+    "strokeAmplitude": 30,
+    "strokeSpeed": 1,
+    "tieOn": false,
+    "tieColour": "#1f4e8c",
+    "tieSize": 1,
+    "glassesOn": false,
+    "glassesSize": 1
+  }
+}
