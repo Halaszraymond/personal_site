@@ -212,6 +212,15 @@ export function validateConfig(input: unknown): ConfigResult {
   return errors.length === 0 ? { ok: true, config: input as KalmanConfig } : { ok: false, errors };
 }
 
+/**
+ * A slider value as text, with as many decimals as its step has: 1.05 for step 0.01,
+ * 0.5 for step 0.05, 30 for step 1. Avoids showing 1.0500000000000003.
+ */
+export function formatValue(value: number, step: number): string {
+  const decimals = Math.max(0, Math.ceil(-Math.log10(step) - 1e-9));
+  return value.toFixed(decimals);
+}
+
 /** The JSON format version. Raise it when the format changes in a way old files can't follow. */
 export const CONFIG_FORMAT_VERSION = 1;
 

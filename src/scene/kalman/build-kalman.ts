@@ -34,10 +34,13 @@ import {
   bodyColourAt,
   CHEEK_INDEX,
   facetSegments,
+  flipperPivotRadius,
+  flipperSplay,
   NECK_INDEX,
   PLUMAGE,
   pointAt,
   PROFILE_LENGTH,
+  radiusAtHeight,
   SHOULDER_INDEX,
   silhouette,
   uAtHeight,
@@ -55,9 +58,6 @@ export const PART = {
   glasses: 'glasses',
 } as const;
 
-/** How far the flippers hang away from the body at rest, in radians (about 7°). */
-const FLIPPER_SPLAY = 0.12;
-
 /**
  * A Three.js colour from an sRGB colour (the values you see on screen).
  * Three.js works in linear light internally, so it converts; without this,
@@ -67,32 +67,30 @@ function toColour({ r, g, b }: Rgb): Color {
   return new Color().setRGB(r, g, b, SRGBColorSpace);
 }
 
-/** The radius of the silhouette at a height, interpolated between profile points. */
-function radiusAtHeight(profile: readonly ProfilePoint[], y: number): number {
-  const position = uAtHeight(profile, y) * (profile.length - 1);
-  const lower = pointAt(profile, Math.floor(position));
-  const upper = pointAt(profile, Math.min(profile.length - 1, Math.ceil(position)));
-  return lower.radius + (upper.radius - lower.radius) * (position - Math.floor(position));
-}
-
 /**
  * Gives every triangle of a non-indexed geometry one colour, chosen from its centre.
  * One colour per face is what makes the facets read as facets.
  */
 function colourFaces(geometry: BufferGeometry, colourOf: (centre: Vector3) => Rgb): void {
+  // A lathe's facets are quads made of two consecutive triangles. Colouring them as a
+  // pair keeps each facet one colour; colouring triangles one by one gave a saw-tooth
+  // edge where the white belly meets the black flanks.
+  const TRIANGLES_PER_FACET = 2;
+  const corners = 3 * TRIANGLES_PER_FACET;
   const positions = geometry.getAttribute('position');
   const colours = new Float32Array(positions.count * 3);
   const centre = new Vector3();
-  for (let vertex = 0; vertex < positions.count; vertex += 3) {
+  for (let first = 0; first < positions.count; first += corners) {
+    const count = Math.min(corners, positions.count - first);
     centre.set(0, 0, 0);
-    for (let corner = 0; corner < 3; corner++) {
-      centre.x += positions.getX(vertex + corner) / 3;
-      centre.y += positions.getY(vertex + corner) / 3;
-      centre.z += positions.getZ(vertex + corner) / 3;
+    for (let corner = 0; corner < count; corner++) {
+      centre.x += positions.getX(first + corner) / count;
+      centre.y += positions.getY(first + corner) / count;
+      centre.z += positions.getZ(first + corner) / count;
     }
     const { r, g, b } = toColour(colourOf(centre));
-    for (let corner = 0; corner < 3; corner++) {
-      colours.set([r, g, b], (vertex + corner) * 3);
+    for (let corner = 0; corner < count; corner++) {
+      colours.set([r, g, b], (first + corner) * 3);
     }
   }
   geometry.setAttribute('color', new BufferAttribute(colours, 3));
@@ -144,8 +142,8 @@ function buildBody(config: KalmanConfig, profile: readonly ProfilePoint[]): Mesh
 
 /** The slender bill: black on top, the orange-to-pink stripe on the lower mandible. */
 function buildBill(config: KalmanConfig, profile: readonly ProfilePoint[]): Mesh {
-  const length = 0.17 * config.billLength;
-  const base = 0.03 * config.billThickness;
+  const length = 0.2 * config.billLength;
+  const base = 0.032 * config.billThickness;
   const lathe = new LatheGeometry(
     [
       new Vector2(0, 0),
@@ -169,7 +167,7 @@ function buildBill(config: KalmanConfig, profile: readonly ProfilePoint[]): Mesh
   const positions = geometry.getAttribute('position');
   for (let index = 0; index < positions.count; index++) {
     const t = Math.max(0, positions.getZ(index)) / length;
-    positions.setY(index, positions.getY(index) - 0.05 * config.billDroop * length * t * t * 4);
+    positions.setY(index, positions.getY(index) - 0.08 * config.billDroop * length * t * t * 4);
   }
   geometry.computeVertexNormals();
 
@@ -177,8 +175,8 @@ function buildBill(config: KalmanConfig, profile: readonly ProfilePoint[]): Mesh
   const above = pointAt(profile, CHEEK_INDEX + 1);
   const mesh = new Mesh(geometry, material({ vertexColours: true }));
   mesh.name = PART.bill;
-  mesh.position.set(0, (cheek.y + above.y) / 2, cheek.radius * 0.75);
-  mesh.rotation.x = 0.15; // tilted slightly down
+  mesh.position.set(0, (cheek.y + above.y) / 2, cheek.radius * 0.7);
+  mesh.rotation.x = 0.12; // tilted slightly down
   return mesh;
 }
 
@@ -188,7 +186,7 @@ function eyePosition(profile: readonly ProfilePoint[], side: 1 | -1): Vector3 {
   const above = pointAt(profile, CHEEK_INDEX + 1);
   const y = cheek.y + (above.y - cheek.y) * 0.85;
   const radius = radiusAtHeight(profile, y) * 0.97;
-  const angle = 0.62 * side; // about 35° from the front
+  const angle = 0.78 * side; // about 45° from the front: on the sides of the head, as in real penguins
   return new Vector3(Math.sin(angle) * radius, y, Math.cos(angle) * radius);
 }
 
@@ -211,12 +209,12 @@ function buildFlipper(config: KalmanConfig, profile: readonly ProfilePoint[], si
   const scale = config.flipperLength;
   const outline = new Shape();
   outline.moveTo(0, 0);
-  outline.lineTo(0.035 * scale, -0.02 * scale);
-  outline.lineTo(0.045 * scale, -0.2 * scale);
-  outline.lineTo(0.025 * scale, -0.33 * scale);
+  outline.lineTo(0.045 * scale, -0.025 * scale);
+  outline.lineTo(0.06 * scale, -0.18 * scale);
+  outline.lineTo(0.035 * scale, -0.32 * scale);
   outline.lineTo(0.005 * scale, -0.36 * scale);
-  outline.lineTo(-0.01 * scale, -0.3 * scale);
-  outline.lineTo(-0.015 * scale, -0.05 * scale);
+  outline.lineTo(-0.012 * scale, -0.3 * scale);
+  outline.lineTo(-0.02 * scale, -0.06 * scale);
   outline.closePath();
 
   const geometry = new ExtrudeGeometry(outline, {
@@ -228,12 +226,17 @@ function buildFlipper(config: KalmanConfig, profile: readonly ProfilePoint[], si
   geometry.rotateY(Math.PI / 2); // flat against the side of the body
 
   const blade = new Mesh(geometry, material({ colour: toColour(PLUMAGE.black) }));
+  // Turn the flat side a little to the front, so the flipper reads as a flipper, not a stick.
+  blade.rotation.y = -side * 0.4;
   const shoulder = pointAt(profile, SHOULDER_INDEX);
+  // Swing out just far enough to clear the belly, which is wider than the shoulders.
+  const splay = flipperSplay(profile, 0.36 * scale);
   const pivot = new Group();
   pivot.name = side === 1 ? PART.flipperRight : PART.flipperLeft;
   pivot.userData['side'] = side;
-  pivot.position.set(side * shoulder.radius * 0.95, shoulder.y - 0.01, -0.01);
-  pivot.rotation.z = side * FLIPPER_SPLAY;
+  pivot.userData['splay'] = splay;
+  pivot.position.set(side * flipperPivotRadius(profile), shoulder.y, -0.015);
+  pivot.rotation.z = side * splay;
   pivot.add(blade);
   return pivot;
 }
@@ -244,7 +247,7 @@ function buildFoot(config: KalmanConfig, side: 1 | -1): Mesh {
   geometry.scale(1, 0.3, 1.5);
   const mesh = new Mesh(geometry, material({ colour: toColour({ r: 0.16, g: 0.165, b: 0.18 }) }));
   mesh.name = side === 1 ? 'foot-right' : 'foot-left';
-  mesh.position.set(side * 0.075 * config.bodyGirth, 0.012, 0.13 * config.bodyGirth);
+  mesh.position.set(side * 0.075 * config.bodyGirth, 0.012, 0.1 * config.bodyGirth);
   return mesh;
 }
 
@@ -338,8 +341,9 @@ export function poseFlippers(kalman: Object3D, stroke: number): void {
   for (const name of [PART.flipperLeft, PART.flipperRight]) {
     const pivot = kalman.getObjectByName(name);
     const side = pivot?.userData['side'];
-    if (pivot !== undefined && typeof side === 'number') {
-      pivot.rotation.z = side * (FLIPPER_SPLAY + stroke);
+    const splay = pivot?.userData['splay'];
+    if (pivot !== undefined && typeof side === 'number' && typeof splay === 'number') {
+      pivot.rotation.z = side * (splay + stroke);
     }
   }
 }

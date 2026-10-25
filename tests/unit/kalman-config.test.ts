@@ -8,6 +8,7 @@ import {
   CONFIG_FORMAT_VERSION,
   defaultConfig,
   exportConfig,
+  formatValue,
   importConfig,
   KALMAN_PARAMETERS,
   validateConfig,
@@ -115,6 +116,15 @@ describe('JSON format', () => {
 
   it('refuses text that is not JSON', () => {
     expect(importConfig('{ not json')).toEqual({ ok: false, errors: ['This is not valid JSON'] });
+  });
+});
+
+describe('formatValue', () => {
+  it('shows as many decimals as the step has', () => {
+    expect(formatValue(1.0500000000000003, 0.01)).toBe('1.05');
+    expect(formatValue(0.5, 0.05)).toBe('0.50');
+    expect(formatValue(1.2, 0.1)).toBe('1.2');
+    expect(formatValue(30, 1)).toBe('30');
   });
 });
 

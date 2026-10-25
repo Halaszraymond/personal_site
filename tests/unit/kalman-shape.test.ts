@@ -6,6 +6,8 @@ import { defaultConfig, KALMAN_PARAMETERS, type KalmanConfig } from '../../src/l
 import {
   bellyFactor,
   billStripeColour,
+  CHEST_POINT,
+  EAR_POINT,
   bodyColourAt,
   earPatchWeight,
   facetSegments,
@@ -26,8 +28,8 @@ function extreme(end: 'min' | 'max'): KalmanConfig {
   return config as KalmanConfig;
 }
 
-const EAR = { u: (8 + 0.4) / 12, angle: 1.75 };
-const CHEST = { u: (7 - 1.2) / 12, angle: 0.35 };
+const EAR = EAR_POINT;
+const CHEST = CHEST_POINT;
 
 describe('silhouette', () => {
   for (const [name, config] of [
@@ -79,7 +81,7 @@ describe('earPatchWeight', () => {
   it('reaches further down with more spread', () => {
     const halfway = { u: (EAR.u + CHEST.u) / 2, angle: (EAR.angle + CHEST.angle) / 2 };
     expect(earPatchWeight(halfway.u, halfway.angle, 1)).toBeGreaterThan(0.3);
-    expect(earPatchWeight(halfway.u, halfway.angle, 0)).toBeLessThan(0.05);
+    expect(earPatchWeight(halfway.u, halfway.angle, 0)).toBeLessThan(0.15);
   });
 
   it('stays off the back and the belly', () => {

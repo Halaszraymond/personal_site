@@ -1,0 +1,126 @@
+---
+/**
+ * The playground's controls: one per config parameter, generated from the parameter table.
+ *
+ * Built as plain HTML at build time: native range sliders, checkboxes and a colour input,
+ * each with a visible label. The browser then provides keyboard support and screen-reader
+ * output for free. The client script (playground-client.ts) reads them into a config.
+ */
+import { formatValue, KALMAN_PARAMETERS, type KalmanConfig } from '../lib/kalman-config';
+import { PLAYGROUND_EN as TEXT } from '../i18n/playground';
+
+interface Props {
+  /** The values the controls start with: the repo config. */
+  config: KalmanConfig;
+}
+
+const { config } = Astro.props;
+
+/** The groups in the order their first parameter appears in the table. */
+const groups = [...new Set(KALMAN_PARAMETERS.map((parameter) => parameter.group))];
+---
+
+<form class="controls" data-controls>
+  {groups.map((group) => (
+    <fieldset>
+      <legend>{TEXT.groups[group]}</legend>
+      {KALMAN_PARAMETERS.filter((parameter) => parameter.group === group).map((parameter) => {
+        const id = `control-${parameter.key}`;
+        if (parameter.kind === 'range') {
+          const value = config[parameter.key] as number;
+          return (
+            <div class="control">
+              <label for={id}>{TEXT.parameters[parameter.key]}</label>
+              <input
+                type="range"
+                id={id}
+                name={parameter.key}
+                min={parameter.min}
+                max={parameter.max}
+                step={parameter.step}
+                value={value}
+                data-param={parameter.key}
+              />
+              <output for={id} data-output={parameter.key}>
+                {formatValue(value, parameter.step)}
+              </output>
+            </div>
+          );
+        }
+        if (parameter.kind === 'switch') {
+          return (
+            <div class="control control-switch">
+              <input
+                type="checkbox"
+                role="switch"
+                id={id}
+                name={parameter.key}
+                checked={config[parameter.key] as boolean}
+                data-param={parameter.key}
+              />
+              <label for={id}>{TEXT.parameters[parameter.key]}</label>
+            </div>
+          );
+        }
+        return (
+          <div class="control">
+            <label for={id}>{TEXT.parameters[parameter.key]}</label>
+            <input
+              type="color"
+              id={id}
+              name={parameter.key}
+              value={config[parameter.key] as string}
+              data-param={parameter.key}
+            />
+          </div>
+        );
+      })}
+    </fieldset>
+  ))}
+</form>
+
+<style>
+  .controls {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  fieldset {
+    border: 1px solid #c3ccd3;
+    border-radius: 0.5rem;
+    margin: 0;
+    padding: 0.5rem 0.75rem 0.75rem;
+  }
+
+  legend {
+    font-weight: 700;
+    padding: 0 0.25rem;
+  }
+
+  .control {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 0.75rem;
+    margin-top: 0.4rem;
+  }
+
+  .control label {
+    grid-column: 1 / -1;
+  }
+
+  .control input[type='range'] {
+    width: 100%;
+  }
+
+  .control output {
+    min-width: 3.5ch;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .control-switch {
+    display: flex;
+    gap: 0.5rem;
+  }
+</style>
