@@ -87,3 +87,25 @@ Frontend, 3D and tooling terms used in this repo, in plain language. Where it he
 **Format version**: the `"version": 1` field in the config JSON. If the format ever changes in a way old files can't follow, the version goes up, and an old file is refused with a clear message instead of being misread.
 
 **Union type**: a TypeScript type that is one of several shapes, such as `RangeDefinition | SwitchDefinition | ColourDefinition`. The `kind` field tells them apart, and the type checker knows which fields exist after checking it. Like `Union[...]` with a `Literal` tag in Python.
+
+**Mesh**: one visible 3D object in Three.js: a geometry (the shape) plus a material (how it looks). Kálmán is a group of meshes: body, bill, eyes, flippers, feet.
+
+**Geometry**: the shape of a mesh, as a list of corner points (vertices) grouped into triangles. Every 3D shape on screen is made of triangles.
+
+**Material**: how a surface reacts to light: colour, roughness, metalness. `MeshStandardMaterial` is Three.js's realistic, light-based material.
+
+**Vertex colour**: a colour stored per corner point in the geometry, instead of one colour for the whole material. We give the three corners of each triangle the same colour, so every face is one flat colour.
+
+**Flat shading**: lighting each triangle as one flat surface instead of smoothing between them. Together with few triangles, that gives the faceted low-poly look.
+
+**Lathe**: a shape made by spinning a 2D outline around an axis, like a vase on a potter's wheel (or a lathe in a workshop). Kálmán's body and head are one lathe.
+
+**Low-poly**: deliberately few polygons (triangles), so the facets show. A style choice, and good for performance.
+
+**Draw call**: one request from the browser to the graphics card to draw something. Each mesh costs one. Fewer draw calls means a smoother frame rate on phones.
+
+**Triangle budget**: the maximum number of triangles a model may have (Kálmán: 8,000). Checked by a unit test, so detail can't creep up unnoticed.
+
+**sRGB vs linear light**: two ways to write down colours. sRGB matches what we see on screen; lighting maths needs linear values. Three.js computes in linear light, so our sRGB plumage colours are converted first.
+
+**Pivot**: the point an object rotates around. Kálmán's flippers hang from a pivot at the shoulder, so rotating it swings the whole flipper.

@@ -100,6 +100,27 @@ The black back, the white belly and the bill stripe are **not** parameters: they
 
 **Validation** (`validateConfig()`) collects every problem at once: unknown keys, missing keys, wrong types, values outside the range or off the slider's step grid. **Import** (`importConfig()`) also checks the format version, so an old or foreign file fails with a clear message. A unit test validates the config file in the repo, so a bad paste fails CI.
 
+## How Kálmán is built
+
+`buildKalman(config)` in `src/scene/kalman/build-kalman.ts` turns a config into a Three.js `Group`. All the numbers come from pure functions in `src/lib/kalman-shape.ts`, so they are unit-tested without a browser; the build file only turns them into meshes. The playground and the future animated scene use the same function.
+
+```mermaid
+flowchart LR
+    A[kalman.config.json] --> B["silhouette(), bodyColourAt(), ...<br/>src/lib/kalman-shape.ts"]
+    B --> C["buildKalman()<br/>src/scene/kalman/build-kalman.ts"]
+    C --> D[Three.js Group: body, bill, eyes, flippers, feet, tie, glasses]
+```
+
+- **Body and head are one lathe.** A side silhouette of 13 points (bottom centre to top of the head) is spun around the vertical axis. Height and girth stretch the body, head size scales the head around the neck. The front is pushed out for the belly (`bellyFactor`).
+- **Faceting** sets how many faces go around (7, 9, 12 or 16). Fewer faces means larger flat facets: the low-poly look.
+- **Colours per face, not textures.** Every triangle gets one colour, chosen from its centre: black back and head, white belly (`isBelly`), and the golden-orange ear patch blended in by `earPatchWeight`, which is full at the ear and fades down to the chest as far as `earPatchSpread` allows. Colours are written as sRGB and converted to Three.js's linear light (`toColour`), otherwise black renders as grey.
+- **Bill:** a slender six-sided cone, black on top, with the orange-to-pink stripe on the faces of the lower mandible, curving down by `billDroop`.
+- **Flippers** hang from a pivot at the shoulder; `poseFlippers()` swings both in mirror image for the swim preview.
+- **Tie and glasses** are only added when switched on: a knot and a blade lying on the belly; two thin golden rings and a bridge in front of the eyes.
+- **Budget:** at maximum faceting with both accessories, at most 8,000 triangles and 20 meshes (one mesh = one draw call). In practice he uses a few hundred triangles and 13 meshes.
+
+**Originality rules** (CLAUDE.md: no resemblance to existing penguin characters or mascots): realistic emperor proportions (tall, slender, small head, a long thin bill); small dark eyes without a white or highlight; no smile; no yellow bill or feet (Tux); no round egg body with a short beak (Pingu, Pororo); nothing exaggerated (Madagascar, Happy Feet). Raymond gives the final verdict on the playground.
+
 ## npm scripts
 
 Run them with `npm run <name>` (`npm test` works without `run`). They are defined in `package.json`, a bit like targets in a Makefile.
