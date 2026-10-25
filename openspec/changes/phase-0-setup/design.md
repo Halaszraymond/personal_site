@@ -93,7 +93,7 @@ Dependabot (`.github/dependabot.yml`) checks npm and GitHub Actions weekly, grou
 
 ### 9. Cloudflare Pages
 
-The repo is connected through Cloudflare's Git integration (build command `npm run build`, output `dist`). Cloudflare builds every branch into its own preview URL, and no deploy secrets have to be stored in GitHub. The production branch is `main`, but no custom domain is attached: until go-live the site only lives on its `*.pages.dev` address. Raymond does the dashboard steps; `docs/architecture.md` records the settings.
+The repo is connected through Cloudflare's Git integration as the Pages project `halaszraymond` (`halaszraymond.pages.dev`; build command `npm run build`, output `dist`). The Node version comes from `.nvmrc` in the repo, not from a `NODE_VERSION` dashboard variable, so it is versioned and reviewable in one place. Cloudflare builds every branch into its own preview URL, and no deploy secrets have to be stored in GitHub. The production branch is `main`, but no custom domain is attached: until go-live the site only lives on its `*.pages.dev` address. Raymond does the dashboard steps; `docs/architecture.md` records the settings.
 
 *Alternative:* deploy from GitHub Actions with `wrangler`. That gives more control but needs an API token in GitHub secrets, for no gain right now.
 

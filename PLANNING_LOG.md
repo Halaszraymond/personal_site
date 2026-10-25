@@ -38,3 +38,5 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — The ice-floe 404 stays in Phase 5; Phase 0 ships a plain 404 page in three languages. Decided by: Raymond (plain 404 proposed by Claude).
 - 2026-10-25 — Cloudflare Email Routing set up: `kalman@halaszraymond.com` forwards to Raymond's inbox. Done by: Raymond.
 - 2026-10-25 — Site email changes from `kalman@halaszraymond.com` to `raymond@halaszraymond.com`, so visitors don't think Raymond's name is Kálmán; changed in Cloudflare Email Routing, forwarding tested. Decided and done by: Raymond.
+- 2026-10-25 — Cloudflare Pages project `halaszraymond` (`halaszraymond.pages.dev`) connected to the repo, production branch `main`, build `npm run build` → `dist`. Done by: Raymond.
+- 2026-10-25 — The Node version for Cloudflare builds comes from `.nvmrc` in the repo, not a `NODE_VERSION` dashboard variable. Decided by: Claude.
