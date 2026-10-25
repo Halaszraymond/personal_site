@@ -1,0 +1,54 @@
+# Makes (or remakes) the visual regression baselines on Linux (README §5.4).
+#
+# Started by hand: Actions → "Update visual baselines" → Run workflow → pick the branch.
+# It takes the screenshots, and if they changed, commits them to that same branch.
+# Afterwards, start CI on that branch with its "Run workflow" button: commits made by a
+# workflow do not start other workflows by themselves.
+#
+# Only run this when a visual change is intended, and look at the new images in the commit.
+name: Update visual baselines
+
+on:
+  workflow_dispatch:
+
+# Needs to push the new screenshots.
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Take new screenshots
+        run: npx playwright test --project=visual --update-snapshots
+
+      - name: Commit the screenshots if they changed
+        run: |
+          git add tests/e2e/__screenshots__
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged, nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "test: update visual baselines"
+          git push
