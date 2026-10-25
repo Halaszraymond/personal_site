@@ -109,3 +109,11 @@ Frontend, 3D and tooling terms used in this repo, in plain language. Where it he
 **sRGB vs linear light**: two ways to write down colours. sRGB matches what we see on screen; lighting maths needs linear values. Three.js computes in linear light, so our sRGB plumage colours are converted first.
 
 **Pivot**: the point an object rotates around. Kálmán's flippers hang from a pivot at the shoulder, so rotating it swings the whole flipper.
+
+**SwiftShader**: a WebGL that runs on the processor instead of a graphics card. CI machines have no GPU, so the 3D tests run Chromium with SwiftShader; it renders the same way on every run, which makes 3D screenshots comparable.
+
+**Smoke test**: a quick test that the thing starts and does the basics without "smoke" (errors): here, that the canvas draws Kálmán within budget without console errors.
+
+**Chunk**: one JavaScript file the build produces. Chunks import each other; the size check follows those imports to count everything a page really downloads.
+
+**Draw on demand**: drawing a new frame only when something changed, instead of 60 times per second. Saves battery and keeps the page quiet when nothing moves.

@@ -161,9 +161,9 @@ Run them with `npm run <name>` (`npm test` works without `run`). They are define
 | `test` | Runs the Vitest unit tests once. |
 | `e2e` | Runs the Playwright tests against the built site. Run `npm run build` first. |
 
-| `size` | Checks the gzipped JavaScript in `dist/` against the 50 KB budget. Run `npm run build` first. |
+| `size` | Checks the JavaScript each page loads (its scripts plus everything they import), gzipped, against that page's budget: 50 KB for public pages, 160 KB for the dev-only playground. Run a build first. |
 | `lighthouse` | Runs Lighthouse 5 times on `/`, `/nl/`, `/hu/` and `/en/` (mobile) and fails when the median is below 90 in any category. Reports land in `.lighthouse/`. Run `npm run build` first. |
-| `check` | The whole chain in CI order: `lint` → `typecheck` → `test` → `build` → `size` → `e2e` → `lighthouse`. Green here means green in CI. |
+| `check` | The whole chain in CI order: `lint` → `typecheck` → `test` → `build` → `check:production` → `build:playground` → `size` → `e2e` → `lighthouse`. Green here means green in CI. |
 
 On every commit, a **pre-commit hook** runs ESLint and Prettier on the files you are committing (`lint-staged`). A commit with a lint error is blocked. The full checks (type check, tests, build) run in CI.
 
@@ -171,12 +171,15 @@ On every commit, a **pre-commit hook** runs ESLint and Prettier on the files you
 
 | Layer | Tool | Where | What it covers |
 |---|---|---|---|
-| Unit | Vitest | `tests/unit/` | Pure logic: language hint, render mode, alternates, bundle budget, the `_headers` parser. |
+| Unit | Vitest | `tests/unit/` | Pure logic: language hint, render mode, alternates, budgets and the chunk graph, the `_headers` parser, the playground flag, the production-leak check, Kálmán's config and shape. |
+| Model | Vitest (Node, no browser) | `tests/unit/build-kalman.test.ts` | `buildKalman()`: same config → same model; the emperor's features at the extreme configs; ≤ 8,000 triangles and ≤ 20 meshes. |
+| 3D smoke | Playwright, Chromium with SwiftShader | `tests/e2e/playground.spec.ts` | The canvas draws within the triangle and draw-call budget; redraws after a change, not while idle; swim preview and hidden tab; drag and Reset view. |
 | End-to-end | Playwright | `tests/e2e/*.spec.ts` | The built site in four browsers: desktop and mobile Chromium, mobile WebKit (iPhone), desktop Firefox. Routing, switcher, hint, 404, render mode. |
 | Accessibility | axe in Playwright | `tests/e2e/quality.spec.ts` | Every page in every language: zero WCAG 2.2 AA violations, no console errors. |
-| Visual regression | Playwright screenshots | `tests/e2e/visual.spec.ts` | `/`, `/nl/`, `/hu/`, `/en/` at 375 and 1280 px, compared with baselines in `tests/e2e/__screenshots__/`. **CI only** (see below). |
+| Visual regression | Playwright screenshots | `tests/e2e/visual.spec.ts` | `/`, `/nl/`, `/hu/`, `/en/` at 375 and 1280 px, plus a 3D snapshot of the default Kálmán, compared with baselines in `tests/e2e/__screenshots__/`. **CI only** (see below). |
 | Performance & co | Lighthouse | `scripts/run-lighthouse.ts` | ≥ 90 (median of 5 runs) for performance, accessibility, best practices and SEO. The gate logic is unit-tested in `scripts/lib/lighthouse-scores.ts`. |
-| Bundle size | own script | `scripts/check-bundle-size.ts` | ≤ 50 KB gzipped JavaScript. |
+| Bundle size | own script | `scripts/check-bundle-size.ts` | Per page: ≤ 50 KB gzipped JavaScript on public pages, ≤ 160 KB on the playground. |
+| Production | own script | `scripts/check-production-build.ts` | The production build contains no playground and no Three.js. |
 
 **Production headers in tests.** Astro's preview server ignores `public/_headers`. The fixture in `tests/e2e/fixtures.ts` reads that file and adds its headers to every response, so a CSP that would block our own scripts in production also fails the tests. All e2e specs import `test` from `./fixtures` instead of from `@playwright/test`.
 
@@ -201,7 +204,7 @@ Two workflows live in `.github/workflows/`:
 
 | Workflow | When | What |
 |---|---|---|
-| `ci.yml` | Every push to every branch, and by hand | One job, in this order: `npm ci` → lint → type check → unit tests → build → bundle size → Playwright (browsers cached between runs) → Lighthouse. Uploads the Playwright report when something fails, and the Lighthouse reports always. A red run does not get merged. |
+| `ci.yml` | Every push to every branch, and by hand | One job, in this order: `npm ci` → lint → type check → unit tests → production build → production check → playground build → bundle size per page → Playwright (Chromium with software WebGL for the 3D tests) (browsers cached between runs) → Lighthouse. Uploads the Playwright report when something fails, and the Lighthouse reports always. A red run does not get merged. |
 | `update-visual-baselines.yml` | Only by hand | Takes new screenshots on Linux and commits them to the branch it ran on. Use it only for an intended visual change, and look at the new images. |
 
 **`main` is protected:** changes only arrive through a pull request whose CI `check` is green, for admins too; force-pushes and deleting `main` are blocked (Settings → Branches). No approval is needed, since this is a solo project.

@@ -38,3 +38,22 @@ for (const { name, path } of PAGES) {
     });
   }
 }
+
+/**
+ * 3D snapshot, layer 4 (README §5.4): the default Kálmán in the playground, from the starting
+ * view, with the swim preview paused (it always starts paused). SwiftShader renders the same
+ * way on every Linux run; the small tolerance absorbs anti-aliasing differences at the edges.
+ */
+test('the default Kálmán looks the same as the 3D baseline', async ({ page }) => {
+  test.skip(!isCI, 'Visual baselines are Linux-only: these run in CI.');
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/playground/');
+  const canvas = page.locator('[data-view] canvas');
+  await expect
+    .poll(async () => Number((await canvas.getAttribute('data-frames')) ?? 0))
+    .toBeGreaterThan(0);
+
+  await expect(page.locator('[data-view]')).toHaveScreenshot('kalman-default.png', {
+    maxDiffPixelRatio: 0.01,
+  });
+});

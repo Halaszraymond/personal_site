@@ -42,7 +42,7 @@
 - [ ] 6.2 Update `ci.yml` and `npm run check` to the new order (production build → production check → playground build → size → e2e → Lighthouse), with SwiftShader flags for the Chromium 3D tests; verify the CI run on this branch is green except for the missing 3D baseline
 - [ ] 6.3 Add the 3D snapshot of the default Kálmán to the `visual` project (front view, preview paused, small tolerance), make the baseline with the "Update visual baselines" workflow, and verify the next CI run is fully green
 - [ ] 6.4 Ask Raymond to add `PLAYGROUND=1` to the Cloudflare Pages project for the **Preview** environment only; verify `/playground/` works on the branch preview and that production still returns 404 for it
-- [ ] 6.5 Update `docs/architecture.md` (CI order, per-page budgets, 3D test layers); verify every new npm script is documented
+- [x] 6.5 Update `docs/architecture.md` (CI order, per-page budgets, 3D test layers); verify every new npm script is documented
 
 ## 7. Review and wrap-up
 
