@@ -14,7 +14,7 @@
 
 ## 3. Shape and model
 
-- [ ] 3.1 Implement `src/lib/kalman-shape.ts` (silhouette profile, ear-patch weight, bill-stripe colour, flipper stroke angle); verify with Vitest the profile stays closed and monotonic in height, the patch weight is 1 at the ear and fades to 0 down the chest according to the spread, the stripe runs from orange to pink, and the stroke angle stays within the amplitude and repeats with the speed
+- [x] 3.1 Implement `src/lib/kalman-shape.ts` (silhouette profile, ear-patch weight, bill-stripe colour, flipper stroke angle); verify with Vitest the profile stays closed and monotonic in height, the patch weight is 1 at the ear and fades to 0 down the chest according to the spread, the stripe runs from orange to pink, and the stroke angle stays within the amplitude and repeats with the speed
 - [ ] 3.2 Implement `buildKalman(config)` in `src/scene/kalman/build-kalman.ts` (lathe body and head with vertex colours and flat shading, bill, flippers, feet, eyes, optional tie and glasses); verify with Vitest that the same config gives identical geometry and that tie and glasses appear only when switched on
 - [ ] 3.3 Add the feature and budget tests for `buildKalman()`: at all-minimum and all-maximum configs the back stays dark, the belly white, the ear patch golden-orange and the bill striped; the worst case stays ≤ 8,000 triangles and ≤ 20 meshes; verify they pass
 - [ ] 3.4 Document how Kálmán is built in `docs/architecture.md` (lathe, vertex colours, faceting, the originality rules) and add 3D terms to `docs/glossary.md` (mesh, geometry, material, vertex colour, flat shading, lathe, draw call, triangle budget); verify the originality rules match design.md
