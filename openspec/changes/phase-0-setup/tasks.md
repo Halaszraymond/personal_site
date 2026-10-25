@@ -16,7 +16,7 @@
 - [x] 2.3 Build the language switcher (plain links, `hreflang`/`lang` on each link, `aria-current="page"`, keyboard-usable) and store the choice on click in `try/catch`; verify with Playwright that switching works with and without JavaScript, that the choice is stored without a cookie, and that blocked storage causes no errors
 - [x] 2.4 Implement `chooseLanguageHint()` in `src/lib/language-hint.ts`; verify with Vitest tests for every hint scenario in the spec (stored choice wins, browser language, English means no hint, region subtags such as `hu-HU`)
 - [x] 2.5 Add the dismissible language hint to `/` (Dutch and Hungarian versions in the HTML, `hidden` and with their own `lang`, revealed by the client script); verify with Playwright the Hungarian-browser, English-browser, dismiss and stored-choice scenarios, and that no hint appears on `/nl/`, `/hu/` or `/en/`
-- [ ] 2.6 Add `src/pages/404.astro` with text in all three languages and links to `/nl/`, `/hu/` and `/en/`; verify with Playwright that `/does-not-exist` returns status 404 with those links
+- [x] 2.6 Add `src/pages/404.astro` with text in all three languages and links to `/nl/`, `/hu/` and `/en/`; verify with Playwright that `/does-not-exist` returns status 404 with those links
 - [ ] 2.7 Update `docs/architecture.md` (routing) and `docs/glossary.md` (hreflang, canonical URL, `x-default`, localStorage) and ask Raymond to review the placeholder strings and hint copy in all three languages; verify the docs describe every URL the site serves
 
 ## 3. Render fallback
@@ -41,7 +41,7 @@
 - [ ] 5.1 Add `.github/workflows/ci.yml` (one job: `npm ci` → lint → typecheck → unit tests → build → bundle size → Playwright with cached browsers → Lighthouse, uploading the Playwright report on failure); verify the run on this branch is green
 - [ ] 5.2 Add `.github/workflows/update-visual-baselines.yml` (manual trigger, Linux, `--update-snapshots`, commits the images back to the branch) and ask Raymond to trigger it; verify the baselines are committed and the next CI run compares against them
 - [ ] 5.3 Add `.github/dependabot.yml` (npm and GitHub Actions, weekly, dev dependencies grouped); verify GitHub shows it as valid under Insights → Dependency graph → Dependabot
-- [ ] 5.4 Write step-by-step instructions for connecting the repo to Cloudflare Pages (Git integration, `npm run build`, `dist`, no custom domain) and ask Raymond to do it; verify a preview URL serves `/nl/`, `/hu/` and `/en/` with the security headers from `_headers`
+- [ ] 5.4 Write step-by-step instructions for connecting the repo to Cloudflare Pages (Git integration, `npm run build`, `dist`, no custom domain) and ask Raymond to do it; verify a preview URL serves `/nl/`, `/hu/` and `/en/` with the security headers from `_headers`, and that `/does-not-exist` returns the 404 page with status 404
 - [ ] 5.5 Document the CI chain, the baseline workflow and the Cloudflare settings in `docs/architecture.md`; verify the documented commands and settings match the files
 
 ## 6. Wrap-up

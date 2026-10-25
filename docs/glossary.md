@@ -21,3 +21,21 @@ Frontend, 3D and tooling terms used in this repo, in plain language. Where it he
 **`package-lock.json`**: the exact version of every installed package, including the packages of packages. `npm ci` installs exactly those versions, so CI and your laptop use the same code. Like a fully pinned `requirements.txt` or `poetry.lock`.
 
 **Static site**: a site whose pages are finished HTML files before any visitor arrives. Nothing is computed per request on a server, which makes it fast, cheap and hard to break.
+
+**Locale**: a language code such as `nl`, `hu` or `en`. Browsers report longer tags such as `hu-HU` (language plus region); we only use the language part.
+
+**i18n**: short for "internationalisation" (an i, 18 letters, an n): making a site work in several languages.
+
+**Canonical URL**: the one "official" address of a page, set with `<link rel="canonical">`. When two URLs show the same content (`/` and `/en/`), it tells search engines which one to list, so they don't see duplicates.
+
+**hreflang**: a `<link rel="alternate" hreflang="hu">` tag that tells search engines "this page also exists in Hungarian, here". Google then shows Hungarian searchers the Hungarian version.
+
+**`x-default`**: the hreflang value for "everyone else": the version for visitors whose language we don't have. For us that is `/`.
+
+**localStorage**: a small key-value store in the visitor's browser, per website (like a tiny `dict` that survives a page reload). Unlike a cookie, it is never sent to a server.
+
+**`aria-current`**: an attribute that tells screen readers "this link is the page you are on". Part of ARIA, the set of attributes that describe a page to assistive technology.
+
+**Endonym**: a language's own name for itself: "Magyar", not "Hungarian". Language switchers use endonyms, so visitors recognise their own language.
+
+**404**: the HTTP status code for "this page doesn't exist". A real 404 (instead of showing the home page with status 200) tells browsers and search engines the truth.
