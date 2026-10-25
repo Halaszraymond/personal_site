@@ -10,6 +10,8 @@ import type { HintLocale, Locale } from './locales';
 export interface UiStrings {
   /** The page title in the browser tab. */
   siteTitle: string;
+  /** The meta description: the line search engines show under the link. */
+  description: string;
   /** Phase 0 test string: proves that each language page shows its own language. */
   testString: string;
   /** The language's own name in the switcher, e.g. "Magyar" rather than "Hungarian". */
@@ -30,6 +32,8 @@ export interface UiStrings {
 export const UI: Record<Locale, UiStrings> = {
   nl: {
     siteTitle: 'Keizer Kálmán · Raymond Visser',
+    description:
+      'Raymond Visser vist patronen uit data. Het portfolio van een data scientist in Budapest, met keizerspinguïn Kálmán als gids.',
     testString: 'Keizer Kálmán maakt zich klaar voor de duik.',
     languageName: 'Nederlands',
     switcherLabel: 'Taal',
@@ -39,6 +43,8 @@ export const UI: Record<Locale, UiStrings> = {
   },
   hu: {
     siteTitle: 'Császár Kálmán · Halász Raymond',
+    description:
+      'Halász Raymond mintázatokat halász ki az adatokból. Egy budapesti data scientist portfóliója, Császár Kálmánnal.',
     testString: 'Császár Kálmán készül a merülésre.',
     languageName: 'Magyar',
     switcherLabel: 'Nyelv',
@@ -48,6 +54,8 @@ export const UI: Record<Locale, UiStrings> = {
   },
   en: {
     siteTitle: 'Emperor Kálmán · Raymond Visser',
+    description:
+      'Raymond Visser fishes patterns out of data. The portfolio of a data scientist in Budapest, guided by Emperor Kálmán.',
     testString: 'Emperor Kálmán is getting ready for the dive.',
     languageName: 'English',
     switcherLabel: 'Language',

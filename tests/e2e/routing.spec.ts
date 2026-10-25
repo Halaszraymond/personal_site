@@ -21,6 +21,10 @@ for (const locale of LOCALES) {
       'href',
       `${SITE}/${locale}/`,
     );
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      UI[locale].description,
+    );
   });
 }
 

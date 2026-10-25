@@ -38,6 +38,8 @@ const indexable = canonicalPath !== undefined;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{UI[locale].siteTitle}</title>
+    <meta name="description" content={UI[locale].description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {indexable && <link rel="canonical" href={new URL(canonicalPath, site).href} />}
     {indexable &&
       homeAlternates(site).map(({ hreflang, href }) => (
