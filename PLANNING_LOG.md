@@ -63,3 +63,4 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-25 — Claude may start the "Update visual baselines" workflow itself (via `gh`) for intended visual changes, telling Raymond when it does. Decided by: Raymond.
 - 2026-10-25 — `kalman-playground` approved, including `three` and `@types/three`; Cloudflare `PLAYGROUND=1` set for Preview only. Decided by: Raymond.
 - 2026-10-25 — Bundle budgets are per page: 50 KB gzipped JavaScript for every public page, 160 KB for the dev-only playground (measured at 148.8 KB, mostly Three.js r186). Decided by: Claude (method agreed in the kalman-playground design).
+- 2026-10-25 — Cloudflare `PLAYGROUND=1` is a Preview-only variable (an accidental Production copy was removed); verified: playground on the branch preview, 404 on production. Done by: Raymond.
