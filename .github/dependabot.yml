@@ -10,9 +10,13 @@ updates:
       # All dev tools in one weekly PR instead of a dozen small ones.
       dev-dependencies:
         dependency-type: development
-    # Not TypeScript 7 yet: typescript-eslint and @astrojs/check don't support it (PLANNING_LOG).
     ignore:
+      # Not TypeScript 7 yet: typescript-eslint and @astrojs/check don't support it (PLANNING_LOG).
       - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      # @types/node must match the Node version in .nvmrc (24). Newer major types would allow
+      # functions Node 24 doesn't have. Update both together when moving to a new Node version.
+      - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
 
   - package-ecosystem: github-actions
