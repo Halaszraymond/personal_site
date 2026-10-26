@@ -2,7 +2,7 @@
 
 ## Purpose
 
-A dev-only page where Raymond views Kálmán's rig and poses, tries new poses by hand and exports them as data for the repo, without it ever reaching the public site.
+A dev-only page where Raymond views Kálmán's rig and poses, tries new poses by hand and exports them as data for the repo, spins him and turns him around, without it ever reaching the public site.
 
 ## ADDED Requirements
 
@@ -77,6 +77,39 @@ The preview SHALL offer a "Copy pose" control that copies the current slider val
 #### Scenario: No clipboard access
 - **WHEN** the browser refuses clipboard access
 - **THEN** the preview says so, the JSON stays visible as selectable text, and no error is logged
+
+### Requirement: Spin slider
+The preview SHALL offer a labelled slider from −180 to 180 degrees that spins the whole figure as one piece, showing the current value. Spinning SHALL NOT change the pose or the pose JSON.
+
+#### Scenario: Spinning with the keyboard
+- **WHEN** Raymond focuses the spin slider and presses an arrow key
+- **THEN** the figure turns by one degree, the shown value updates, and the pose JSON stays the same
+
+### Requirement: A control to turn Kálmán around
+When the turntable data has more than one view, the preview SHALL offer a labelled "Turn around" slider from 0 to 359 degrees, and dragging the figure sideways SHALL turn him too. With only one view the control SHALL be left out.
+
+#### Scenario: Dragging
+- **WHEN** Raymond drags the figure sideways
+- **THEN** Kálmán turns and the slider shows the new angle, while a vertical swipe on a phone still scrolls the page
+
+#### Scenario: Only the front view
+- **WHEN** the turntable data has only the front view
+- **THEN** the preview has no "Turn around" control
+
+### Requirement: The drawn views while he is turned
+At a view's own angle exactly that drawing SHALL show; in between, the current view SHALL narrow and the next one SHALL fade in on top of it, so the background never shows through. The posable layers SHALL show only while he faces the front, and the mood SHALL apply to the views too.
+
+#### Scenario: Seen from the back
+- **WHEN** Raymond turns Kálmán to 180 degrees
+- **THEN** the drawn back view shows, the posable layers are hidden, and the figure's description says he is seen from the back
+
+#### Scenario: Back to the front
+- **WHEN** Raymond turns Kálmán back to 0 degrees
+- **THEN** the posable layers show again in the current pose
+
+#### Scenario: Professional views
+- **WHEN** the professional mood is on and Kálmán is turned to a drawn view
+- **THEN** that view's professional image shows
 
 ### Requirement: Usable on a phone and with reduced motion
 The preview SHALL be usable at a 360 px wide viewport without horizontal scrolling, and SHALL behave the same with reduced motion requested, since pose changes are immediate and not animated.

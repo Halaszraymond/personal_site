@@ -8,13 +8,13 @@ Constraints that shape this design:
 
 - README §5.4: the rig is one config file; rig and pose maths are pure functions in `src/lib/`; the drawing code only applies what they compute.
 - README §5.2: content stays in HTML, the fallback shows the same illustrations standing still, and reduced motion is respected.
-- The real layer illustrations don't exist yet and will be raster images (PNG with transparency, later AVIF/WebP).
-- No new dependencies without Raymond's approval; GSAP is not needed until the animations change.
+- Raymond's final design exists as two front views made with Gemini (`docs/images/kalman-design/front-goofy.png` and `front-professional.png`, 687 × 1024 px, Kálmán about 918 px tall). The professional one is an edit of the goofy one, so the two line up pixel for pixel. More views (¾ front, side, ¾ back, back) arrive later in the same way.
+- No new dependencies without Raymond's approval; GSAP is not needed until the animations change. `sharp` (already installed by Astro) is approved as a devDependency for the cutting script.
 
 ## Goals / Non-Goals
 
 **Goals:**
-- A rig format that takes Raymond's real layers later by editing data only.
+- A rig format that takes Raymond's layers by editing data only, and a script that cuts those layers from his images, so better images later are one command away.
 - Pose maths that are fully covered by unit tests, including the parent/child and pivot behaviour.
 - A figure that is plain SVG in the HTML, so the fallback and no-JavaScript cases are the same code path as full mode.
 - A production build that provably contains no preview code.
@@ -23,7 +23,8 @@ Constraints that shape this design:
 - Tweening between poses or any time-based motion (the animations change, with GSAP).
 - Editing positions and pivots in the preview: they are tuned in the JSON when the real art arrives (see Open Questions).
 - Remembering preview state across reloads: poses are short experiments, and "Copy pose" is how one is kept.
-- Responsive image formats (AVIF/WebP, `srcset`): they matter for the real art on public pages, not for placeholders in a dev tool.
+- Responsive image formats (AVIF/WebP, `srcset`): they matter on the public pages (Phase 2), not in a dev tool.
+- A 3D model or true in-between angles: the turntable shows the drawn views only (Kálmán stays 2D, PLANNING_LOG).
 
 ## Decisions
 
@@ -35,8 +36,12 @@ Constraints that shape this design:
 | `src/scene/kalman/rig.json` | data | The rig: artboard size and the nine layers. |
 | `src/scene/kalman/poses.json` | data | The named poses: rest, bow, flippers up, head tilt left, head tilt right. |
 | `src/scene/kalman/KalmanFigure.astro` | component | Renders the SVG at build time in a given pose (rest by default). |
-| `src/scene/kalman/kalman-figure-client.ts` | browser | `applyPose()`: writes the transforms and visibility from `resolvePose()` onto the existing SVG elements. |
-| `src/assets/kalman/placeholder/*.svg` | images | One flat placeholder shape per layer. |
+| `src/scene/kalman/kalman-figure-client.ts` | browser | `applyPose()`, `applySpin()` and `applyTurn()`: write the transforms, visibility and opacity onto the existing SVG elements. |
+| `src/assets/kalman/front/*.png` | images | The nine layers and the two front views, cut from the final design. Generated: never edited by hand. |
+| `scripts/cut-kalman-layers.ts` | script | Reads the two front views, cuts the layers and the front views, writes them to `src/assets/kalman/front/` and writes `rig.json` and `turntable.json` (§5). Run with `npm run cut:kalman`. |
+| `scripts/lib/kalman-cut.ts` | pure | The cutting logic on plain pixel arrays: background flood fill, soft edges, the difference mask for the accessories, the gap per row, the part masks with the neck fade, and turning pixel boxes into rig entries. |
+| `src/lib/kalman-turntable.ts` | pure | `turntableFrame()` (which views show at an angle, how narrow, how faded), `viewMatrix()`, `normaliseAngle()` and the validation of `turntable.json`. |
+| `src/scene/kalman/turntable.json` | data | The drawn views for turning around: name, angle and a placed image per mood. |
 | `src/playground/` | page | `PreviewPage.astro`, `PreviewControls.astro` and `preview-client.ts`. |
 | `src/lib/playground-flag.ts` | pure | `shouldIncludePlayground()`, carried over unchanged. |
 | `scripts/lib/production-check.ts` | pure | Carried over, with the Three.js marker replaced by the preview's marker (see §6). |
@@ -94,26 +99,43 @@ Images go through Astro's asset pipeline (`import` of the file), so they get has
 
 *Alternatives:* `<img>` elements with CSS transforms (needs inline styles or many classes under our CSP, and CSS transforms on HTML elements don't share one coordinate system as easily); canvas 2D (the figure would not be in the HTML, and hit areas and accessibility get harder).
 
-### 5. Placeholders
+### 5. Cutting the layers from the design images
 
-Each placeholder is a small hand-written SVG: a flat shape in the design sheet's colours (navy back and head, cream belly, golden ear patch, grey feet, dark-red tie, silver glasses ring), with a thin dashed outline so it's obviously not final. They are sized to the rig's `size` and drawn so the rest pose roughly matches the design sheet's front view. The pivots go where the real joints will be (shoulder, neck, ankle, tail base), so the poses already look about right.
+The script works on the two front views, both turned into plain pixel arrays by `sharp`; all decisions are pure functions in `scripts/lib/kalman-cut.ts`, so they are unit-tested on tiny made-up images.
 
-### 5b. The layer guide and prompts
+1. **Background:** a flood fill from the image's edges through near-white pixels marks the background. The white belly stays, because it is enclosed by the darker edge of the body. Pixels next to the background get a soft alpha from how far they are from white, so the outline isn't jagged.
+2. **The professional extras:** where the professional image differs from the goofy one, limited to the area of the glasses and of the tie. The glasses layer includes the calmer professional eyes behind them, so the goofy eyes are covered in the professional mood and come back in the goofy one. The script stops if the two images are not the same size.
+3. **The parts:** head above the neck; body between two cut lines; flippers outside them; feet and tail below the body. Above row 553 the flippers merge with the body, so the cut follows the shoulder; below it Gemini drew a small gap, and the cut is that gap, found per row.
+4. **The joints:**
+   - Body and flippers meet exactly at the cut. Above the gap each flipper reaches 2 px under the body (it is drawn behind it), which hides the hairline seam that two exactly touching layers show; below the gap it stops at the gap, or it would take the body's outline along when it turns.
+   - The head fades out over the top of the neck and the body fades in under it, so a tilt or a nod shows no hard edge. Above the shoulders the body covers the full width, so the neck sides are never only covered by the fading head.
+5. **Placing:** 1.33 artboard units per image pixel, the figure's middle on x = 800 and his feet at y ≈ 1400, the same place as before. Each layer's box becomes its `size` and `position`, the joints on the image become the pivots.
 
-`docs/kalman-layers.md` is written right after `rig.json`, so it can quote the rig's real numbers. It has three parts:
+The cut lines are tied to these two images. New images get their own numbers in the script's settings (one object at the top), checked with the pivot overlay.
 
-1. **The list**: one row per layer with its file name, its size on the artboard, where its pivot is ("the shoulder, top centre"), and which neighbouring layer it tucks under.
-2. **The rules for every image**, so the parts fit together:
-   - front view, rest pose, the same angle and lighting as the front view on the design sheet;
-   - one part per image, nothing else in it, no cast shadow;
-   - a plain flat background in one colour that isn't in Kálmán (bright green), because most AI image generators can't make real transparency; the background is removed afterwards, and the guide says how;
-   - extra material where a part joins another (the top of a flipper, the bottom of the neck), hidden under the neighbouring layer, so no gap shows when it rotates;
-   - the aspect ratio of the rig's `size`, exported as PNG at twice the artboard size.
-3. **One prompt per layer**, ready to paste: a shared style block (taken from the design sheet: soft painted style, dark navy and cream, golden ear crescent, the colours and line weight) plus the part-specific text. The guide says to give the design sheet as a reference image with every prompt, which is what keeps the parts consistent.
+### 5b. The image guide and prompts
 
-Front view only in this change: the poses here are front-view poses. The side-view set for diving and swimming is added to the guide with the animations change, when it's clear which poses need it.
+`docs/kalman-layers.md` tells Raymond which images to make and how, for Gemini:
 
-*Alternative:* asking the generator for the whole figure and cutting it up by hand. Possible, but parts hidden behind others (the far flipper, the top of the feet) would be missing, so it only works as a fallback; the guide mentions it.
+1. **The two front views:** the goofy front view (big round eyes, rest pose, flippers down with a small gap of background between flipper and body, plain white background, 2:3), then the professional one as an **edit** of it (add the tie, the glasses and the calmer eyes; change nothing else), so the two line up pixel for pixel.
+2. **The turntable views:** ¾ front, side, ¾ back and back, each first goofy (made from the goofy front view as the reference, same height and place), then professional as an edit of that view. The other side is mirrored, so Raymond doesn't make it.
+3. **The rules:** same image size, feet on the same ground line, no text, labels, logos or shadow.
+
+It also explains what the script does with the images and how to run it.
+
+*Alternative:* one image per layer (the earlier guide). Rejected: making nine separate parts that fit together is much more work than two whole views, and the difference trick gives the accessories for free.
+
+### 5c. Spinning the whole figure
+
+All layers (and the turntable views) sit in one `<g data-spin>` group. `spinMatrix()` turns it around `figureCentre()`, the middle of the box around all layers at rest, so he stays on the stage at every angle. Each layer's pose stays on top of the spin. It is a view setting: not part of a pose and not in "Copy pose". The SVG has `overflow: visible`, so raised flippers aren't cut off at the artboard's edge.
+
+### 5d. Turning around: the turntable
+
+- **Data:** `turntable.json`, a list of views with a name, an angle and a placed image per mood, validated on load (`turntableErrors()`). The front view is first; for now it is the only one.
+- **Between two views** `turntableFrame()` works out the frame: the current view narrows (a sine hump, down to 65 % of its width halfway), and over a short band around halfway (12 % of the way) the next view fades in **on top**, with the outgoing view staying solid underneath, so the background never shows through two half-transparent drawings. The client moves the incoming view's group to the end of its parent, so it is drawn on top whatever the order in the HTML.
+- **Mirrored views** for the other side: a view can be mirrored (`scaleX` −1 around the centre line), so four drawn views give eight angles.
+- **Layers vs views:** facing front (exactly 0°) the posable layers show; at any other angle the views take over. Whole groups are hidden with `display`, not `visibility`, because a child with `visibility="visible"` (every layer has one) still shows inside a hidden SVG group. The pivot markers are hidden by CSS while he is turned.
+- **The control:** a "Turn around" slider (0–359°) plus dragging sideways on the figure (pointer events, half a degree per pixel, `touch-action: pan-y` so vertical swipes still scroll). Left out of the page while there is only one view.
 
 ### 6. The preview page and keeping it off production
 
@@ -148,9 +170,9 @@ The figure gets `role="img"` and an `aria-label` like "Kálmán, pose: bow, mood
 
 | Layer | Where | What |
 |---|---|---|
-| Logic | Vitest | Matrix helpers; `resolvePose()`: rest pose = rest positions, pivot stays put under rotation, glasses follow the head (through the chain), offsets, order sorting, accessories per mood; `validateRig()` and `validatePose()` for each failure in the specs; the repo's `rig.json` and every pose in `poses.json` validate; flag, budgets and production-check helpers. |
-| Page | Playwright, all browsers | Preview present with the flag; `noindex`, `lang="en"`, no switcher or alternates; pose buttons set `aria-pressed` and change the layer transforms; sliders follow a pose and rotate a layer with the keyboard; mood switch shows and hides the accessories; pivot markers appear; Copy pose (clipboard in Chromium, visible text elsewhere); the figure is present with JavaScript disabled; 360 px width without horizontal scroll; axe; no console errors. |
-| Snapshots | Playwright `visual` project (Linux) | The figure in rest (goofy) and bow (professional), with the pivot overlay off. These baselines will change when the real art arrives, which is intended. |
+| Logic | Vitest | `kalman-cut.ts` (flood fill, soft edge, difference mask, gap per row, part masks and fades, rig entries) on tiny made-up images; `turntableFrame()`, `viewMatrix()`, mirroring and the turntable validation; `figureCentre()` and `spinMatrix()`; matrix helpers; `resolvePose()`: rest pose = rest positions, pivot stays put under rotation, glasses follow the head (through the chain), offsets, order sorting, accessories per mood; `validateRig()` and `validatePose()` for each failure in the specs; the repo's `rig.json`, every pose in `poses.json` and `turntable.json` validate, and every image they name exists; flag, budgets and production-check helpers. |
+| Page | Playwright, all browsers | Preview present with the flag; `noindex`, `lang="en"`, no switcher or alternates; pose buttons set `aria-pressed` and change the layer transforms; sliders follow a pose and rotate a layer with the keyboard; mood switch shows and hides the accessories; pivot markers appear; Copy pose (clipboard in Chromium, visible text elsewhere); the spin slider; turning to a drawn view and back (skipped while there is only one view); the figure is present with JavaScript disabled; 360 px width without horizontal scroll; axe; no console errors. |
+| Snapshots | Playwright `visual` project (Linux) | The figure in rest (goofy) and bow (professional), with the pivot overlay off, made again for the final design. |
 | Production | CI step | `check-production-build.ts` on the build without the flag. |
 
 Tests compare transforms through `resolvePose()` output exposed as `data-` attributes rather than parsing pixel positions.
@@ -161,11 +183,13 @@ Tests compare transforms through `resolvePose()` output exposed as `data-` attri
 
 ## Risks / Trade-offs
 
-- [The real layers don't fit the rig's sizes or joints] → that's the point of the rig being data: sizes, positions and pivots change in `rig.json`; the pivot overlay shows mismatches. Positions are absolute artboard coordinates so they can be read straight off the design sheet.
+- [New images need different cut lines] → the numbers live in one settings object at the top of the script; the pivot overlay and the flippers-up pose show mistakes straight away.
 - [Rotated cut-out layers show gaps at the joints] → a known cut-out issue; the illustrations need a little overlap under the neighbouring layer at each joint. Written into the layer guide's rules (§5b), and visible in the preview.
-- [AI-generated parts don't match each other in style or scale] → the shared style block and the design sheet as a reference image in every prompt; the rig's `size` and `position` absorb small scale differences.
+- [AI-generated views don't match each other in style or scale, so the turn "jumps"] → every view is made from the goofy front view as the reference, with the same size and ground line; the script can scale and align a view that is a little off.
+- [The images are smallish: Kálmán is about 918 px tall] → sharp enough for the preview and a phone-sized hero; if the public pages need more, Raymond makes larger images and the script runs again.
+- [`sharp` is used directly] → it is the image library Astro already depends on, now declared as a devDependency at the same version, so Dependabot keeps it up to date.
 - [Matrix maths is new for Raymond] → small named helpers (`translate`, `rotateAround`, `multiply`), a glossary entry, and the NumPy comparison in the comments.
-- [Placeholder snapshots churn when the art arrives] → expected; regenerate with the "Update visual baselines" workflow.
+- [Snapshots change whenever the images do] → expected; regenerate with the "Update visual baselines" workflow.
 - [`import.meta.glob` over assets is less obvious than one `import` per file] → explained in a comment; it's what lets a JSON file name an image.
 
 ## Migration Plan
@@ -176,5 +200,4 @@ Tests compare transforms through `resolvePose()` output exposed as `data-` attri
 
 ## Open Questions
 
-- Whether the generator keeps the parts consistent enough with the prompts alone. Answered when Raymond tries the first two or three parts; if not, the guide's fallback (cutting up a whole figure) applies, and the rig doesn't change either way.
 - Whether position and pivot sliders are worth adding to the preview once the real art is in. If tuning in JSON proves slow, it is a small follow-up on top of the same controls.
