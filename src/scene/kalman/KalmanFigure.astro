@@ -13,7 +13,7 @@
  */
 import type { ImageMetadata } from 'astro';
 import { resolvePose, spinMatrix, toSvgTransform, type Mood } from '../../lib/kalman-rig';
-import { viewMatrix } from '../../lib/kalman-turntable';
+import { viewImages, viewMatrix } from '../../lib/kalman-turntable';
 import { poseNamed, REPO_RIG, REPO_TURNTABLE } from './repo-rig';
 
 interface Props {
@@ -51,16 +51,19 @@ function imageFor(file: string): ImageMetadata {
 }
 
 const [width, height] = REPO_RIG.artboard;
-// The turntable's drawn views, one per angle and mood, hidden until the preview turns him.
-const views = REPO_TURNTABLE.flatMap((view) =>
-  Object.entries(view.images).map(([viewMood, placed]) => ({
+// The turntable's views, one group per angle and mood, hidden until the preview turns him. A
+// mirrored view gets its source's image, flipped around the centre line.
+const views = REPO_TURNTABLE.flatMap((view) => {
+  const found = viewImages(REPO_TURNTABLE, view.name);
+  if (found === undefined) return [];
+  return Object.entries(found.images).map(([viewMood, placed]) => ({
     name: view.name,
     mood: viewMood,
     size: placed.size,
-    transform: toSvgTransform(viewMatrix(1, width / 2, placed.position)),
+    transform: toSvgTransform(viewMatrix(found.mirrored ? -1 : 1, width / 2, placed.position)),
     image: imageFor(placed.image),
-  })),
-);
+  }));
+});
 const chosenPose = poseNamed(pose);
 const layers = resolvePose(REPO_RIG, chosenPose, mood).map((resolved) => {
   const rigLayer = REPO_RIG.layers.find((layer) => layer.name === resolved.name);

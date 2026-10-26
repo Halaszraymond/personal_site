@@ -78,16 +78,42 @@ export function viewMatrix(scaleX: number, centreX: number, position: Pair): Mat
   );
 }
 
-/** One drawn view as stored in turntable.json: its angle and an image per mood. */
-export interface TurntableEntry extends TurntableView {
-  readonly images: Readonly<Record<Mood, PlacedImage>>;
-}
-
 /** An image placed on the artboard, like a rig layer at rest. */
 export interface PlacedImage {
   readonly image: string;
   readonly size: Pair;
   readonly position: Pair;
+}
+
+/** A drawn view as stored in turntable.json: its angle and an image per mood. */
+export interface DrawnView extends TurntableView {
+  readonly images: Readonly<Record<Mood, PlacedImage>>;
+}
+
+/**
+ * A view that is the mirror image of a drawn view, at the opposite angle (360° minus its
+ * angle): the side seen from the left is the side seen from the right, flipped. So four drawn
+ * views give eight angles.
+ */
+export interface MirroredView extends TurntableView {
+  readonly mirrorOf: string;
+}
+
+/** One entry of turntable.json: drawn, or mirrored from a drawn one. */
+export type TurntableEntry = DrawnView | MirroredView;
+
+/** The images to draw for a view, and whether to flip them: a mirrored view borrows its source's. */
+export function viewImages(
+  views: readonly TurntableEntry[],
+  name: string,
+): { images: Readonly<Record<Mood, PlacedImage>>; mirrored: boolean } | undefined {
+  const view = views.find((v) => v.name === name);
+  if (view === undefined) return undefined;
+  if ('images' in view) return { images: view.images, mirrored: false };
+  const source = views.find((v) => v.name === view.mirrorOf);
+  return source !== undefined && 'images' in source
+    ? { images: source.images, mirrored: true }
+    : undefined;
 }
 
 const isPair = (value: unknown): value is Pair =>
@@ -99,28 +125,56 @@ function isPlacedImage(value: unknown): value is PlacedImage {
   return typeof image === 'string' && image !== '' && isPair(size) && isPair(position);
 }
 
+/** What one entry of the raw JSON may contain; checked field by field below. */
+interface RawView {
+  name?: unknown;
+  angle?: unknown;
+  images?: unknown;
+  mirrorOf?: unknown;
+}
+
 /**
- * Checks turntable.json: a list of views with a unique name and angle (0–360), each with a
- * placed image for both moods. Returns the problems; empty when it is fine.
+ * Checks turntable.json: a list of views with a unique name and angle (0–360). A drawn view
+ * has a placed image for both moods; a mirrored view names a drawn view at the opposite angle.
+ * Returns every problem at once; empty when it is fine.
  */
 export function turntableErrors(data: unknown): string[] {
   const views = (data as { views?: unknown } | null)?.views;
-  if (!Array.isArray(views) || views.length === 0)
+  if (!Array.isArray(views) || views.length === 0) {
     return ['The turntable needs a list of "views".'];
+  }
+  const entries = views.map((view: unknown) => (view ?? {}) as RawView);
   const errors: string[] = [];
   const names = new Set<string>();
   const angles = new Set<number>();
-  views.forEach((view: unknown, index) => {
-    const { name, angle, images } = (view ?? {}) as Record<string, unknown>;
+  entries.forEach(({ name, angle, images, mirrorOf }, index) => {
     const label = typeof name === 'string' ? `View "${name}"` : `View ${index + 1}`;
-    if (typeof name !== 'string' || name === '') errors.push(`${label} needs a "name".`);
-    else if (names.has(name)) errors.push(`${label} is listed twice.`);
-    else names.add(name);
+    if (typeof name !== 'string' || name === '') {
+      errors.push(`${label} needs a "name".`);
+    } else if (names.has(name)) {
+      errors.push(`${label} is listed twice.`);
+    } else {
+      names.add(name);
+    }
     if (typeof angle !== 'number' || angle < 0 || angle >= 360) {
       errors.push(`${label} needs an "angle" from 0 up to 360.`);
-    } else if (angles.has(angle))
+    } else if (angles.has(angle)) {
       errors.push(`${label} shares its angle ${angle} with another view.`);
-    else angles.add(angle);
+    } else {
+      angles.add(angle);
+    }
+    if (mirrorOf !== undefined) {
+      const source = entries.find((other) => other.name === mirrorOf);
+      if (source === undefined || source.images === undefined) {
+        errors.push(`${label} mirrors "${String(mirrorOf)}", which is not a drawn view.`);
+      } else if (
+        typeof angle === 'number' &&
+        normaliseAngle(360 - Number(source.angle)) !== angle
+      ) {
+        errors.push(`${label} must be at the opposite angle of "${String(mirrorOf)}".`);
+      }
+      return;
+    }
     const byMood = (images ?? {}) as Record<string, unknown>;
     for (const mood of ['goofy', 'professional']) {
       if (!isPlacedImage(byMood[mood])) {

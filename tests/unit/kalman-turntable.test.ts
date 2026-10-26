@@ -6,6 +6,7 @@ import { applyToPoint } from '../../src/lib/kalman-rig';
 import {
   normaliseAngle,
   turntableErrors,
+  viewImages,
   turntableFrame,
   viewMatrix,
   type ViewFrame,
@@ -109,7 +110,61 @@ describe('turntableErrors', () => {
     ]);
   });
 
+  it('accepts a mirrored view at the opposite angle of a drawn one', () => {
+    const mirror = { name: 'side-mirrored', angle: 270, mirrorOf: 'side' };
+    expect(turntableErrors({ views: [view('front', 0), view('side', 90), mirror] })).toEqual([]);
+  });
+
+  it('rejects a mirror of nothing, or at the wrong angle', () => {
+    expect(
+      turntableErrors({
+        views: [
+          view('front', 0),
+          view('side', 90),
+          { name: 'a', angle: 200, mirrorOf: 'side' },
+          { name: 'b', angle: 300, mirrorOf: 'tail' },
+        ],
+      }),
+    ).toEqual([
+      'View "a" must be at the opposite angle of "side".',
+      'View "b" mirrors "tail", which is not a drawn view.',
+    ]);
+  });
+
   it('rejects something without views', () => {
     expect(turntableErrors({})).toEqual(['The turntable needs a list of "views".']);
+  });
+});
+
+describe('viewImages', () => {
+  const image = { image: 'side.png', size: [10, 20] as const, position: [0, 0] as const };
+  const views = [
+    { name: 'side', angle: 90, images: { goofy: image, professional: image } },
+    { name: 'side-mirrored', angle: 270, mirrorOf: 'side' },
+  ];
+
+  it('gives a drawn view its own images, not flipped', () => {
+    expect(viewImages(views, 'side')).toEqual({ images: views[0]?.images, mirrored: false });
+  });
+
+  it('gives a mirrored view its source’s images, flipped', () => {
+    expect(viewImages(views, 'side-mirrored')).toEqual({
+      images: views[0]?.images,
+      mirrored: true,
+    });
+  });
+
+  it('knows nothing about unknown views', () => {
+    expect(viewImages(views, 'top')).toBeUndefined();
+  });
+});
+
+describe('viewMatrix for a mirrored view', () => {
+  it('flips the image around the centre line', () => {
+    // An image placed from x 700 to 900 around the centre line 800, flipped:
+    // its left edge (700) ends up at 900 and its right edge (900) at 700.
+    const matrix = viewMatrix(-1, 800, [700, 0]);
+    expect(applyToPoint(matrix, [0, 0])).toEqual([900, 0]);
+    expect(applyToPoint(matrix, [200, 0])).toEqual([700, 0]);
   });
 });

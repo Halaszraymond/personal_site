@@ -2,7 +2,8 @@
  * Cuts Kálmán's layers and turntable views out of Raymond's design images (kalman-rig design §5).
  *
  * Run with `npm run cut:kalman` after changing an image in docs/images/kalman-design/. It
- * writes the layers and views to src/assets/kalman/front/, and src/scene/kalman/rig.json and
+ * writes the layers and front views to src/assets/kalman/front/, the turntable views to
+ * src/assets/kalman/views/, and src/scene/kalman/rig.json and
  * turntable.json (Prettier formats them afterwards). Running it twice on the same images gives
  * the same files, so `git status` shows exactly what a new image changed.
  *
@@ -14,14 +15,18 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 import {
   assertSameSize,
+  bodyCentreX,
   cutPart,
   differenceAlpha,
   figureAlpha,
   findBackground,
   frontRegions,
   gapPerRow,
+  groundRow,
+  matchTone,
   pivotIn,
   placeBox,
+  plumageTone,
   type FrontCutSettings,
   type Placement,
   type RawImage,
@@ -29,6 +34,7 @@ import {
 
 const DESIGN = 'docs/images/kalman-design';
 const OUT = 'src/assets/kalman/front';
+const VIEWS_OUT = 'src/assets/kalman/views';
 const RIG_FILE = 'src/scene/kalman/rig.json';
 const TURNTABLE_FILE = 'src/scene/kalman/turntable.json';
 
@@ -122,6 +128,24 @@ const LAYERS = [
   },
 ] as const;
 
+/**
+ * The turntable views: each drawn with his bill to the left of the picture, with a professional
+ * version as an edit of it (`<file>-professional.png`). The other side is mirrored.
+ */
+const VIEWS = [
+  { name: '3q-front', angle: 45, file: 'view-3q-front' },
+  { name: 'side', angle: 90, file: 'view-side' },
+  { name: '3q-back', angle: 135, file: 'view-3q-back' },
+  { name: 'back', angle: 180, file: 'view-back' },
+] as const;
+const MIRRORS = [
+  { name: '3q-back-mirrored', angle: 225, mirrorOf: '3q-back' },
+  { name: 'side-mirrored', angle: 270, mirrorOf: 'side' },
+  { name: '3q-front-mirrored', angle: 315, mirrorOf: '3q-front' },
+] as const;
+/** The rows of the body (no head, bill or tail) used to centre a view. */
+const BODY_ROWS = [280, 900] as const;
+
 // ---------------------------------------------------------------------------------------
 // Reading and writing images
 // ---------------------------------------------------------------------------------------
@@ -204,6 +228,51 @@ for (const [mood, image, file] of [
   await writePng(join(OUT, file), whole.rgba, whole.box.width, whole.box.height);
   frontImages[mood] = { image: `front/${file}`, ...placeBox(whole.box, PLACEMENT) };
 }
-writeJson(TURNTABLE_FILE, { views: [{ name: 'front', angle: 0, images: frontImages }] });
+
+// The turntable views: the same plumage tone as the front view, his feet on the front view's
+// ground line and his body centred on the same line. The professional version gets exactly the
+// goofy version's correction, so the pair stays aligned.
+const frontTone = plumageTone(goofy, bodyAlpha);
+const groundOnArtboard =
+  PLACEMENT.to[1] + (groundRow(bodyAlpha, goofy.width) - PLACEMENT.from[1]) * PLACEMENT.scale;
+mkdirSync(VIEWS_OUT, { recursive: true });
+const drawnViews = [];
+for (const view of VIEWS) {
+  const viewGoofy = await readRgb(`${DESIGN}/${view.file}.png`);
+  const viewPro = await readRgb(`${DESIGN}/${view.file}-professional.png`);
+  assertSameSize(viewGoofy, viewPro, `The two "${view.name}" views`);
+  const goofyAlpha = figureAlpha(viewGoofy, findBackground(viewGoofy));
+  const tone = plumageTone(viewGoofy, goofyAlpha);
+  const placement: Placement = {
+    scale: PLACEMENT.scale,
+    from: [
+      bodyCentreX(goofyAlpha, viewGoofy.width, ...BODY_ROWS),
+      groundRow(goofyAlpha, viewGoofy.width),
+    ],
+    to: [PLACEMENT.to[0], groundOnArtboard],
+  };
+  const images: Record<
+    string,
+    { image: string; size: [number, number]; position: [number, number] }
+  > = {};
+  for (const [mood, image, suffix] of [
+    ['goofy', viewGoofy, ''],
+    ['professional', viewPro, '-pro'],
+  ] as const) {
+    const matched = matchTone(image, tone, frontTone);
+    const whole = cutPart(matched, figureAlpha(matched, findBackground(image)), () => 1);
+    if (whole === undefined) throw new Error(`The ${mood} "${view.name}" view is empty.`);
+    const file = `${view.name}${suffix}.png`;
+    await writePng(join(VIEWS_OUT, file), whole.rgba, whole.box.width, whole.box.height);
+    images[mood] = { image: `views/${file}`, ...placeBox(whole.box, placement) };
+  }
+  drawnViews.push({ name: view.name, angle: view.angle, images });
+  console.log(
+    `view ${view.name.padEnd(9)} tone ${tone.map(Math.round).join(',')} → ${frontTone.map(Math.round).join(',')}`,
+  );
+}
+writeJson(TURNTABLE_FILE, {
+  views: [{ name: 'front', angle: 0, images: frontImages }, ...drawnViews, ...MIRRORS],
+});
 
 console.log(`Written: ${OUT}/, ${RIG_FILE} and ${TURNTABLE_FILE}.`);

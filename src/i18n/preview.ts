@@ -19,11 +19,16 @@ export const PREVIEW_EN = {
   spin: 'Spin whole figure',
   turn: 'Turn around',
   turnHint: 'Or drag Kálmán sideways.',
+  /** "seen from the …" per turntable view. */
   views: {
     front: 'front',
-    'side-right': 'right side',
+    '3q-front': 'front, at an angle',
+    side: 'side',
+    '3q-back': 'back, at an angle',
     back: 'back',
-    'side-left': 'left side',
+    '3q-back-mirrored': 'back, at an angle from the other side',
+    'side-mirrored': 'other side',
+    '3q-front-mirrored': 'front, at an angle from the other side',
   },
   copyPose: 'Copy pose',
   poseJsonLabel: 'Pose JSON (paste into src/scene/kalman/poses.json)',

@@ -18,6 +18,7 @@ import {
 import {
   normaliseAngle,
   turntableFrame,
+  viewImages,
   viewMatrix,
   type TurntableEntry,
 } from '../../lib/kalman-turntable';
@@ -71,13 +72,17 @@ export function applyTurn(
   const centreX = rig.artboard[0] / 2;
   for (const group of figure.querySelectorAll<SVGGElement>('[data-view]')) {
     const frame = frames.find((f) => f.name === group.dataset['view']);
-    const placed = views.find((v) => v.name === group.dataset['view'])?.images[mood];
+    const found = viewImages(views, group.dataset['view'] ?? '');
+    const placed = found?.images[mood];
     const shown = frame !== undefined && placed !== undefined && group.dataset['viewMood'] === mood;
     group.setAttribute('visibility', shown ? 'visible' : 'hidden');
     if (shown) {
       group.setAttribute(
         'transform',
-        toSvgTransform(viewMatrix(frame.scaleX, centreX, placed.position)),
+        // A mirrored view squeezes the same way, but flipped (a negative horizontal scale).
+        toSvgTransform(
+          viewMatrix(frame.scaleX * (found?.mirrored === true ? -1 : 1), centreX, placed.position),
+        ),
       );
       // `opacity` is an SVG attribute, so the Content-Security-Policy allows it.
       group.setAttribute('opacity', String(Math.round(frame.opacity * 1000) / 1000));
