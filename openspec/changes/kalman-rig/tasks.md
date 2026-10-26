@@ -42,7 +42,7 @@
 
 - [x] 6.1 Update `docs/architecture.md` (rig data → `resolvePose()` → SVG, the dev-only route, the CI order); verify it matches the code
 - [x] 6.2 Record this session in `docs/making-of.md` with a screenshot of the preview, tick the relevant part of Phase 1 in README §7, and add the decisions to `PLANNING_LOG.md`; verify the files are updated
-- [ ] 6.3 Run `npm run check` locally and check the preview on the Cloudflare branch preview (and that `/playground/` is a 404 on production); verify everything is green and Raymond has looked at the preview
+- [x] 6.3 Run `npm run check` locally and check the preview on the Cloudflare branch preview (and that `/playground/` is a 404 on production); verify everything is green and Raymond has looked at the preview
 
 ## 7. Final design and turning around
 
@@ -56,7 +56,7 @@ The work for this group started on the local branch `experiment/sheet-layers`; e
 - [x] 7.6 Rewrite `docs/kalman-layers.md` as the image guide for the final design (design §5b), with the Gemini prompts for the front views and the turntable views; verify every image the script reads or the turntable can use is covered
 - [x] 7.7 Put the turntable views in as Raymond delivers them (¾ front, side, ¾ back, back, each with its professional edit), mirrored for the other side; verify each view validates and turning through all angles looks right in the preview. Can be ticked with only the views delivered so far, if Raymond agrees
 - [x] 7.8 Update `docs/architecture.md` (cutting, spin, turntable), `docs/glossary.md` (turntable, crossfade, flood fill), `src/scene/README.md` and `docs/making-of.md` (the switch to Raymond's own images, the final design, what went wrong at the joints); verify they match the code
-- [ ] 7.9 Make the pose snapshots again for the final design with "Update visual baselines" and check the images; verify the `visual` project passes in CI
+- [x] 7.9 Make the pose snapshots again for the final design with "Update visual baselines" and check the images; verify the `visual` project passes in CI
 
 ## Workflow follow-up
 
