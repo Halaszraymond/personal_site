@@ -8,12 +8,14 @@ import { describe, expect, it } from 'vitest';
 import {
   applyToPoint,
   compose,
+  figureCentre,
   IDENTITY,
   multiply,
   resolvePose,
   REST_POSE,
   rotate,
   rotateAround,
+  spinMatrix,
   toSvgTransform,
   translate,
   validatePose,
@@ -354,5 +356,23 @@ describe('validatePose', () => {
       'Pose "?" needs a "label" (text).',
       'Pose "?" needs "layers" as an object.',
     ]);
+  });
+});
+
+describe('spinning the whole figure', () => {
+  it('finds the centre of the box around all layers at rest', () => {
+    // RIG spans x 80–300 (flipper to body) and y 100–500 (head to body bottom).
+    expect(figureCentre(RIG)).toEqual([190, 300]);
+  });
+
+  it('keeps the centre in place and turns everything else around it', () => {
+    const spin = spinMatrix(RIG, 90);
+    expectPointClose(applyToPoint(spin, [190, 300]), [190, 300]);
+    // A point 10 to the right of the centre ends up 10 below it (clockwise, y down).
+    expectPointClose(applyToPoint(spin, [200, 300]), [190, 310]);
+  });
+
+  it('is the identity at 0°', () => {
+    expectPointClose(applyToPoint(spinMatrix(RIG, 0), [123, 45]), [123, 45]);
   });
 });

@@ -441,3 +441,28 @@ export function validatePose(data: unknown, rig: Rig): Validation<Pose> {
   if (errors.length > 0) return { ok: false, errors };
   return { ok: true, value: data as unknown as Pose };
 }
+
+// ---------------------------------------------------------------------------------------
+// Spinning the whole figure
+// ---------------------------------------------------------------------------------------
+
+/**
+ * The middle of the figure at rest: the centre of the box around all layers. Spinning turns
+ * around this point, so he stays on the stage at every angle instead of swinging out of it.
+ */
+export function figureCentre(rig: Rig): Pair {
+  const lefts = rig.layers.map((layer) => layer.position[0]);
+  const tops = rig.layers.map((layer) => layer.position[1]);
+  const rights = rig.layers.map((layer) => layer.position[0] + layer.size[0]);
+  const bottoms = rig.layers.map((layer) => layer.position[1] + layer.size[1]);
+  // `...` spreads a list into separate arguments, like `max(*values)` in Python.
+  return [
+    (Math.min(...lefts) + Math.max(...rights)) / 2,
+    (Math.min(...tops) + Math.max(...bottoms)) / 2,
+  ];
+}
+
+/** Turns the whole figure, as one piece, by `degrees` around its centre. */
+export function spinMatrix(rig: Rig, degrees: number): Matrix {
+  return rotateAround(degrees, figureCentre(rig));
+}

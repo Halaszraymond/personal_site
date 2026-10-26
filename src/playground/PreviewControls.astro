@@ -40,6 +40,17 @@ import { REPO_POSES, REPO_RIG } from '../scene/kalman/repo-rig';
   </fieldset>
 
   <fieldset>
+    <legend>{TEXT.viewLegend}</legend>
+    <div class="slider">
+      <label for="spin">{TEXT.spin}</label>
+      <input type="range" id="spin" data-spin-slider min="-180" max="180" step="1" value="0" />
+      <output for="spin" data-spin-value>
+        0°
+      </output>
+    </div>
+  </fieldset>
+
+  <fieldset>
     <legend>{TEXT.rotationsLegend}</legend>
     {
       /* In the rig's own order (body, head, flippers, ...), which reads better than drawing order. */

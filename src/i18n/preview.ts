@@ -15,6 +15,8 @@ export const PREVIEW_EN = {
   professional: 'Professional (tie and glasses)',
   showPivots: 'Show pivots',
   rotationsLegend: 'Rotation per layer (degrees)',
+  viewLegend: 'View',
+  spin: 'Spin whole figure',
   copyPose: 'Copy pose',
   poseJsonLabel: 'Pose JSON (paste into src/scene/kalman/poses.json)',
   copied: 'Copied the pose to the clipboard.',

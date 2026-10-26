@@ -9,7 +9,7 @@
  */
 import type { Mood, Pose } from '../lib/kalman-rig';
 import { figureDescription, poseFromControls, poseToJson } from '../lib/preview-pose';
-import { applyPose } from '../scene/kalman/kalman-figure-client';
+import { applyPose, applySpin } from '../scene/kalman/kalman-figure-client';
 import { poseNamed, REPO_RIG } from '../scene/kalman/repo-rig';
 import { PREVIEW_EN as TEXT } from '../i18n/preview';
 
@@ -26,6 +26,8 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
   const sliders = [...root.querySelectorAll<HTMLInputElement>('[data-rotation]')];
   const moodSwitch = root.querySelector<HTMLInputElement>('[data-mood-switch]');
   const pivotsSwitch = root.querySelector<HTMLInputElement>('[data-pivots-switch]');
+  const spinSlider = root.querySelector<HTMLInputElement>('[data-spin-slider]');
+  const spinValue = root.querySelector<HTMLElement>('[data-spin-value]');
   const copyButton = root.querySelector<HTMLButtonElement>('[data-copy-pose]');
   const copyStatus = root.querySelector<HTMLElement>('[data-copy-status]');
   const poseJson = root.querySelector<HTMLTextAreaElement>('[data-pose-json]');
@@ -88,6 +90,13 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
   }
 
   moodSwitch?.addEventListener('change', render);
+
+  // Spinning is a view setting, not part of the pose: it turns the whole figure and leaves the
+  // pose (and the pose JSON) as they are.
+  spinSlider?.addEventListener('input', () => {
+    applySpin(figure, REPO_RIG, Number(spinSlider.value));
+    if (spinValue !== null) spinValue.textContent = `${spinSlider.value}°`;
+  });
 
   pivotsSwitch?.addEventListener('change', () => {
     // `toggleAttribute(name, on)` adds or removes the attribute; CSS shows the markers with it.

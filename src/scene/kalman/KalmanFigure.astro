@@ -12,7 +12,7 @@
  * body (kalman-rig design §3).
  */
 import type { ImageMetadata } from 'astro';
-import { resolvePose, toSvgTransform, type Mood } from '../../lib/kalman-rig';
+import { resolvePose, spinMatrix, toSvgTransform, type Mood } from '../../lib/kalman-rig';
 import { poseNamed, REPO_RIG } from './repo-rig';
 
 interface Props {
@@ -68,28 +68,31 @@ const layers = resolvePose(REPO_RIG, chosenPose, mood).map((resolved) => {
   aria-label={label}
   aria-hidden={label === undefined ? 'true' : undefined}
 >
-  {layers.map((layer) => (
-    <g
-      data-layer={layer.name}
-      transform={toSvgTransform(layer.matrix)}
-      visibility={layer.visible ? 'visible' : 'hidden'}
-    >
-      <image href={layer.image.src} width={layer.size[0]} height={layer.size[1]} />
-    </g>
-  ))}
-  {pivotMarkers && (
-    <g class="pivots" data-pivots>
-      {layers.map((layer) => (
-        <circle
-          data-pivot={layer.name}
-          cx={layer.pivotOnArtboard[0]}
-          cy={layer.pivotOnArtboard[1]}
-          r="9"
-          visibility={layer.visible ? 'visible' : 'hidden'}
-        />
-      ))}
-    </g>
-  )}
+  {/* The whole figure turns as one piece inside this group (the preview's spin slider). */}
+  <g data-spin transform={toSvgTransform(spinMatrix(REPO_RIG, 0))}>
+    {layers.map((layer) => (
+      <g
+        data-layer={layer.name}
+        transform={toSvgTransform(layer.matrix)}
+        visibility={layer.visible ? 'visible' : 'hidden'}
+      >
+        <image href={layer.image.src} width={layer.size[0]} height={layer.size[1]} />
+      </g>
+    ))}
+    {pivotMarkers && (
+      <g class="pivots" data-pivots>
+        {layers.map((layer) => (
+          <circle
+            data-pivot={layer.name}
+            cx={layer.pivotOnArtboard[0]}
+            cy={layer.pivotOnArtboard[1]}
+            r="9"
+            visibility={layer.visible ? 'visible' : 'hidden'}
+          />
+        ))}
+      </g>
+    )}
+  </g>
 </svg>
 
 <style>
@@ -97,6 +100,8 @@ const layers = resolvePose(REPO_RIG, chosenPose, mood).map((resolved) => {
     display: block;
     width: 100%;
     height: auto;
+    /* Raised flippers can reach past the artboard when he spins; draw them instead of cutting them off. */
+    overflow: visible;
   }
 
   .pivots {

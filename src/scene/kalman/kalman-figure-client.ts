@@ -7,7 +7,14 @@
  * The numbers come from resolvePose() (src/lib/kalman-rig.ts), the same function the
  * component uses at build time, so the browser and the HTML always agree.
  */
-import { resolvePose, toSvgTransform, type Mood, type Pose, type Rig } from '../../lib/kalman-rig';
+import {
+  resolvePose,
+  spinMatrix,
+  toSvgTransform,
+  type Mood,
+  type Pose,
+  type Rig,
+} from '../../lib/kalman-rig';
 
 export function applyPose(figure: SVGSVGElement, rig: Rig, pose: Pose, mood: Mood): void {
   for (const layer of resolvePose(rig, pose, mood)) {
@@ -24,4 +31,12 @@ export function applyPose(figure: SVGSVGElement, rig: Rig, pose: Pose, mood: Moo
   // `dataset.pose` writes `data-pose`: readable by styles and tests.
   figure.dataset['pose'] = pose.name;
   figure.dataset['mood'] = mood;
+}
+
+/** Turns the whole figure as one piece by `degrees` around its centre; the pose stays as it is. */
+export function applySpin(figure: SVGSVGElement, rig: Rig, degrees: number): void {
+  figure
+    .querySelector('[data-spin]')
+    ?.setAttribute('transform', toSvgTransform(spinMatrix(rig, degrees)));
+  figure.dataset['spin'] = String(degrees);
 }

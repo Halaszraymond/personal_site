@@ -211,3 +211,21 @@ test.describe('with reduced motion', () => {
     await expect(figure(page)).toHaveAttribute('data-pose', 'bow');
   });
 });
+
+test('the spin slider turns the whole figure without changing the pose', async ({ page }) => {
+  const spin = page.locator('[data-spin]');
+  const restSpin = await spin.getAttribute('transform');
+  const json = await page.getByLabel(/Pose JSON/).inputValue();
+  const head = await transformOf(page, 'head');
+
+  const slider = page.getByLabel('Spin whole figure');
+  await slider.focus();
+  await page.keyboard.press('ArrowRight');
+
+  await expect(slider).toHaveValue('1');
+  await expect(page.locator('[data-spin-value]')).toHaveText('1°');
+  expect(await spin.getAttribute('transform')).not.toBe(restSpin);
+  // The pose itself is unchanged: same layer transforms and the same pose JSON.
+  expect(await transformOf(page, 'head')).toBe(head);
+  await expect(page.getByLabel(/Pose JSON/)).toHaveValue(json);
+});
