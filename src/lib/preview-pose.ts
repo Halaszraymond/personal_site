@@ -6,7 +6,7 @@
  * has them. Once a slider differs from the named pose, the result is no longer that pose but
  * a "custom" one, which is what "Copy pose" exports. Pure, so it is unit-tested.
  */
-import type { LayerPose, Pose } from './kalman-rig';
+import type { LayerPose, Pair, Pose } from './kalman-rig';
 
 /** The name and label a pose gets once the sliders have changed it. */
 export const CUSTOM_POSE = { name: 'custom', label: 'Custom' } as const;
@@ -25,7 +25,7 @@ export function poseFromControls(base: Pose, rotations: Readonly<Record<string, 
     const rotate = rotations[name] ?? base.layers[name]?.rotate ?? 0;
     if (rotate !== (base.layers[name]?.rotate ?? 0)) changed = true;
     // Build the layer entry with only the fields that matter, in a fixed order.
-    const entry: { rotate?: number; offset?: LayerPose['offset'] } = {};
+    const entry: { rotate?: number; offset?: Pair } = {};
     if (rotate !== 0) entry.rotate = rotate;
     if (offset !== undefined) entry.offset = offset;
     if (entry.rotate !== undefined || entry.offset !== undefined) layers[name] = entry;
