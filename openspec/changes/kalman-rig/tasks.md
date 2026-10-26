@@ -13,7 +13,7 @@
 - [x] 2.3 Add `showLanguageSwitcher` to `BaseLayout.astro` and use it (with no `canonicalPath`) on the preview page; add `tests/e2e/preview-page.spec.ts` for `noindex`, `lang="en"`, no alternates, no switcher, and no alternates on the 404; verify it passes
 - [x] 2.4 Bring over `scripts/lib/production-check.ts` with the `kalman-preview` marker instead of `__THREE__`, its unit test and `scripts/check-production-build.ts` as `npm run check:production`; verify it passes on the production build and fails on the playground build
 - [x] 2.5 Bring over the per-page budgets (`scripts/lib/budgets.ts`, `scripts/check-bundle-size.ts`, `tests/unit/budgets.test.ts`), with the 50 KB base budget for every page; verify `npm run size` prints one line per page and passes
-- [ ] 2.6 Update the CI workflow and `npm run check` to the order in design §10; verify by pushing the branch and seeing the CI `check` job green
+- [x] 2.6 Update the CI workflow and `npm run check` to the order in design §10; verify by pushing the branch and seeing the CI `check` job green
 
 ## 3. Rig and pose logic
 
@@ -36,7 +36,7 @@
 - [x] 5.2 Write `preview-client.ts`: pose buttons with `aria-pressed`, sliders that rotate layers and follow named poses, mood switch, pivot markers, and the figure's `aria-label`; add e2e tests for each of these; verify they pass
 - [x] 5.3 Add "Copy pose" (clipboard, visible JSON, status line) with e2e tests for the clipboard (Chromium) and the refused-clipboard case; verify they pass and that copied JSON passes `validatePose()`
 - [x] 5.4 Lay out the preview mobile-first; add e2e tests for 360 px without horizontal scroll, axe and no console errors; verify they pass
-- [ ] 5.5 Add the two pose snapshots (rest goofy, bow professional) to `tests/e2e/visual.spec.ts` and run "Update visual baselines" on the branch; verify the new images look right and the `visual` project passes
+- [x] 5.5 Add the two pose snapshots (rest goofy, bow professional) to `tests/e2e/visual.spec.ts` and run "Update visual baselines" on the branch; verify the new images look right and the `visual` project passes
 
 ## 6. Docs and wrap-up
 
