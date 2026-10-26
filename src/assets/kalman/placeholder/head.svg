@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 270" width="250" height="270">
+  <!-- Placeholder: head (front view). Navy head, golden ear patches, small eyes, slender bill. -->
+  <path d="M125 8 C60 8 22 58 22 125 C22 190 55 262 125 262 C195 262 228 190 228 125 C228 58 190 8 125 8 Z" fill="#1f2a44" stroke="#8a93a6" stroke-width="3" stroke-dasharray="10 7"/>
+  <path d="M30 120 C26 170 50 230 95 255 C70 205 62 160 70 120 Z" fill="#e0a646"/>
+  <path d="M220 120 C224 170 200 230 155 255 C180 205 188 160 180 120 Z" fill="#e0a646"/>
+  <circle cx="92" cy="110" r="9" fill="#f3eee0"/><circle cx="93" cy="111" r="5" fill="#10141f"/>
+  <circle cx="158" cy="110" r="9" fill="#f3eee0"/><circle cx="157" cy="111" r="5" fill="#10141f"/>
+  <path d="M110 140 L140 140 L125 182 Z" fill="#2a2f3a"/>
+  <path d="M114 152 L136 152 L125 178 Z" fill="#e8925a"/>
+</svg>

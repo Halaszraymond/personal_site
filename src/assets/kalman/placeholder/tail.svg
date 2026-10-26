@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 110" width="80" height="110">
+  <!-- Placeholder: tail, a short dark wedge between the feet. Pivot: top centre. -->
+  <path d="M8 6 L72 6 C70 50 56 86 40 104 C24 86 10 50 8 6 Z" fill="#141b2e" stroke="#8a93a6" stroke-width="3" stroke-dasharray="10 7"/>
+</svg>

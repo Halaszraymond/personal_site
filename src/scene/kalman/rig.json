@@ -1,0 +1,97 @@
+{
+  "artboard": [1000, 1400],
+  "layers": [
+    {
+      "name": "body",
+      "image": "placeholder/body.svg",
+      "size": [416, 930],
+      "position": [292, 240],
+      "pivot": [208, 900],
+      "parent": null,
+      "order": 20,
+      "rotate": [-15, 15]
+    },
+    {
+      "name": "head",
+      "image": "placeholder/head.svg",
+      "size": [250, 270],
+      "position": [375, 80],
+      "pivot": [125, 240],
+      "parent": "body",
+      "order": 30,
+      "rotate": [-25, 25]
+    },
+    {
+      "name": "flipperLeft",
+      "image": "placeholder/flipper-left.svg",
+      "size": [100, 625],
+      "position": [250, 288],
+      "pivot": [70, 30],
+      "parent": "body",
+      "order": 10,
+      "rotate": [-15, 150]
+    },
+    {
+      "name": "flipperRight",
+      "image": "placeholder/flipper-right.svg",
+      "size": [100, 625],
+      "position": [650, 288],
+      "pivot": [30, 30],
+      "parent": "body",
+      "order": 11,
+      "rotate": [-150, 15]
+    },
+    {
+      "name": "footLeft",
+      "image": "placeholder/foot-left.svg",
+      "size": [150, 135],
+      "position": [304, 1146],
+      "pivot": [90, 20],
+      "parent": "body",
+      "order": 25,
+      "rotate": [-20, 20]
+    },
+    {
+      "name": "footRight",
+      "image": "placeholder/foot-right.svg",
+      "size": [150, 135],
+      "position": [546, 1146],
+      "pivot": [60, 20],
+      "parent": "body",
+      "order": 26,
+      "rotate": [-20, 20]
+    },
+    {
+      "name": "tail",
+      "image": "placeholder/tail.svg",
+      "size": [80, 110],
+      "position": [460, 1090],
+      "pivot": [40, 10],
+      "parent": "body",
+      "order": 15,
+      "rotate": [-25, 25]
+    },
+    {
+      "name": "tie",
+      "image": "placeholder/tie.svg",
+      "size": [270, 500],
+      "position": [365, 264],
+      "pivot": [135, 40],
+      "parent": "body",
+      "order": 50,
+      "rotate": [-15, 15],
+      "accessory": true
+    },
+    {
+      "name": "glasses",
+      "image": "placeholder/glasses.svg",
+      "size": [210, 56],
+      "position": [395, 146],
+      "pivot": [105, 28],
+      "parent": "head",
+      "order": 60,
+      "rotate": [-10, 10],
+      "accessory": true
+    }
+  ]
+}

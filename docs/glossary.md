@@ -1,6 +1,6 @@
 # Glossary
 
-Frontend, 3D and tooling terms used in this repo, in plain language. Where it helps, there is a comparison with Python.
+Frontend, animation and tooling terms used in this repo, in plain language. Where it helps, there is a comparison with Python.
 
 **Linting**: automatically checking code for likely bugs and unsafe patterns, without running it. ESLint does this here; Ruff and flake8 do the same for Python.
 
@@ -79,3 +79,26 @@ Frontend, 3D and tooling terms used in this repo, in plain language. Where it he
 **gzip**: a compression format. Servers send files gzipped, so the size that matters for loading speed is the gzipped size, which is what the bundle budget measures.
 
 **Bundle**: the JavaScript files the build produces for the browser. "Bundle size" is how much JavaScript a visitor has to download.
+
+## Kálmán's figure
+
+**Cut-out animation**: animating a character made of separate flat pieces (head, body, flippers…) that are moved and turned, like a paper puppet with split pins. One set of drawings gives every pose.
+
+**Layer**: one of those pieces: one image with a transparent background.
+
+**Artboard**: the drawing area all layers are placed on, 1000 × 1400 units here. Positions are measured on it from the top-left corner, with y pointing *down* (the SVG convention, the opposite of a maths graph).
+
+**SVG**: a picture format made of shapes and text instead of pixels, which the browser draws at any size. Kálmán's figure is one SVG in the page's HTML, holding one image per layer.
+
+**Rig**: the description of how the layers fit together: where each sits, where it turns, which layer it hangs from and in which order they are drawn. Here it is data (`rig.json`), not code.
+
+**Pivot**: the point a layer turns around, such as the shoulder for a flipper. Turning around the pivot keeps that point in place and swings the rest of the layer around it.
+
+**Parent and child layer**: a child hangs from its parent and moves along with it: when the head (parent) tilts, the glasses (child) tilt with it. The body is the one layer without a parent (the *root*).
+
+**Pose**: a still position of the figure, stored as "turn this layer so many degrees, shift that one so far" relative to rest. Layers a pose doesn't mention stay at rest.
+
+**Transform matrix**: six numbers that move, turn and scale points in one step; SVG writes it as `matrix(a b c d e f)`. Combining two transforms is multiplying their matrices, like `A @ B` in NumPy, and the order matters: turning then moving is not the same as moving then turning.
+
+**Drawing order (z-order)**: which layer is drawn on top of which. Later-drawn layers cover earlier ones. Here it is set per layer (`order`), separately from parent and child, so a flipper that hangs from the body can still be drawn behind it.
+

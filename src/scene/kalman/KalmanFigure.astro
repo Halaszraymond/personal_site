@@ -1,0 +1,116 @@
+---
+/**
+ * Kálmán as a cut-out figure: one SVG, one image per rig layer (spec: kalman-rig).
+ *
+ * Drawn at build time, so Kálmán is in the HTML in the given pose (rest by default) and
+ * shows without JavaScript. That is also what the static fallback will use (README §5.2).
+ * kalman-figure-client.ts can change the pose afterwards by rewriting the same attributes.
+ *
+ * Every layer is a `<g>` (a group) with a `transform` from resolvePose(), holding an `<image>`.
+ * The groups are flat and sorted by drawing order, not nested by parent: in SVG a nested child
+ * is always drawn in front of its parent, and the far flipper must be able to sit behind the
+ * body (kalman-rig design §3).
+ */
+import type { ImageMetadata } from 'astro';
+import { resolvePose, toSvgTransform, type Mood } from '../../lib/kalman-rig';
+import { poseNamed, REPO_RIG } from './repo-rig';
+
+interface Props {
+  /** Name of a pose from poses.json; defaults to rest. */
+  pose?: string;
+  mood?: Mood;
+  /**
+   * What a screen reader says about the figure. Leave out for a decorative figure, which is
+   * then hidden from assistive technology (the content is in the HTML around it).
+   */
+  label?: string;
+  /**
+   * Also draw a marker per pivot point, for the preview's "Show pivots" switch. They only show
+   * while the figure has the `data-show-pivots` attribute (the SVG has no reliable `hidden`).
+   */
+  pivotMarkers?: boolean;
+}
+
+const { pose = 'rest', mood = 'goofy', label, pivotMarkers = false } = Astro.props;
+
+// Every image under src/assets/kalman/, keyed by its path. `eager: true` imports them all now
+// (at build time), like a dict comprehension over a folder; Astro then gives each one a
+// hashed file name in the build. This is what lets rig.json name an image as plain text.
+const images = import.meta.glob<{ default: ImageMetadata }>(
+  '../../assets/kalman/**/*.{svg,png,webp,avif}',
+  { eager: true },
+);
+
+function imageFor(file: string): ImageMetadata {
+  const found = images[`../../assets/kalman/${file}`];
+  if (found === undefined) {
+    throw new Error(`rig.json names the image "${file}", which is not in src/assets/kalman/.`);
+  }
+  return found.default;
+}
+
+const [width, height] = REPO_RIG.artboard;
+const chosenPose = poseNamed(pose);
+const layers = resolvePose(REPO_RIG, chosenPose, mood).map((resolved) => {
+  const rigLayer = REPO_RIG.layers.find((layer) => layer.name === resolved.name);
+  if (rigLayer === undefined) throw new Error(`Unknown layer ${resolved.name}`);
+  return { ...resolved, size: rigLayer.size, image: imageFor(rigLayer.image) };
+});
+---
+
+<svg
+  class="kalman-figure"
+  viewBox={`0 0 ${width} ${height}`}
+  data-kalman-figure
+  data-pose={chosenPose.name}
+  data-mood={mood}
+  role={label === undefined ? undefined : 'img'}
+  aria-label={label}
+  aria-hidden={label === undefined ? 'true' : undefined}
+>
+  {layers.map((layer) => (
+    <g
+      data-layer={layer.name}
+      transform={toSvgTransform(layer.matrix)}
+      visibility={layer.visible ? 'visible' : 'hidden'}
+    >
+      <image href={layer.image.src} width={layer.size[0]} height={layer.size[1]} />
+    </g>
+  ))}
+  {pivotMarkers && (
+    <g class="pivots" data-pivots>
+      {layers.map((layer) => (
+        <circle
+          data-pivot={layer.name}
+          cx={layer.pivotOnArtboard[0]}
+          cy={layer.pivotOnArtboard[1]}
+          r="9"
+          visibility={layer.visible ? 'visible' : 'hidden'}
+        />
+      ))}
+    </g>
+  )}
+</svg>
+
+<style>
+  .kalman-figure {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .pivots {
+    display: none;
+  }
+
+  .kalman-figure[data-show-pivots] .pivots {
+    display: inline;
+  }
+
+  /* Pivot markers: a dot with a ring that stands out on both navy and cream. */
+  .pivots circle {
+    fill: #e0465a;
+    stroke: #ffffff;
+    stroke-width: 4;
+  }
+</style>

@@ -1,0 +1,32 @@
+[
+  { "name": "rest", "label": "Rest", "layers": {} },
+  {
+    "name": "bow",
+    "label": "Bow",
+    "layers": {
+      "body": { "offset": [0, 20] },
+      "head": { "offset": [0, 70] },
+      "flipperLeft": { "rotate": -6 },
+      "flipperRight": { "rotate": 6 },
+      "tie": { "offset": [0, 30] }
+    }
+  },
+  {
+    "name": "flippersUp",
+    "label": "Flippers up",
+    "layers": {
+      "flipperLeft": { "rotate": 140 },
+      "flipperRight": { "rotate": -140 }
+    }
+  },
+  {
+    "name": "headTiltLeft",
+    "label": "Head tilt left",
+    "layers": { "head": { "rotate": -15 } }
+  },
+  {
+    "name": "headTiltRight",
+    "label": "Head tilt right",
+    "layers": { "head": { "rotate": 15 } }
+  }
+]
