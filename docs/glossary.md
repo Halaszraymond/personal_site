@@ -102,3 +102,12 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 
 **Drawing order (z-order)**: which layer is drawn on top of which. Later-drawn layers cover earlier ones. Here it is set per layer (`order`), separately from parent and child, so a flipper that hangs from the body can still be drawn behind it.
 
+**Turntable**: turning a figure around to see it from every side, like a cake on a turning plate. Here it switches between drawn views (front, ¾, side, ¾ back, back) instead of rotating a 3D model.
+
+**Crossfade**: fading one image in while another is still showing, so a switch doesn't jump. On the turntable the next view fades in on top of the current one.
+
+**Mirroring**: flipping an image left to right. The side seen from the left is the side seen from the right, flipped, so four drawn views give eight angles.
+
+**Flood fill**: colouring every connected pixel of the same kind, starting from one point, like the paint-bucket tool. The cutting script uses it from the image's edges to find the white background, which leaves the (enclosed) white belly alone.
+
+**Alpha**: how solid a pixel is, from 0 (fully transparent) to 1 (fully solid). A PNG stores it as a fourth value next to red, green and blue.

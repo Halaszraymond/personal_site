@@ -96,8 +96,37 @@ flowchart LR
 - **`resolvePose()`** turns rig + pose + mood into one SVG transform matrix per layer. A child gets its own movement plus its parent's *movement from rest*, so the glasses follow the head and everything follows the body. The tie and the glasses are `accessory` layers: hidden in the goofy mood.
 - **Flat, not nested.** The SVG has one `<g>` per layer, sorted by `order`. Nested groups would let the browser combine the transforms, but in SVG a child is always drawn in front of its parent, and the far flipper must be able to sit behind the body.
 - **Validation.** `validateRig()` and `validatePose()` list every problem at once: unknown parents, loops, a shared drawing order, missing images, rotations outside a layer's range. `src/scene/kalman/repo-rig.ts` validates the repo's files when they are loaded (so the build fails on a bad edit), and `tests/unit/kalman-rig-data.test.ts` checks them in CI.
-- **Images.** `KalmanFigure.astro` looks every layer's image up in `src/assets/kalman/` with `import.meta.glob`, so Astro gives it a hashed file name; a missing file fails the build. They are placeholders for now (`src/assets/kalman/placeholder/`).
+- **Images.** `KalmanFigure.astro` looks every layer's image up in `src/assets/kalman/` with `import.meta.glob`, so Astro gives it a hashed file name; a missing file fails the build. They are cut from Raymond's design images by a script (see below), into `src/assets/kalman/front/`.
 - **Without JavaScript** the figure is already in the HTML, in the rest pose. The fallback stills later are this same component with another pose.
+- **Spinning:** all layers sit in one `<g data-spin>` group, which `spinMatrix()` turns around `figureCentre()` (the middle of the figure at rest). It is a view setting, not part of a pose.
+
+### Where the layers come from
+
+Raymond makes the images with Gemini (`docs/images/kalman-design/`, explained in [`kalman-layers.md`](kalman-layers.md)); `npm run cut:kalman` (`scripts/cut-kalman-layers.ts`) cuts them:
+
+```mermaid
+flowchart LR
+    G[front-goofy.png] --> C
+    P[front-professional.png<br/>an edit of the goofy one] --> C
+    V["view-*.png<br/>4 views × 2 moods"] --> C
+    C["cut-kalman-layers.ts<br/>logic: scripts/lib/kalman-cut.ts"] --> L["src/assets/kalman/front/<br/>9 layers + front views"]
+    C --> W["src/assets/kalman/views/<br/>turntable views"]
+    C --> R[rig.json]
+    C --> T[turntable.json]
+```
+
+- **Background:** a flood fill from the edges through near-white pixels; the outline gets a soft edge from how far a pixel is from white.
+- **Tie and glasses:** the professional front view is an edit of the goofy one, so they line up pixel for pixel; where they differ (within the area of the tie and of the glasses) is the tie and glasses layers. The script refuses images of different sizes.
+- **The parts:** the flippers are cut at the gap Gemini drew between flipper and body, found row by row; above it along the shoulder. Body and flipper share no pixel below the gap (a shared column would show as a line when the flipper turns), and above it the flipper reaches 2 px under the body to hide the seam. The head fades into the neck.
+- **Reproducible:** the same images always give the same files. The cut lines are in one settings object at the top of the script; all decisions are tested functions in `scripts/lib/kalman-cut.ts`. It uses `sharp` (the image library Astro already uses, declared as a devDependency).
+
+### Turning around: the turntable
+
+`turntable.json` lists views by angle: the front (0°), four drawn views (¾ front 45°, side 90°, ¾ back 135°, back 180°) and three mirrored ones (225°, 270°, 315°), which borrow a drawn view's image flipped (`mirrorOf`). The script matches every view's plumage tone, ground line and body centre to the front view.
+
+- `turntableFrame()` (`src/lib/kalman-turntable.ts`) decides what shows at an angle: exactly the drawing at a view's own angle; in between, the current view narrows and, over a short band halfway, the next one fades in **on top** while the outgoing one stays solid, so the background never shows through.
+- `applyTurn()` shows the posable layers only at exactly 0° and the views at any other angle. Whole groups are hidden with `display`, not `visibility`: an SVG child that says `visibility="visible"` would still show inside a hidden group.
+- The preview's control is a "Turn around" slider plus dragging sideways on the figure; it is left out while `turntable.json` has only one view.
 
 ## The dev-only Kálmán preview
 
@@ -118,7 +147,7 @@ Only exactly `PLAYGROUND=1` switches it on, so a typo never leaks it.
 
 **The proof:** `npm run check:production` (after `npm run build`) fails if `dist/` has a `playground` folder or any HTML or JavaScript containing the preview's marker `kalman-preview`. The search is a pure function in `scripts/lib/production-check.ts`. Kálmán's figure and rig code are not preview code (the hero will use them), so the check doesn't look for them.
 
-**The page:** pose buttons (`aria-pressed`), a switch for the professional mood, a switch for the pivot markers, one slider per layer (limited to its `rotate` range), and **Copy pose**. All controls are plain HTML, built from `rig.json` and `poses.json` at build time (`PreviewControls.astro`). The browser script `preview-client.ts` keeps the state; the logic of "named pose + slider changes = custom pose" is a pure function in `src/lib/preview-pose.ts`. If the clipboard is refused, the JSON is still in a text box to copy by hand. English only (`src/i18n/preview.ts`) while it is dev-only, `noindex`, and no public page links to it.
+**The page:** pose buttons (`aria-pressed`), a switch for the professional mood, a switch for the pivot markers, the turn-around and spin sliders, one slider per layer (limited to its `rotate` range), and **Copy pose**. All controls are plain HTML, built from `rig.json` and `poses.json` at build time (`PreviewControls.astro`). The browser script `preview-client.ts` keeps the state; the logic of "named pose + slider changes = custom pose" is a pure function in `src/lib/preview-pose.ts`. If the clipboard is refused, the JSON is still in a text box to copy by hand. English only (`src/i18n/preview.ts`) while it is dev-only, `noindex`, and no public page links to it.
 
 **Cloudflare setup:** Pages project → Settings → Variables and Secrets → `PLAYGROUND` = `1`, for the **Preview** environment only. If it is ever missing, `/playground/` simply 404s on previews; nothing leaks.
 
@@ -132,6 +161,7 @@ Run them with `npm run <name>` (`npm test` works without `run`). They are define
 | `build` | Builds the production site into `dist/` (without the preview). |
 | `build:playground` | Builds the site including the dev-only preview (`PLAYGROUND=1`). |
 | `check:production` | After `build`: fails if the preview ended up in `dist/`. |
+| `cut:kalman` | Cuts Kálmán's layers and turntable views from the images in `docs/images/kalman-design/` and writes `rig.json` and `turntable.json` (see `docs/kalman-layers.md`). |
 | `preview` | Serves the built `dist/` locally, the way Cloudflare would. |
 | `lint` | ESLint (likely bugs) plus a Prettier check (formatting). Changes nothing. |
 | `format` | Fixes formatting with Prettier and fixable lint problems with ESLint. |
@@ -148,8 +178,8 @@ On every commit, a **pre-commit hook** runs ESLint and Prettier on the files you
 
 | Layer | Tool | Where | What it covers |
 |---|---|---|---|
-| Unit | Vitest | `tests/unit/` | Pure logic: language hint, render mode, alternates, budgets and the chunk graph, the `_headers` parser, the preview flag and production check, Kálmán's rig maths and validation, the preview's pose logic, and the repo's `rig.json` and `poses.json`. |
-| End-to-end | Playwright | `tests/e2e/*.spec.ts` | The built site in four browsers: desktop and mobile Chromium, mobile WebKit (iPhone), desktop Firefox. Routing, switcher, hint, 404, render mode, and the Kálmán preview (poses, sliders, mood, pivots, Copy pose, no JavaScript, 360 px). |
+| Unit | Vitest | `tests/unit/` | Pure logic: language hint, render mode, alternates, budgets and the chunk graph, the `_headers` parser, the preview flag and production check, Kálmán's rig maths and validation, the cutting logic, the turntable maths and validation, the preview's pose logic, and the repo's `rig.json`, `poses.json` and `turntable.json`. |
+| End-to-end | Playwright | `tests/e2e/*.spec.ts` | The built site in four browsers: desktop and mobile Chromium, mobile WebKit (iPhone), desktop Firefox. Routing, switcher, hint, 404, render mode, and the Kálmán preview (poses, sliders, mood, pivots, spin, turning around, Copy pose, no JavaScript, 360 px). |
 | Accessibility | axe in Playwright | `tests/e2e/quality.spec.ts` | Every page in every language, and the preview: zero WCAG 2.2 AA violations, no console errors. |
 | Visual regression | Playwright screenshots | `tests/e2e/visual.spec.ts` | `/`, `/nl/`, `/hu/`, `/en/` at 375 and 1280 px, plus two of Kálmán's poses in the preview (rest goofy, bow professional), compared with baselines in `tests/e2e/__screenshots__/`. **CI only** (see below). |
 | Performance & co | Lighthouse | `scripts/run-lighthouse.ts` | ≥ 90 (median of 5 runs) for performance, accessibility, best practices and SEO. The gate logic is unit-tested in `scripts/lib/lighthouse-scores.ts`. |

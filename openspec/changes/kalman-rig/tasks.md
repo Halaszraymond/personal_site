@@ -55,7 +55,7 @@ The work for this group started on the local branch `experiment/sheet-layers`; e
 - [x] 7.5 Bring the spin (`figureCentre`, `spinMatrix`, `applySpin`, the spin slider) and the turntable (`src/lib/kalman-turntable.ts`, `applyTurn`, the turn control, dragging) up to the specs, including mirrored views and the control left out with one view; verify the unit tests and the preview e2e tests pass
 - [x] 7.6 Rewrite `docs/kalman-layers.md` as the image guide for the final design (design §5b), with the Gemini prompts for the front views and the turntable views; verify every image the script reads or the turntable can use is covered
 - [x] 7.7 Put the turntable views in as Raymond delivers them (¾ front, side, ¾ back, back, each with its professional edit), mirrored for the other side; verify each view validates and turning through all angles looks right in the preview. Can be ticked with only the views delivered so far, if Raymond agrees
-- [ ] 7.8 Update `docs/architecture.md` (cutting, spin, turntable), `docs/glossary.md` (turntable, crossfade, flood fill), `src/scene/README.md` and `docs/making-of.md` (the switch to Raymond's own images, the final design, what went wrong at the joints); verify they match the code
+- [x] 7.8 Update `docs/architecture.md` (cutting, spin, turntable), `docs/glossary.md` (turntable, crossfade, flood fill), `src/scene/README.md` and `docs/making-of.md` (the switch to Raymond's own images, the final design, what went wrong at the joints); verify they match the code
 - [ ] 7.9 Make the pose snapshots again for the final design with "Update visual baselines" and check the images; verify the `visual` project passes in CI
 
 ## Workflow follow-up
