@@ -15,8 +15,8 @@
     "name": "flippersUp",
     "label": "Flippers up",
     "layers": {
-      "flipperLeft": { "rotate": 140 },
-      "flipperRight": { "rotate": -140 }
+      "flipperLeft": { "rotate": 120 },
+      "flipperRight": { "rotate": -120 }
     }
   },
   {

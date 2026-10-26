@@ -10,4 +10,34 @@ export const PREVIEW_EN = {
   heading: 'Kálmán preview',
   intro:
     'Dev-only page: try Kálmán’s poses and moods. The layers are placeholders until the real illustrations arrive.',
+  posesLegend: 'Pose',
+  displayLegend: 'Show',
+  professional: 'Professional (tie and glasses)',
+  showPivots: 'Show pivots',
+  rotationsLegend: 'Rotation per layer (degrees)',
+  copyPose: 'Copy pose',
+  poseJsonLabel: 'Pose JSON (paste into src/scene/kalman/poses.json)',
+  copied: 'Copied the pose to the clipboard.',
+  copyFailed: 'The clipboard is not available here: select and copy the text below.',
+  moodGoofy: 'goofy',
+  moodProfessional: 'professional',
+  /** The sliders' labels, per rig layer. */
+  layers: {
+    body: 'Body',
+    head: 'Head',
+    flipperLeft: 'Left flipper',
+    flipperRight: 'Right flipper',
+    footLeft: 'Left foot',
+    footRight: 'Right foot',
+    tail: 'Tail',
+    tie: 'Tie',
+    glasses: 'Glasses',
+  },
 } as const;
+
+/** A layer's label for the sliders; the layer's own name if it has none (a new layer). */
+export function layerLabel(name: string): string {
+  // `Object.entries` gives [key, value] pairs, like `dict.items()` in Python.
+  const found = Object.entries(PREVIEW_EN.layers).find(([key]) => key === name);
+  return found === undefined ? name : found[1];
+}

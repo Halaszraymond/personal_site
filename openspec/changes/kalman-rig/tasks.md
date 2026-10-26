@@ -32,10 +32,10 @@
 
 ## 5. The preview page
 
-- [ ] 5.1 Build `PreviewControls.astro` from `rig.json` and `poses.json` (pose buttons, mood switch, pivot switch, one slider per layer with an `<output>`); verify there is exactly one slider per layer with the layer's range
-- [ ] 5.2 Write `preview-client.ts`: pose buttons with `aria-pressed`, sliders that rotate layers and follow named poses, mood switch, pivot markers, and the figure's `aria-label`; add e2e tests for each of these; verify they pass
-- [ ] 5.3 Add "Copy pose" (clipboard, visible JSON, status line) with e2e tests for the clipboard (Chromium) and the refused-clipboard case; verify they pass and that copied JSON passes `validatePose()`
-- [ ] 5.4 Lay out the preview mobile-first; add e2e tests for 360 px without horizontal scroll, axe and no console errors; verify they pass
+- [x] 5.1 Build `PreviewControls.astro` from `rig.json` and `poses.json` (pose buttons, mood switch, pivot switch, one slider per layer with an `<output>`); verify there is exactly one slider per layer with the layer's range
+- [x] 5.2 Write `preview-client.ts`: pose buttons with `aria-pressed`, sliders that rotate layers and follow named poses, mood switch, pivot markers, and the figure's `aria-label`; add e2e tests for each of these; verify they pass
+- [x] 5.3 Add "Copy pose" (clipboard, visible JSON, status line) with e2e tests for the clipboard (Chromium) and the refused-clipboard case; verify they pass and that copied JSON passes `validatePose()`
+- [x] 5.4 Lay out the preview mobile-first; add e2e tests for 360 px without horizontal scroll, axe and no console errors; verify they pass
 - [ ] 5.5 Add the two pose snapshots (rest goofy, bow professional) to `tests/e2e/visual.spec.ts` and run "Update visual baselines" on the branch; verify the new images look right and the `visual` project passes
 
 ## 6. Docs and wrap-up

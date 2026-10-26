@@ -86,7 +86,7 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 
 **Layer**: one of those pieces: one image with a transparent background.
 
-**Artboard**: the drawing area all layers are placed on, 1000 × 1400 units here. Positions are measured on it from the top-left corner, with y pointing *down* (the SVG convention, the opposite of a maths graph).
+**Artboard**: the drawing area all layers are placed on, 1600 × 1500 units here. Positions are measured on it from the top-left corner, with y pointing *down* (the SVG convention, the opposite of a maths graph).
 
 **SVG**: a picture format made of shapes and text instead of pixels, which the browser draws at any size. Kálmán's figure is one SVG in the page's HTML, holding one image per layer.
 

@@ -6,7 +6,7 @@ Only the **front view** for now: every pose in this change is a front-view pose.
 
 ## How the rig uses an image
 
-The rig (`src/scene/kalman/rig.json`) places each image on the **artboard**, a drawing area of **1000 × 1400** units with the origin at the top left. For every layer it gives:
+The rig (`src/scene/kalman/rig.json`) places each image on the **artboard**, a drawing area of **1600 × 1500** units with the origin at the top left. For every layer it gives:
 
 | Field | Meaning |
 |---|---|

@@ -1,0 +1,137 @@
+---
+/**
+ * The preview's controls, built at build time from rig.json and poses.json, so there is always
+ * exactly one pose button per named pose and one slider per layer (spec: kalman-preview).
+ *
+ * All plain HTML: buttons, checkboxes shown as switches and range sliders. Keyboard support,
+ * labels and screen-reader output come from the browser. preview-client.ts connects them to
+ * the figure.
+ */
+import { layerLabel, PREVIEW_EN as TEXT } from '../i18n/preview';
+import { REPO_POSES, REPO_RIG } from '../scene/kalman/repo-rig';
+---
+
+<div class="controls">
+  <fieldset>
+    <legend>{TEXT.posesLegend}</legend>
+    <div class="pose-buttons">
+      {REPO_POSES.map((pose) => (
+        <button
+          type="button"
+          data-pose-button={pose.name}
+          aria-pressed={pose.name === 'rest' ? 'true' : 'false'}
+        >
+          {pose.label}
+        </button>
+      ))}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{TEXT.displayLegend}</legend>
+    <label class="switch">
+      <input type="checkbox" role="switch" data-mood-switch />
+      {TEXT.professional}
+    </label>
+    <label class="switch">
+      <input type="checkbox" role="switch" data-pivots-switch />
+      {TEXT.showPivots}
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>{TEXT.rotationsLegend}</legend>
+    {
+      /* In the rig's own order (body, head, flippers, ...), which reads better than drawing order. */
+      REPO_RIG.layers.map((layer) => (
+        <div class="slider">
+          <label for={`rotate-${layer.name}`}>{layerLabel(layer.name)}</label>
+          <input
+            type="range"
+            id={`rotate-${layer.name}`}
+            data-rotation={layer.name}
+            min={layer.rotate[0]}
+            max={layer.rotate[1]}
+            step="1"
+            value="0"
+          />
+          <output for={`rotate-${layer.name}`} data-rotation-value={layer.name}>
+            0°
+          </output>
+        </div>
+      ))
+    }
+  </fieldset>
+</div>
+
+<style>
+  .controls {
+    display: grid;
+    gap: 1rem;
+  }
+
+  fieldset {
+    border: 1px solid #c4c9d4;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem 1rem;
+    /* Fieldsets refuse to shrink below their content by default, which breaks narrow phones. */
+    min-width: 0;
+  }
+
+  legend {
+    font-weight: 600;
+    padding: 0 0.25rem;
+  }
+
+  .pose-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  button {
+    font: inherit;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid #1f2a44;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #1f2a44;
+    cursor: pointer;
+  }
+
+  button[aria-pressed='true'] {
+    background: #1f2a44;
+    color: #ffffff;
+  }
+
+  .switch {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+  }
+
+  .switch input {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .slider {
+    display: grid;
+    grid-template-columns: 7rem minmax(0, 1fr) 3.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+  }
+
+  .slider input {
+    width: 100%;
+    min-width: 0;
+  }
+
+  output {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+</style>
