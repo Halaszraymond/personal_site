@@ -1,14 +1,14 @@
 ---
 /**
- * The scene slot and the switch between the static fallback and full (3D) mode.
+ * The scene slot and the switch between the static fallback and full (animated) mode.
  *
  * Every page is built in fallback mode (`data-render-mode="fallback"` on <html>, set in
- * BaseLayout). The script below collects three browser signals, asks
+ * BaseLayout). The script below collects two browser signals, asks
  * `chooseRenderMode()` (src/lib/render-mode.ts) and switches to `full` only if all checks
  * pass. So no JavaScript, a script error or a slow load all leave a working page.
  *
- * The scene slot is where Kálmán's 3D scene will be drawn (Phase 1). It is decorative only,
- * so it is hidden from screen readers; all content stays in the HTML around it.
+ * The scene slot is where Kálmán's animated scene will be drawn (Phase 2). It is decorative
+ * only, so it is hidden from screen readers; all content stays in the HTML around it.
  */
 ---
 
@@ -16,22 +16,6 @@
 
 <script>
   import { chooseRenderMode } from '../lib/render-mode';
-
-  /** Can this browser create a WebGL2 context? Some browsers throw instead of returning null. */
-  function detectWebGL2(): boolean {
-    try {
-      const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl2');
-      if (gl === null) {
-        return false;
-      }
-      // Release the test context right away: browsers allow only a few at a time.
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
-      return true;
-    } catch {
-      return false;
-    }
-  }
 
   /** Has the visitor asked to save data? */
   function detectSaveData(): boolean {
@@ -43,7 +27,6 @@
 
   const mode = chooseRenderMode({
     prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-    hasWebGL2: detectWebGL2(),
     saveData: detectSaveData(),
   });
 
@@ -52,7 +35,7 @@
 </script>
 
 <style>
-  /* In fallback mode the slot takes no space; the 3D scene only appears in full mode. */
+  /* In fallback mode the slot takes no space; the animated scene only appears in full mode. */
   :global(html[data-render-mode='fallback']) .scene-slot {
     display: none;
   }
