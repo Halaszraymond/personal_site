@@ -40,8 +40,8 @@
 
 ## 6. Docs and wrap-up
 
-- [ ] 6.1 Update `docs/architecture.md` (rig data → `resolvePose()` → SVG, the dev-only route, the CI order); verify it matches the code
-- [ ] 6.2 Record this session in `docs/making-of.md` with a screenshot of the preview, tick the relevant part of Phase 1 in README §7, and add the decisions to `PLANNING_LOG.md`; verify the files are updated
+- [x] 6.1 Update `docs/architecture.md` (rig data → `resolvePose()` → SVG, the dev-only route, the CI order); verify it matches the code
+- [x] 6.2 Record this session in `docs/making-of.md` with a screenshot of the preview, tick the relevant part of Phase 1 in README §7, and add the decisions to `PLANNING_LOG.md`; verify the files are updated
 - [ ] 6.3 Run `npm run check` locally and check the preview on the Cloudflare branch preview (and that `/playground/` is a 404 on production); verify everything is green and Raymond has looked at the preview
 
 ## Workflow follow-up

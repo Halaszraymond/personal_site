@@ -111,3 +111,28 @@ Three options were on the table: an AI image-to-3D model, a 3D artist, or **Kál
 
 - **Decide the look with the right tool.** Sliders are good for tuning; they are a poor way to *design* a character. An image generator got to Raymond's Kálmán in minutes.
 - **A good process makes a change of direction cheap.** The 3D work stays on its branch, the general improvements (per-page budgets, the production-build check, the dev-only route) move on, and the README, planning log and specs record why.
+
+---
+
+## 2026-10-26 · Kálmán's rig: a paper puppet in code
+
+### The plan
+
+The illustrations don't exist yet, but everything that moves them can be built now. So the first 2D change (`kalman-rig`) builds the *rig* with placeholder shapes, and the real art drops in later as data. The animations follow in a separate change, so the rig can be judged first. Raymond chose that order.
+
+![The Kálmán preview: flippers up, professional, with the pivots shown](images/phase-1/kalman-preview-2d.png)
+
+### How it works
+
+- **The rig is data.** `rig.json` lists the nine layers (body, head, two flippers, two feet, tail, tie, glasses): which image, where it sits on the artboard, where it turns, which layer it hangs from, the drawing order and how far it may turn. `poses.json` holds the named poses as "turn this, shift that" from rest.
+- **One function does the maths.** `resolvePose()` turns rig + pose into one transform matrix per layer. A child moves with its parent's movement from rest, so the glasses follow the head and everything follows the body.
+- **Flat SVG instead of nested groups.** Letting the browser nest the layers would have been less code, but in SVG a child is always drawn in front of its parent, and the far flipper must be able to sit behind the body.
+- **He is in the HTML.** The figure is drawn at build time, so he shows without JavaScript, and the fallback stills later are the same component in another pose.
+- **The preview** at `/playground/` has a button per pose, a mood switch for the tie and glasses, pivot markers, a slider per layer and **Copy pose**. It loads 4.4 KB of JavaScript.
+- **A layer guide with prompts** (`docs/kalman-layers.md`) lists the nine images to make, the rules that make them fit, and a prompt per layer for the image generator.
+
+### What went wrong, and what it taught us
+
+- **The raised flippers stuck out of the picture.** Kálmán's flippers are long (as on the sheet), and the first artboard was cut to his standing silhouette. A screenshot showed it straight away; the artboard became wider and the "flippers up" pose a little lower. Lesson: size the drawing area for the widest pose, not for the rest pose.
+- **A front-view bow is subtle.** From the front, bowing mostly means the head and body dropping a little. The real bow will probably use the side view, in the animations change.
+- **Small tooling surprises:** an `<output>` element counts as a status message for screen readers (and for the tests); SVG has no reliable `hidden` attribute; Node needs an extra attribute to import JSON; and Astro allows only one preview server per project.

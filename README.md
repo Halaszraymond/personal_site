@@ -2,7 +2,7 @@
 
 The new version of halaszraymond.com: an employer-facing portfolio with real wow factor, built around one original character, **a fishing emperor penguin, illustrated and animated in 2D**.
 
-> Status: Phase 0 (setup) is done; Phase 1 (Keizer Kálmán, in 2D) is being planned. This document is the source of truth. If a decision changes, update this file first.
+> Status: Phase 0 (setup) is done; Phase 1 (Keizer Kálmán, in 2D) is in progress: the rig and the dev-only preview are built, the illustrations and animations are next. This document is the source of truth. If a decision changes, update this file first.
 
 ---
 
@@ -270,6 +270,9 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 
   **Rule from Phase 1 on:** every new feature ships in all three languages (placeholder text is fine) and with its fallback. Nothing gets "added later in polish".
 - [ ] **Phase 1: Keizer Kálmán (2D).** Final illustrations as cut-out layers, made from the design sheet → the rig (where each layer sits and pivots) → the animations (idle, dive, swim, bow, head-follow, launch) → the dev-only animation preview. Drop Three.js and the WebGL check.
+  - [x] The rig, the named poses and the dev-only preview with placeholder layers; the WebGL check dropped (change `kalman-rig`). The layer list with prompts is in [`docs/kalman-layers.md`](docs/kalman-layers.md).
+  - [ ] The final illustrations from the design sheet, put into the rig.
+  - [ ] The animations, with GSAP.
 - [ ] **Phase 2: the dive.** All sections with depth gauge, colour gradient, fish school, and fish turning into charts. Placeholder text first.
 - [ ] **Phase 3: content.** Real texts in NL/HU/EN, the 3 case studies, the "more catch" cards and a CV download. **Then go live** (§6): content complete, CI green, fallback working.
 - [ ] **Phase 4: polish, on the live site.** Tuning and verifying, not building: performance, accessibility audit, mobile testing on real devices, SEO and Open Graph, and a review of the translations.

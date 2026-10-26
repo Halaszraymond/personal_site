@@ -14,12 +14,14 @@ The site is **static**: `npm run build` turns everything in `src/` into plain HT
 | `src/components/` | Reusable pieces of UI (Astro components), such as the language switcher. |
 | `src/content/` | Texts, projects and translations as Markdown/JSON. Changing content never means changing code. Empty until Phase 3. |
 | `src/i18n/` | Everything about languages: the list of languages and the UI strings per language. |
-| `src/lib/` | **Pure logic**: functions that take values and return values, with no browser or 3D code. This is what the unit tests test. |
-| `src/scene/` | Everything 3D (Three.js). Empty until Phase 1. |
+| `src/lib/` | **Pure logic**: functions that take values and return values, with no browser or drawing code. This is what the unit tests test. |
+| `src/scene/` | Everything animated, in 2D. For now Kálmán's figure: his rig, poses and SVG component (`src/scene/kalman/`). |
+| `src/assets/` | Images that go through Astro's build (hashed file names). For now Kálmán's layers, `src/assets/kalman/`. |
+| `src/playground/` | The dev-only Kálmán preview at `/playground/` (see below). Not in `src/pages/`, so it is only added when the flag says so. |
 | `scripts/` | Small Node scripts for the build and CI, such as the bundle-size check. Pure logic for them goes in `scripts/lib/`. |
 | `tests/unit/` | Vitest unit tests for `src/lib/` and `scripts/lib/`. |
 | `tests/e2e/` | Playwright end-to-end tests: the built site in real browsers. |
-| `docs/` | This file, the glossary and the making-of (the build log). |
+| `docs/` | This file, the glossary, the making-of (the build log) and Kálmán's layer guide (`kalman-layers.md`). |
 | `openspec/` | Agreed specs and proposed changes (README §5.4). |
 
 Config files in the root: `astro.config.ts` (how the site is built), `tsconfig.json` (TypeScript settings), `eslint.config.js` and `.prettierrc.json` (code checks and formatting), `vitest.config.ts` (unit tests), `.nvmrc` (Node version) and `.gitattributes` (line endings).
@@ -41,7 +43,7 @@ Every page has:
 - **hreflang** alternates to all three languages, plus `x-default` → `/` (built by `src/lib/alternates.ts`);
 - the **language switcher** (`src/components/LanguageSwitcher.astro`): plain links, so it works without JavaScript.
 
-The 404 page has no canonical or alternates and says `noindex`, so it stays out of search results.
+The 404 page has no canonical or alternates and says `noindex`, so it stays out of search results. The same goes for the dev-only preview, which also has no language switcher.
 
 **Texts:** `src/i18n/ui.ts` holds every interface text per language. Its type, `Record<Locale, UiStrings>`, makes the build fail when a language misses a text.
 
@@ -56,23 +58,69 @@ Dismissing the hint stores English, so it doesn't come back.
 
 ## Full mode or fallback
 
-Every visitor gets either the **full** experience (the 3D scene, from Phase 1) or the static **fallback**. The rule from README §5.2: never a broken or empty page. So the fallback is the starting point, and full mode has to be earned.
+Every visitor gets either the **full** experience (the animated scene, from Phase 2) or the static **fallback**. The rule from README §5.2: never a broken or empty page. So the fallback is the starting point, and full mode has to be earned.
 
 ```mermaid
 flowchart TD
     A[Cloudflare Pages serves the static HTML] --> B["html data-render-mode = fallback<br/>all content already readable"]
     B --> C{JavaScript runs?}
     C -- no --> F[Stays in fallback]
-    C -- yes --> D["RenderModeSwitch collects 3 signals:<br/>reduced motion · WebGL2 · Save-Data"]
+    C -- yes --> D["RenderModeSwitch collects 2 signals:<br/>reduced motion · Save-Data"]
     D --> E{"chooseRenderMode()<br/>src/lib/render-mode.ts"}
     E -- any check fails --> F
-    E -- all checks pass --> G["data-render-mode = full<br/>scene slot shown, empty until Phase 1"]
+    E -- all checks pass --> G["data-render-mode = full<br/>scene slot shown, empty until Phase 2"]
 ```
 
-- **The decision** is a pure function, `chooseRenderMode()` in `src/lib/render-mode.ts`, unit-tested for all 8 combinations of the three signals.
-- **The browser glue** is `src/components/RenderModeSwitch.astro`: it reads `prefers-reduced-motion`, tries to create a WebGL2 context (and releases it immediately), reads `navigator.connection.saveData` (Chromium only; missing means "no"), and writes the result to `data-render-mode` on `<html>`.
+- **The decision** is a pure function, `chooseRenderMode()` in `src/lib/render-mode.ts`, unit-tested for all 4 combinations of the two signals.
+- **The browser glue** is `src/components/RenderModeSwitch.astro`: it reads `prefers-reduced-motion` and `navigator.connection.saveData` (Chromium only; missing means "no"), and writes the result to `data-render-mode` on `<html>`.
+- **No WebGL check.** The site is 2D (images, SVG and canvas 2D), so a browser without WebGL can run the full mode. That check was removed in Phase 1.
 - **The scene slot** is an empty `<div aria-hidden="true">`: decorative only, hidden in fallback mode. All text and links live in the HTML around it, identical in both modes. The e2e tests compare the two.
-- **Still to come in Phase 1:** step 3 of README §5.2 (measuring frame time once the scene runs) and the "lite mode" switch in the footer.
+- **Still to come:** step 3 of README §5.2 (measuring frame time once the animated scene runs) and the "lite mode" switch in the footer.
+
+## Kálmán: rig, poses and figure
+
+Kálmán is a **cut-out figure**: nine flat images (layers) moved like a paper puppet. Where they sit and how they move is data, not code; the maths is pure functions; the browser only applies the result.
+
+```mermaid
+flowchart LR
+    A["rig.json<br/>layers: image, size, position,<br/>pivot, parent, order, rotate"] --> C
+    B["poses.json<br/>per layer: rotate, offset"] --> C
+    C["resolvePose(rig, pose, mood)<br/>src/lib/kalman-rig.ts"] --> D["one matrix per layer,<br/>sorted by drawing order"]
+    D --> E["KalmanFigure.astro<br/>SVG in the HTML (build time)"]
+    D --> F["applyPose()<br/>kalman-figure-client.ts (browser)"]
+    F -->|rewrites transform and visibility| E
+```
+
+- **The rig** (`src/scene/kalman/rig.json`) places every layer on a 1600 × 1500 **artboard**. Positions are absolute artboard coordinates, so they can be read off the design sheet; pivots are in the image's own coordinates. `docs/kalman-layers.md` explains every field.
+- **Poses** (`src/scene/kalman/poses.json`) only store differences from rest: rotation around the pivot and an offset. Layers a pose doesn't mention stay at rest.
+- **`resolvePose()`** turns rig + pose + mood into one SVG transform matrix per layer. A child gets its own movement plus its parent's *movement from rest*, so the glasses follow the head and everything follows the body. The tie and the glasses are `accessory` layers: hidden in the goofy mood.
+- **Flat, not nested.** The SVG has one `<g>` per layer, sorted by `order`. Nested groups would let the browser combine the transforms, but in SVG a child is always drawn in front of its parent, and the far flipper must be able to sit behind the body.
+- **Validation.** `validateRig()` and `validatePose()` list every problem at once: unknown parents, loops, a shared drawing order, missing images, rotations outside a layer's range. `src/scene/kalman/repo-rig.ts` validates the repo's files when they are loaded (so the build fails on a bad edit), and `tests/unit/kalman-rig-data.test.ts` checks them in CI.
+- **Images.** `KalmanFigure.astro` looks every layer's image up in `src/assets/kalman/` with `import.meta.glob`, so Astro gives it a hashed file name; a missing file fails the build. They are placeholders for now (`src/assets/kalman/placeholder/`).
+- **Without JavaScript** the figure is already in the HTML, in the rest pose. The fallback stills later are this same component with another pose.
+
+## The dev-only Kálmán preview
+
+`/playground/` is where Raymond looks at Kálmán's poses, tries new ones with a slider per layer, and copies a pose as JSON for `poses.json`. While it is dev-only, it must never reach production, but it must work on his laptop, in CI and on Cloudflare branch previews (so he can use it on his phone).
+
+**How:** the page lives in `src/playground/PreviewPage.astro`, not in `src/pages/`. A small integration in `astro.config.ts` adds it as a route only when `shouldIncludePlayground()` (`src/lib/playground-flag.ts`) says so:
+
+| Where | Command | Preview? |
+|---|---|---|
+| Your laptop | `npm run dev` | yes, always |
+| Your laptop | `npm run build` | no |
+| Your laptop | `npm run build:playground` | yes (sets `PLAYGROUND=1` from `.env.playground`) |
+| CI | production build, then playground build | first no (checked), then yes (tested) |
+| Cloudflare branch previews | `npm run build` with the **Preview** variable `PLAYGROUND=1` | yes |
+| Cloudflare production (`main`) | `npm run build`, no variable | no |
+
+Only exactly `PLAYGROUND=1` switches it on, so a typo never leaks it.
+
+**The proof:** `npm run check:production` (after `npm run build`) fails if `dist/` has a `playground` folder or any HTML or JavaScript containing the preview's marker `kalman-preview`. The search is a pure function in `scripts/lib/production-check.ts`. Kálmán's figure and rig code are not preview code (the hero will use them), so the check doesn't look for them.
+
+**The page:** pose buttons (`aria-pressed`), a switch for the professional mood, a switch for the pivot markers, one slider per layer (limited to its `rotate` range), and **Copy pose**. All controls are plain HTML, built from `rig.json` and `poses.json` at build time (`PreviewControls.astro`). The browser script `preview-client.ts` keeps the state; the logic of "named pose + slider changes = custom pose" is a pure function in `src/lib/preview-pose.ts`. If the clipboard is refused, the JSON is still in a text box to copy by hand. English only (`src/i18n/preview.ts`) while it is dev-only, `noindex`, and no public page links to it.
+
+**Cloudflare setup:** Pages project → Settings → Variables and Secrets → `PLAYGROUND` = `1`, for the **Preview** environment only. If it is ever missing, `/playground/` simply 404s on previews; nothing leaks.
 
 ## npm scripts
 
@@ -81,17 +129,18 @@ Run them with `npm run <name>` (`npm test` works without `run`). They are define
 | Script | What it does |
 |---|---|
 | `dev` | Starts the development server with live reload at <http://localhost:4321>. |
-| `build` | Builds the site into `dist/`. |
+| `build` | Builds the production site into `dist/` (without the preview). |
+| `build:playground` | Builds the site including the dev-only preview (`PLAYGROUND=1`). |
+| `check:production` | After `build`: fails if the preview ended up in `dist/`. |
 | `preview` | Serves the built `dist/` locally, the way Cloudflare would. |
 | `lint` | ESLint (likely bugs) plus a Prettier check (formatting). Changes nothing. |
 | `format` | Fixes formatting with Prettier and fixable lint problems with ESLint. |
 | `typecheck` | `astro check`: the TypeScript type checker for `.ts` and `.astro` files (like mypy). |
 | `test` | Runs the Vitest unit tests once. |
-| `e2e` | Runs the Playwright tests against the built site. Run `npm run build` first. |
-
-| `size` | Checks the gzipped JavaScript in `dist/` against the 50 KB budget. Run `npm run build` first. |
+| `e2e` | Runs the Playwright tests against the built site. Run `npm run build:playground` first (the preview tests need it). |
+| `size` | Checks the JavaScript each page loads (its scripts plus everything they import), gzipped, against that page's budget: 50 KB for every page for now. Run a build first. |
 | `lighthouse` | Runs Lighthouse 5 times on `/`, `/nl/`, `/hu/` and `/en/` (mobile) and fails when the median is below 90 in any category. Reports land in `.lighthouse/`. Run `npm run build` first. |
-| `check` | The whole chain in CI order: `lint` → `typecheck` → `test` → `build` → `size` → `e2e` → `lighthouse`. Green here means green in CI. |
+| `check` | The whole chain in CI order: `lint` → `typecheck` → `test` → `build` → `check:production` → `build:playground` → `size` → `e2e` → `lighthouse`. Green here means green in CI. |
 
 On every commit, a **pre-commit hook** runs ESLint and Prettier on the files you are committing (`lint-staged`). A commit with a lint error is blocked. The full checks (type check, tests, build) run in CI.
 
@@ -99,12 +148,13 @@ On every commit, a **pre-commit hook** runs ESLint and Prettier on the files you
 
 | Layer | Tool | Where | What it covers |
 |---|---|---|---|
-| Unit | Vitest | `tests/unit/` | Pure logic: language hint, render mode, alternates, bundle budget, the `_headers` parser. |
-| End-to-end | Playwright | `tests/e2e/*.spec.ts` | The built site in four browsers: desktop and mobile Chromium, mobile WebKit (iPhone), desktop Firefox. Routing, switcher, hint, 404, render mode. |
-| Accessibility | axe in Playwright | `tests/e2e/quality.spec.ts` | Every page in every language: zero WCAG 2.2 AA violations, no console errors. |
-| Visual regression | Playwright screenshots | `tests/e2e/visual.spec.ts` | `/`, `/nl/`, `/hu/`, `/en/` at 375 and 1280 px, compared with baselines in `tests/e2e/__screenshots__/`. **CI only** (see below). |
+| Unit | Vitest | `tests/unit/` | Pure logic: language hint, render mode, alternates, budgets and the chunk graph, the `_headers` parser, the preview flag and production check, Kálmán's rig maths and validation, the preview's pose logic, and the repo's `rig.json` and `poses.json`. |
+| End-to-end | Playwright | `tests/e2e/*.spec.ts` | The built site in four browsers: desktop and mobile Chromium, mobile WebKit (iPhone), desktop Firefox. Routing, switcher, hint, 404, render mode, and the Kálmán preview (poses, sliders, mood, pivots, Copy pose, no JavaScript, 360 px). |
+| Accessibility | axe in Playwright | `tests/e2e/quality.spec.ts` | Every page in every language, and the preview: zero WCAG 2.2 AA violations, no console errors. |
+| Visual regression | Playwright screenshots | `tests/e2e/visual.spec.ts` | `/`, `/nl/`, `/hu/`, `/en/` at 375 and 1280 px, plus two of Kálmán's poses in the preview (rest goofy, bow professional), compared with baselines in `tests/e2e/__screenshots__/`. **CI only** (see below). |
 | Performance & co | Lighthouse | `scripts/run-lighthouse.ts` | ≥ 90 (median of 5 runs) for performance, accessibility, best practices and SEO. The gate logic is unit-tested in `scripts/lib/lighthouse-scores.ts`. |
-| Bundle size | own script | `scripts/check-bundle-size.ts` | ≤ 50 KB gzipped JavaScript. |
+| Bundle size | own script | `scripts/check-bundle-size.ts` | Per page: ≤ 50 KB gzipped JavaScript. |
+| Production | own script | `scripts/check-production-build.ts` | The production build contains no preview page or code. |
 
 **Production headers in tests.** Astro's preview server ignores `public/_headers`. The fixture in `tests/e2e/fixtures.ts` reads that file and adds its headers to every response, so a CSP that would block our own scripts in production also fails the tests. All e2e specs import `test` from `./fixtures` instead of from `@playwright/test`.
 
@@ -129,8 +179,8 @@ Two workflows live in `.github/workflows/`:
 
 | Workflow | When | What |
 |---|---|---|
-| `ci.yml` | Every push to every branch, and by hand | One job, in this order: `npm ci` → lint → type check → unit tests → build → bundle size → Playwright (browsers cached between runs) → Lighthouse. Uploads the Playwright report when something fails, and the Lighthouse reports always. A red run does not get merged. |
-| `update-visual-baselines.yml` | Only by hand | Takes new screenshots on Linux and commits them to the branch it ran on. Use it only for an intended visual change, and look at the new images. |
+| `ci.yml` | Every push to every branch, and by hand | One job, in this order: `npm ci` → lint → type check → unit tests → production build → production check → playground build → bundle size per page → Playwright (browsers cached between runs) → Lighthouse. Uploads the Playwright report when something fails, and the Lighthouse reports always. A red run does not get merged. |
+| `update-visual-baselines.yml` | Only by hand | Builds with the preview, takes new screenshots on Linux and commits them to the branch it ran on. Use it only for an intended visual change, and look at the new images. |
 
 **`main` is protected:** changes only arrive through a pull request whose CI `check` is green, for admins too; force-pushes and deleting `main` are blocked (Settings → Branches). No approval is needed, since this is a solo project.
 
@@ -159,12 +209,14 @@ Cloudflare reads `public/_headers` from the build output: the build log says `Pa
 
 1. Dashboard → **Compute** → **Workers & Pages** → **Create application** → the **Pages** tab (not Workers: the Workers form asks for a *Deploy command*) → **Import an existing Git repository**.
 2. Connect GitHub; allow the Cloudflare app on **Only select repositories** → `portfolio_site`.
-3. Project name `halaszraymond`, production branch `main`, build command `npm run build`, output directory `dist`. No environment variables needed.
+3. Project name `halaszraymond`, production branch `main`, build command `npm run build`, output directory `dist`. One environment variable, for **Preview** only: `PLAYGROUND` = `1` (see the preview section).
 4. Settings → Builds → Branch control: preview branches = **All non-Production branches**.
 5. Don't add a custom domain before go-live.
 
 ## Development on a work network
 
 Zscaler on the work network inspects HTTPS traffic with its own certificate. Windows trusts it, but Node does not by default, so `npm install` fails with `UNABLE_TO_GET_ISSUER_CERT_LOCALLY`. The fix is to let Node use the Windows certificate store: set the environment variable `NODE_USE_SYSTEM_CA=1`. Never turn off certificate checks (`strict-ssl=false`) instead.
+
+Astro allows only one preview server per project: if `npm run e2e` says the web server couldn't start, an old `astro preview` is still running; `npx astro preview stop` ends it.
 
 Zscaler also blocks `*.pages.dev`, so preview deployments can't be opened on the work laptop: check them on a phone or at home. And Astro's anonymous telemetry hangs for ~40 s on this network; the test scripts switch it off. For your own `npm run dev`, run `npx astro telemetry disable` once.

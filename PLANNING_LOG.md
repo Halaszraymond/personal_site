@@ -74,3 +74,6 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-26 — The animations (idle, dive, swim, bow, head-follow, launch) and GSAP follow in a separate change after `kalman-rig`. Decided by: Raymond (proposed by Claude).
 - 2026-10-26 — Auto-merge is on for the repo: a PR can be set to merge itself once CI `check` is green. Decided by: Raymond.
 - 2026-10-26 — `kalman-rig` includes a layer guide (`docs/kalman-layers.md`) with the list of front-view illustrations Raymond makes and a ready-made AI prompt per layer; the side-view set follows with the animations change. Decided by: Raymond (proposed by Claude).
+- 2026-10-26 — Kálmán's artboard is 1600 × 1500 units, wide enough for his raised flippers; left and right in layer names are as seen by the viewer. Decided by: Claude.
+- 2026-10-26 — The rig is drawn as flat SVG (one group per layer, sorted by drawing order) with one matrix per layer from `resolvePose()`, not as nested groups, so a child layer can sit behind its parent. Decided by: Claude (design approved by Raymond).
+- 2026-10-26 — Every page, the dev-only preview included, has the 50 KB JavaScript budget for now (the preview measured 4.4 KB); GSAP's budget is set in the animations change. Decided by: Claude.
