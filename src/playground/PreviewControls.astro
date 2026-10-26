@@ -8,7 +8,9 @@
  * the figure.
  */
 import { layerLabel, PREVIEW_EN as TEXT } from '../i18n/preview';
-import { REPO_POSES, REPO_RIG } from '../scene/kalman/repo-rig';
+import { REPO_POSES, REPO_RIG, REPO_TURNTABLE } from '../scene/kalman/repo-rig';
+
+const canTurn = REPO_TURNTABLE.length > 1;
 ---
 
 <div class="controls">
@@ -41,14 +43,21 @@ import { REPO_POSES, REPO_RIG } from '../scene/kalman/repo-rig';
 
   <fieldset>
     <legend>{TEXT.viewLegend}</legend>
-    <div class="slider">
-      <label for="turn">{TEXT.turn}</label>
-      <input type="range" id="turn" data-turn-slider min="0" max="359" step="1" value="0" />
-      <output for="turn" data-turn-value>
-        0°
-      </output>
-    </div>
-    <p class="hint">{TEXT.turnHint}</p>
+    {
+      /* Turning around needs at least two drawn views; until then the control is left out. */
+      canTurn && (
+        <>
+          <div class="slider">
+            <label for="turn">{TEXT.turn}</label>
+            <input type="range" id="turn" data-turn-slider min="0" max="359" step="1" value="0" />
+            <output for="turn" data-turn-value>
+              0°
+            </output>
+          </div>
+          <p class="hint">{TEXT.turnHint}</p>
+        </>
+      )
+    }
     <div class="slider">
       <label for="spin">{TEXT.spin}</label>
       <input type="range" id="spin" data-spin-slider min="-180" max="180" step="1" value="0" />

@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 625" width="100" height="625">
-  <!-- Placeholder: left flipper (viewer's left). Navy outside, pale inner edge. Pivot: shoulder, top right. -->
-  <path d="M70 8 C35 30 12 200 10 420 C9 520 22 600 40 615 C62 560 88 380 92 200 C94 100 90 30 70 8 Z" fill="#1f2a44" stroke="#8a93a6" stroke-width="3" stroke-dasharray="10 7"/>
-  <path d="M80 60 C86 200 74 400 46 590 C70 500 90 330 90 180 C90 120 86 80 80 60 Z" fill="#c9ccd4"/>
-</svg>

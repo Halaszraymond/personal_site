@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 56" width="210" height="56">
-  <!-- Placeholder: round silver reading glasses. Pivot: the bridge. -->
-  <circle cx="55" cy="28" r="22" fill="#ffffff" fill-opacity="0.15" stroke="#b8bec7" stroke-width="5"/>
-  <circle cx="155" cy="28" r="22" fill="#ffffff" fill-opacity="0.15" stroke="#b8bec7" stroke-width="5"/>
-  <path d="M77 26 Q105 14 133 26" fill="none" stroke="#b8bec7" stroke-width="5"/>
-  <path d="M33 24 L4 18 M177 24 L206 18" stroke="#b8bec7" stroke-width="4"/>
-</svg>

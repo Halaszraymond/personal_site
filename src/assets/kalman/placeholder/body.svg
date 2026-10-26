@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 416 930" width="416" height="930">
-  <!-- Placeholder: body (front view). Navy sides, cream belly with a pale-yellow wash at the top. -->
-  <path d="M208 10 C110 10 40 120 30 320 C18 560 40 800 110 900 L306 900 C376 800 398 560 386 320 C376 120 306 10 208 10 Z" fill="#1f2a44" stroke="#8a93a6" stroke-width="3" stroke-dasharray="10 7"/>
-  <path d="M208 30 C135 30 82 140 74 330 C64 560 86 790 140 890 L276 890 C330 790 352 560 342 330 C334 140 281 30 208 30 Z" fill="#f3eee0"/>
-  <path d="M208 30 C150 30 104 90 88 190 C150 230 266 230 328 190 C312 90 266 30 208 30 Z" fill="#f1d48a"/>
-</svg>

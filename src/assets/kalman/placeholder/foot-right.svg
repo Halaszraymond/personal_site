@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 135" width="150" height="135">
-  <!-- Placeholder: right foot (viewer's right), the mirror image of the left one. Pivot: ankle, top. -->
-  <g transform="translate(150 0) scale(-1 1)">
-    <path d="M70 6 C110 6 128 40 132 70 L146 112 C148 122 138 128 128 122 L112 106 L104 126 C100 132 88 132 86 124 L80 104 L64 124 C58 130 46 128 46 118 L54 96 L20 112 C10 116 4 106 10 98 C30 70 30 6 70 6 Z" fill="#4b4f57" stroke="#8a93a6" stroke-width="3" stroke-dasharray="10 7"/>
-  </g>
-</svg>
