@@ -266,3 +266,20 @@ test('the professional mood also shows on the turntable views', async ({ page })
     'hidden',
   );
 });
+
+test('dragging Kálmán sideways turns him, and vertical swipes still scroll', async ({ page }) => {
+  const box = await figure(page).boundingBox();
+  if (box === null) throw new Error('The figure has no box.');
+  const middle = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+
+  // Half a degree per pixel: 180 px to the right is 90 degrees.
+  await page.mouse.move(middle.x, middle.y);
+  await page.mouse.down();
+  await page.mouse.move(middle.x + 180, middle.y, { steps: 10 });
+  await page.mouse.up();
+
+  await expect(page.getByLabel('Turn around')).toHaveValue('90');
+  await expect(figure(page)).toHaveAttribute('data-turn', '90');
+  // The browser handles vertical swipes itself (page scroll); only sideways moves turn him.
+  await expect(figure(page)).toHaveCSS('touch-action', 'pan-y');
+});

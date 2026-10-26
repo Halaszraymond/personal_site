@@ -162,6 +162,7 @@ Run them with `npm run <name>` (`npm test` works without `run`). They are define
 | `build:playground` | Builds the site including the dev-only preview (`PLAYGROUND=1`). |
 | `check:production` | After `build`: fails if the preview ended up in `dist/`. |
 | `cut:kalman` | Cuts Kálmán's layers and turntable views from the images in `docs/images/kalman-design/` and writes `rig.json` and `turntable.json` (see `docs/kalman-layers.md`). |
+| `check:kalman` | Runs `cut:kalman` and fails if that changes any committed file: the generated images must match their sources. Also a CI step. |
 | `preview` | Serves the built `dist/` locally, the way Cloudflare would. |
 | `lint` | ESLint (likely bugs) plus a Prettier check (formatting). Changes nothing. |
 | `format` | Fixes formatting with Prettier and fixable lint problems with ESLint. |
@@ -170,7 +171,7 @@ Run them with `npm run <name>` (`npm test` works without `run`). They are define
 | `e2e` | Runs the Playwright tests against the built site. Run `npm run build:playground` first (the preview tests need it). |
 | `size` | Checks the JavaScript each page loads (its scripts plus everything they import), gzipped, against that page's budget: 50 KB for every page for now. Run a build first. |
 | `lighthouse` | Runs Lighthouse 5 times on `/`, `/nl/`, `/hu/` and `/en/` (mobile) and fails when the median is below 90 in any category. Reports land in `.lighthouse/`. Run `npm run build` first. |
-| `check` | The whole chain in CI order: `lint` → `typecheck` → `test` → `build` → `check:production` → `build:playground` → `size` → `e2e` → `lighthouse`. Green here means green in CI. |
+| `check` | The whole chain in CI order: `lint` → `typecheck` → `test` → `check:kalman` → `build` → `check:production` → `build:playground` → `size` → `e2e` → `lighthouse`. Green here means green in CI. |
 
 On every commit, a **pre-commit hook** runs ESLint and Prettier on the files you are committing (`lint-staged`). A commit with a lint error is blocked. The full checks (type check, tests, build) run in CI.
 
@@ -209,7 +210,7 @@ Two workflows live in `.github/workflows/`:
 
 | Workflow | When | What |
 |---|---|---|
-| `ci.yml` | Every push to every branch, and by hand | One job, in this order: `npm ci` → lint → type check → unit tests → production build → production check → playground build → bundle size per page → Playwright (browsers cached between runs) → Lighthouse. Uploads the Playwright report when something fails, and the Lighthouse reports always. A red run does not get merged. |
+| `ci.yml` | Every push to every branch, and by hand | One job, in this order: `npm ci` → lint → type check → unit tests → Kálmán images up to date → production build → production check → playground build → bundle size per page → Playwright (browsers cached between runs) → Lighthouse. Uploads the Playwright report when something fails, and the Lighthouse reports always. A red run does not get merged. |
 | `update-visual-baselines.yml` | Only by hand | Builds with the preview, takes new screenshots on Linux and commits them to the branch it ran on. Use it only for an intended visual change, and look at the new images. |
 
 **`main` is protected:** changes only arrive through a pull request whose CI `check` is green, for admins too; force-pushes and deleting `main` are blocked (Settings → Branches). No approval is needed, since this is a solo project.

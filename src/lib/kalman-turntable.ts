@@ -184,3 +184,8 @@ export function turntableErrors(data: unknown): string[] {
   });
   return errors;
 }
+
+/** Whether there is anything to turn to: the turn control needs at least two views. */
+export function canTurn(views: readonly TurntableView[]): boolean {
+  return views.length > 1;
+}

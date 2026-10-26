@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyToPoint } from '../../src/lib/kalman-rig';
 import {
+  canTurn,
   normaliseAngle,
   turntableErrors,
   viewImages,
@@ -166,5 +167,13 @@ describe('viewMatrix for a mirrored view', () => {
     const matrix = viewMatrix(-1, 800, [700, 0]);
     expect(applyToPoint(matrix, [0, 0])).toEqual([900, 0]);
     expect(applyToPoint(matrix, [200, 0])).toEqual([700, 0]);
+  });
+});
+
+describe('canTurn', () => {
+  it('needs at least two views (spec: "Only the front view")', () => {
+    expect(canTurn([{ name: 'front', angle: 0 }])).toBe(false);
+    expect(canTurn([])).toBe(false);
+    expect(canTurn(VIEWS)).toBe(true);
   });
 });

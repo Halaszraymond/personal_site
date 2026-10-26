@@ -47,6 +47,10 @@ for (const { name, path } of PAGES) {
 const POSES = [
   { name: 'kalman-rest-goofy', button: 'Rest', professional: false },
   { name: 'kalman-bow-professional', button: 'Bow', professional: true },
+  // The joints (spec: "Joints don't show"): raised flippers must leave no line on the body, and
+  // a tilted head no hard edge at the neck.
+  { name: 'kalman-flippers-up-goofy', button: 'Flippers up', professional: false },
+  { name: 'kalman-head-tilt-professional', button: 'Head tilt right', professional: true },
 ];
 
 for (const { name, button, professional } of POSES) {

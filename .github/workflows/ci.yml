@@ -46,6 +46,12 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      # Kálmán's layers and turntable views are generated from the images in
+      # docs/images/kalman-design/; cutting them again must change nothing (spec: kalman-rig,
+      # "Layers come from the design images", scenario "Cutting again").
+      - name: Check Kálmán's images are up to date
+        run: npm run check:kalman
+
       # First the build that Cloudflare serves on production, proven free of the preview.
       - name: Build (production)
         run: npm run build

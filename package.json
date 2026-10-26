@@ -22,7 +22,8 @@
     "size": "node scripts/check-bundle-size.ts",
     "check:production": "node scripts/check-production-build.ts",
     "cut:kalman": "node scripts/cut-kalman-layers.ts && prettier --write src/scene/kalman/rig.json src/scene/kalman/turntable.json",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run check:production && npm run build:playground && npm run size && npm run e2e && npm run lighthouse",
+    "check:kalman": "npm run cut:kalman && git diff --exit-code -- src/assets/kalman src/scene/kalman",
+    "check": "npm run lint && npm run typecheck && npm test && npm run check:kalman && npm run build && npm run check:production && npm run build:playground && npm run size && npm run e2e && npm run lighthouse",
     "lighthouse": "node scripts/run-lighthouse.ts"
   },
   "dependencies": {

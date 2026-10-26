@@ -40,7 +40,10 @@ Constraints that shape this design:
 | `src/assets/kalman/front/*.png` | images | The nine layers and the two front views, cut from the final design. Generated: never edited by hand. |
 | `scripts/cut-kalman-layers.ts` | script | Reads the two front views, cuts the layers and the front views, writes them to `src/assets/kalman/front/` and writes `rig.json` and `turntable.json` (§5). Run with `npm run cut:kalman`. |
 | `scripts/lib/kalman-cut.ts` | pure | The cutting logic on plain pixel arrays: background flood fill, soft edges, the difference mask for the accessories, the gap per row, the part masks with the neck fade, and turning pixel boxes into rig entries. |
-| `src/lib/kalman-turntable.ts` | pure | `turntableFrame()` (which views show at an angle, how narrow, how faded), `viewMatrix()`, `normaliseAngle()` and the validation of `turntable.json`. |
+| `src/lib/kalman-turntable.ts` | pure | `turntableFrame()` (which views show at an angle, how narrow, how faded), `viewMatrix()`, `viewImages()` (mirrored views), `canTurn()`, `normaliseAngle()` and the validation of `turntable.json`. |
+| `src/lib/preview-pose.ts` | pure | The preview's pose logic: a named pose plus slider changes becomes a custom pose (`poseFromControls()`), the pose JSON, and the figure's description. |
+| `src/scene/kalman/repo-rig.ts` | data | Loads `rig.json`, `poses.json` and `turntable.json` once and validates them, so a bad file fails the build with the validator's message. |
+| `src/i18n/preview.ts` | strings | The preview's English texts, typed, so NL and HU later are just more entries. |
 | `src/scene/kalman/turntable.json` | data | The drawn views for turning around: name, angle and a placed image per mood. |
 | `src/playground/` | page | `PreviewPage.astro`, `PreviewControls.astro` and `preview-client.ts`. |
 | `src/lib/playground-flag.ts` | pure | `shouldIncludePlayground()`, carried over unchanged. |

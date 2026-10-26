@@ -8,9 +8,10 @@
  * the figure.
  */
 import { layerLabel, PREVIEW_EN as TEXT } from '../i18n/preview';
+import { canTurn } from '../lib/kalman-turntable';
 import { REPO_POSES, REPO_RIG, REPO_TURNTABLE } from '../scene/kalman/repo-rig';
 
-const canTurn = REPO_TURNTABLE.length > 1;
+const showTurnControl = canTurn(REPO_TURNTABLE);
 ---
 
 <div class="controls">
@@ -45,7 +46,7 @@ const canTurn = REPO_TURNTABLE.length > 1;
     <legend>{TEXT.viewLegend}</legend>
     {
       /* Turning around needs at least two drawn views; until then the control is left out. */
-      canTurn && (
+      showTurnControl && (
         <>
           <div class="slider">
             <label for="turn">{TEXT.turn}</label>
