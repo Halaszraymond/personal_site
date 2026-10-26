@@ -21,9 +21,9 @@ The new version of halaszraymond.com: an employer-facing portfolio with real wow
 
 - **Name:** **Keizer Kálmán** (*Emperor Kálmán* in English), Kálmán for short. Where the name comes from and how it reads in each language: see §2.2.
 - **Species:** emperor penguin (*Aptenodytes forsteri*).
-- **Style:** **stylised low-poly 3D**, built entirely in code (Three.js), no purchased model. He should read as design, not as a stock model.
+- **Style:** **stylised 3D, smooth by default**, built entirely in code (Three.js), no purchased model; a faceted low-poly look stays available as a switch. His look follows Raymond's design sheet, made with an AI image generator ([`docs/images/kalman-design/`](docs/images/kalman-design/)). He should read as design, not as a stock model.
 - **Original character:** Kálmán must not resemble existing penguin characters or mascots.
-- **Features to keep through the stylisation:** black head and back, white belly, the **golden-orange ear patches** that fade towards the chest, and a slender bill with an orange/pink stripe on the lower mandible.
+- **Features to keep through the stylisation:** dark navy head and back, cream belly, the **golden-orange ear patches** that fade towards the chest, and a slender bill with an orange/pink stripe on the lower mandible.
 - **We build the playground first:** a page with the emperor and sliders for body shape, head and bill size, the colour and intensity of the neck patch, the faceting (polygon count) and the swimming motion. Raymond plays with it until it feels right, and those values become the final config. The playground is dev-only in Phase 1 and later becomes a **public `/playground`** (in all three languages), linked from the "this website" case study: "play with Kálmán yourself".
 - **Personality:** a dual personality. His **goofy** side is funny and playful; his **professional** side is polite and to the point. He switches between them depending on what the visitor does (see §2.5). The professional side gets two small low-poly accessories, a **tie** and **reading glasses**, which are part of the config like the rest of his shape.
 - **Animations:** standing on the ice (idle), diving, swimming (flipper strokes), chasing a fish, bowing when clicked, following the cursor with his head, and, as the finale, launching out of the water with a trail of air bubbles.

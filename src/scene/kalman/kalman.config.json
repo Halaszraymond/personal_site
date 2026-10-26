@@ -12,11 +12,12 @@
     "earPatchIntensity": 0.9,
     "earPatchSpread": 0.5,
     "faceting": 1,
+    "facetedLook": false,
     "flipperLength": 1,
     "strokeAmplitude": 30,
     "strokeSpeed": 1,
     "tieOn": false,
-    "tieColour": "#1f4e8c",
+    "tieColour": "#8b1e2d",
     "tieSize": 1,
     "glassesOn": false,
     "glassesSize": 1

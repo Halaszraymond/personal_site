@@ -44,6 +44,9 @@ export default defineConfig({
     reuseExistingServer: !isCI,
     // Astro's anonymous usage report can hang for ~40 s on a filtered (work) network.
     env: { ASTRO_TELEMETRY_DISABLED: '1' },
+    // Usually up in seconds, but a busy laptop (virus scanner on fresh build files) can take
+    // longer than Playwright's default 60 s.
+    timeout: 120_000,
   },
   // Baselines without the platform in their name (Playwright's default adds `-win32` or
   // `-linux`): they are only ever made and compared on Linux, so one set is enough.

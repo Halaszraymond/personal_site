@@ -40,17 +40,17 @@ Validating a config SHALL fail when a parameter is missing, has the wrong type, 
 - **THEN** validation fails and the error names both
 
 ### Requirement: The emperor's features survive every valid config
-Every valid config SHALL produce a Kálmán with a black head and back, a white belly, golden-orange ear patches that fade towards the chest, and a slender bill with an orange-to-pink stripe on the lower mandible. The ranges SHALL NOT allow removing or recolouring these features beyond recognition.
+Every valid config SHALL produce a Kálmán with a dark navy head and back, a cream belly, golden ear patches that fade into a pale-yellow upper chest, and a slender bill with an orange-to-pink stripe on the lower mandible. The ranges SHALL NOT allow removing or recolouring these features beyond recognition.
 
 #### Scenario: Extremes keep the features
 - **WHEN** Kálmán is built with every parameter at its minimum, and again at its maximum
-- **THEN** both models still have the dark back, white belly, golden-orange ear patches and bill stripe
+- **THEN** both models still have the dark back, cream belly, golden ear patches and bill stripe
 
-### Requirement: Kálmán stays low-poly
-At every valid config, including maximum faceting with both accessories on, the model SHALL stay within 8,000 triangles and 20 draw calls.
+### Requirement: Kálmán stays within a triangle budget
+At every valid config, including maximum detail in both the smooth and the faceted look with both accessories on, the model SHALL stay within 8,000 triangles and 20 draw calls.
 
 #### Scenario: Maximum detail
-- **WHEN** Kálmán is built at maximum faceting with the tie and glasses on
+- **WHEN** Kálmán is built at maximum detail, in either look, with the tie and glasses on
 - **THEN** the model has at most 8,000 triangles and needs at most 20 draw calls
 
 ### Requirement: Accessories are part of the config

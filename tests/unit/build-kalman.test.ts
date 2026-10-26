@@ -39,18 +39,24 @@ interface Face {
 function facesOf(geometry: BufferGeometry): Face[] {
   const positions = geometry.getAttribute('position');
   const colours = geometry.getAttribute('color');
+  // Smooth geometry shares corners between triangles (an index lists them); faceted
+  // geometry has its own three corners per triangle. `corner(n)` handles both.
+  const index = geometry.index;
+  const corner = (n: number) => (index === null ? n : index.getX(n));
+  const total = index === null ? positions.count : index.count;
   const faces: Face[] = [];
   const colour = new Color();
   const srgb = { r: 0, g: 0, b: 0 };
-  for (let vertex = 0; vertex < positions.count; vertex += 3) {
+  for (let first = 0; first < total; first += 3) {
     const centre = [0, 1, 2].reduce(
-      (sum, corner) => ({
-        x: sum.x + positions.getX(vertex + corner) / 3,
-        y: sum.y + positions.getY(vertex + corner) / 3,
-        z: sum.z + positions.getZ(vertex + corner) / 3,
+      (sum, offset) => ({
+        x: sum.x + positions.getX(corner(first + offset)) / 3,
+        y: sum.y + positions.getY(corner(first + offset)) / 3,
+        z: sum.z + positions.getZ(corner(first + offset)) / 3,
       }),
       { x: 0, y: 0, z: 0 },
     );
+    const vertex = corner(first);
     colour.setRGB(colours.getX(vertex), colours.getY(vertex), colours.getZ(vertex));
     colour.getRGB(srgb, SRGBColorSpace);
     faces.push({ ...centre, ...rgbToHsl(srgb) });
@@ -58,10 +64,13 @@ function facesOf(geometry: BufferGeometry): Face[] {
   return faces;
 }
 
+/** Both looks at both ends of every range: the features must survive all of them. */
 const CONFIGS = {
   defaults: defaultConfig(),
-  minimum: extreme('min', false),
-  maximum: extreme('max', true),
+  'minimum, smooth': { ...extreme('min', false), facetedLook: false },
+  'minimum, faceted': { ...extreme('min', false), facetedLook: true },
+  'maximum, smooth': { ...extreme('max', true), facetedLook: false },
+  'maximum, faceted': { ...extreme('max', true), facetedLook: true },
 };
 
 describe('buildKalman', () => {
@@ -112,13 +121,13 @@ describe('the emperor features survive every valid config', () => {
         angle: Math.abs(Math.atan2(face.x, face.z)),
       }));
 
-      it('has a dark back', () => {
+      it('has a dark navy back', () => {
         const back = body.filter((f) => f.u > 0.2 && f.u < 0.5 && f.angle > 2.6);
         expect(back.length).toBeGreaterThan(0);
-        for (const face of back) expect(face.lightness).toBeLessThan(0.15);
+        for (const face of back) expect(face.lightness).toBeLessThan(0.3);
       });
 
-      it('has a white belly', () => {
+      it('has a cream belly', () => {
         const belly = body.filter((f) => f.u > 0.15 && f.u < 0.45 && f.angle < 0.5);
         expect(belly.length).toBeGreaterThan(0);
         for (const face of belly) expect(face.lightness).toBeGreaterThan(0.85);
@@ -143,10 +152,12 @@ describe('the emperor features survive every valid config', () => {
   }
 });
 
-describe('Kálmán stays low-poly', () => {
-  it('stays within 8,000 triangles and 20 draw calls at maximum detail', () => {
-    const stats = modelStats(buildKalman(extreme('max', true)));
-    expect(stats.triangles).toBeLessThanOrEqual(8000);
-    expect(stats.meshes).toBeLessThanOrEqual(20);
-  });
+describe('Kálmán stays within a triangle budget', () => {
+  for (const facetedLook of [false, true]) {
+    it(`stays within 8,000 triangles and 20 draw calls at maximum detail (${facetedLook ? 'faceted' : 'smooth'})`, () => {
+      const stats = modelStats(buildKalman({ ...extreme('max', true), facetedLook }));
+      expect(stats.triangles).toBeLessThanOrEqual(8000);
+      expect(stats.meshes).toBeLessThanOrEqual(20);
+    });
+  }
 });

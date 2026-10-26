@@ -195,6 +195,13 @@ test.describe('3D view (Chromium)', () => {
 });
 
 test.describe('controls (all browsers)', () => {
+  // These tests are about the controls, not the 3D (that is tested in Chromium above).
+  // Outside Chromium, drawing the smooth Kálmán with software WebGL is slow enough to make
+  // them flaky, so there they run without WebGL2, the playground's own fallback path.
+  test.beforeEach(async ({ page, browserName }) => {
+    if (browserName !== 'chromium') await disableWebGL2(page);
+  });
+
   test('there is exactly one control per parameter, matching its definition', async ({ page }) => {
     await page.goto('/playground/');
     await expect(page.locator('[data-param]')).toHaveCount(KALMAN_PARAMETERS.length);

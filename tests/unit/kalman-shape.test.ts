@@ -11,10 +11,13 @@ import {
   bodyColourAt,
   earPatchWeight,
   facetSegments,
+  headDepthScale,
   hslToRgb,
   PLUMAGE,
+  postureShift,
   rgbToHsl,
   silhouette,
+  smoothProfile,
   strokeAngle,
   uAtHeight,
 } from '../../src/lib/kalman-shape';
@@ -91,15 +94,23 @@ describe('earPatchWeight', () => {
 });
 
 describe('bodyColourAt', () => {
-  it('is black on the back and white on the belly', () => {
+  it('is dark navy on the back and cream on the belly', () => {
     // Compared with a tolerance: the ear patch's bell curve never
     // reaches exactly zero, so a 1e-15 trace of orange is mixed in everywhere.
     const back = bodyColourAt(0.4, Math.PI, defaultConfig());
     const belly = bodyColourAt(0.3, 0, defaultConfig());
     for (const channel of ['r', 'g', 'b'] as const) {
-      expect(back[channel]).toBeCloseTo(PLUMAGE.black[channel], 6);
-      expect(belly[channel]).toBeCloseTo(PLUMAGE.white[channel], 6);
+      expect(back[channel]).toBeCloseTo(PLUMAGE.dark[channel], 6);
+      expect(belly[channel]).toBeCloseTo(PLUMAGE.light[channel], 6);
     }
+  });
+
+  it('washes the upper chest pale yellow, fading down into the cream belly', () => {
+    const upper = rgbToHsl(bodyColourAt((8 - 0.6) / 14, 0, defaultConfig()));
+    const lower = rgbToHsl(bodyColourAt(0.3, 0, defaultConfig()));
+    expect(upper.hue).toBeGreaterThan(30);
+    expect(upper.hue).toBeLessThan(60);
+    expect(upper.saturation).toBeGreaterThan(lower.saturation);
   });
 
   it('is golden-orange at the ear, within the hue range', () => {
@@ -135,8 +146,39 @@ describe('bellyFactor', () => {
 });
 
 describe('facetSegments', () => {
-  it('adds faces per level', () => {
-    expect([0, 1, 2, 3].map(facetSegments)).toEqual([7, 9, 12, 16]);
+  it('adds faces per level, many more in the smooth look', () => {
+    expect([0, 1, 2, 3].map((level) => facetSegments(level, true))).toEqual([7, 9, 12, 16]);
+    expect([0, 1, 2, 3].map((level) => facetSegments(level, false))).toEqual([16, 22, 28, 34]);
+  });
+});
+
+describe('smoothProfile', () => {
+  const profile = silhouette(defaultConfig());
+
+  it('leaves the faceted look unchanged', () => {
+    expect(smoothProfile(profile, 1)).toEqual(profile);
+  });
+
+  it('passes through every original point and keeps rising', () => {
+    const smooth = smoothProfile(profile, 3);
+    expect(smooth).toHaveLength((profile.length - 1) * 3 + 1);
+    profile.forEach((point, index) => {
+      expect(smooth[index * 3]?.y).toBeCloseTo(point.y);
+      expect(smooth[index * 3]?.radius).toBeCloseTo(point.radius);
+    });
+    for (let index = 1; index < smooth.length; index++) {
+      expect(smooth[index]?.y).toBeGreaterThan(smooth[index - 1]?.y ?? Infinity);
+      expect(smooth[index]?.radius).toBeGreaterThanOrEqual(0);
+    }
+  });
+});
+
+describe('posture', () => {
+  it('moves the head forward and stretches it, but leaves the body alone', () => {
+    expect(postureShift(0.2)).toBe(0);
+    expect(postureShift(0.9)).toBeGreaterThan(0);
+    expect(headDepthScale(0.3)).toBe(1);
+    expect(headDepthScale(0.75)).toBeGreaterThan(1);
   });
 });
 

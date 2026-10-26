@@ -26,7 +26,7 @@ import { buildKalman, disposeKalman, poseFlippers } from './build-kalman';
 /** Sharper than this costs a lot of pixels on phones for no visible gain (README §5.4). */
 const MAX_PIXEL_RATIO = 2;
 /** Where the camera looks: about the middle of Kálmán's chest. */
-const TARGET_HEIGHT = 0.5;
+const TARGET_HEIGHT = 0.56;
 /** Ice white, the top of the dive's colour scale (README §2.6). */
 const BACKGROUND = '#eef3f7';
 
@@ -56,7 +56,7 @@ export function createKalmanView(canvas: HTMLCanvasElement, initial: KalmanConfi
 
   const camera = new PerspectiveCamera(35, 1, 0.01, 20);
   // Slightly from his right, so the bill reads as a bill instead of pointing straight at you.
-  camera.position.set(0.75, 0.68, 2.25);
+  camera.position.set(0.75, 0.74, 2.4);
 
   const controls = new OrbitControls(camera, canvas);
   controls.target.set(0, TARGET_HEIGHT, 0);

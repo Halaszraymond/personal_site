@@ -83,6 +83,7 @@ export const KALMAN_PARAMETERS = [
     default: 0.5,
   },
   { kind: 'range', key: 'faceting', group: 'facets', min: 0, max: 3, step: 1, default: 1 },
+  { kind: 'switch', key: 'facetedLook', group: 'facets', default: false },
   {
     kind: 'range',
     key: 'flipperLength',
@@ -95,7 +96,7 @@ export const KALMAN_PARAMETERS = [
   { kind: 'range', key: 'strokeAmplitude', group: 'swim', min: 10, max: 50, step: 1, default: 30 },
   { kind: 'range', key: 'strokeSpeed', group: 'swim', min: 0.5, max: 2, step: 0.1, default: 1 },
   { kind: 'switch', key: 'tieOn', group: 'tie', default: false },
-  { kind: 'colour', key: 'tieColour', group: 'tie', default: '#1f4e8c' },
+  { kind: 'colour', key: 'tieColour', group: 'tie', default: '#8b1e2d' }, // dark red, as in the design
   { kind: 'range', key: 'tieSize', group: 'tie', min: 0.8, max: 1.2, step: 0.01, default: 1 },
   { kind: 'switch', key: 'glassesOn', group: 'glasses', default: false },
   {
