@@ -1,8 +1,8 @@
 # halaszraymond.com — portfolio v2
 
-The new version of halaszraymond.com: an employer-facing portfolio with real wow factor, built around one original character, **a fishing emperor penguin in 3D**.
+The new version of halaszraymond.com: an employer-facing portfolio with real wow factor, built around one original character, **a fishing emperor penguin, illustrated and animated in 2D**.
 
-> Status: Phase 0 (setup) is done; Phase 1 (Keizer Kálmán) is next. This document is the source of truth. If a decision changes, update this file first.
+> Status: Phase 0 (setup) is done; Phase 1 (Keizer Kálmán, in 2D) is being planned. This document is the source of truth. If a decision changes, update this file first.
 
 ---
 
@@ -21,11 +21,12 @@ The new version of halaszraymond.com: an employer-facing portfolio with real wow
 
 - **Name:** **Keizer Kálmán** (*Emperor Kálmán* in English), Kálmán for short. Where the name comes from and how it reads in each language: see §2.2.
 - **Species:** emperor penguin (*Aptenodytes forsteri*).
-- **Style:** **stylised low-poly 3D**, built entirely in code (Three.js), no purchased model. He should read as design, not as a stock model.
+- **Style:** **a 2D illustrated character** in a soft, painted style, following Raymond's design sheet ([`docs/images/kalman-design/`](docs/images/kalman-design/)), made with an AI image generator. He should read as a designed character, not as stock art. *(Changed on 2026-10-26: a 3D Kálmán built in code could not get close to the illustration; the attempt stays on the branch `change/kalman-playground` and in the making-of.)*
+- **Built from layers:** Kálmán is a **cut-out** figure: separate illustrated parts (body, head, both flippers, feet, tail, and the tie and glasses), each with a transparent background, moved in code with GSAP. So one set of drawings gives all his poses and moods.
 - **Original character:** Kálmán must not resemble existing penguin characters or mascots.
-- **Features to keep through the stylisation:** black head and back, white belly, the **golden-orange ear patches** that fade towards the chest, and a slender bill with an orange/pink stripe on the lower mandible.
-- **We build the playground first:** a page with the emperor and sliders for body shape, head and bill size, the colour and intensity of the neck patch, the faceting (polygon count) and the swimming motion. Raymond plays with it until it feels right, and those values become the final config. The playground is dev-only in Phase 1 and later becomes a **public `/playground`** (in all three languages), linked from the "this website" case study: "play with Kálmán yourself".
-- **Personality:** a dual personality. His **goofy** side is funny and playful; his **professional** side is polite and to the point. He switches between them depending on what the visitor does (see §2.5). The professional side gets two small low-poly accessories, a **tie** and **reading glasses**, which are part of the config like the rest of his shape.
+- **Features to keep through the stylisation:** dark navy head and back, cream belly, the **golden-orange ear patches** that fade towards the chest, and a slender bill with an orange/pink stripe on the lower mandible.
+- **Design first, then the animation preview:** the look is decided on the design sheet (done). Then a **dev-only animation preview** at `/playground/` shows every pose and mood with play buttons, so Raymond can judge the motion. Later it becomes a **public `/playground`** (in all three languages), linked from the "this website" case study: "play with Kálmán yourself".
+- **Personality:** a dual personality. His **goofy** side is funny and playful; his **professional** side is polite and to the point. He switches between them depending on what the visitor does (see §2.5). The professional side gets two accessories, a **dark-red tie** and **round reading glasses**, as separate layers he puts on and takes off.
 - **Animations:** standing on the ice (idle), diving, swimming (flipper strokes), chasing a fish, bowing when clicked, following the cursor with his head, and, as the finale, launching out of the water with a trail of air bubbles.
 
 ### 2.2 Name: Keizer Kálmán ✅
@@ -151,9 +152,10 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 
 | Part | Choice | Why |
 |---|---|---|
-| Framework | **Astro** | Fast, static, good i18n routing, islands for the 3D part |
-| 3D | **Three.js** | The emperor, the fish school and the water |
-| Scroll/animation | **GSAP + ScrollTrigger** on native scroll | Depth-driven animations. No smooth-scroll library (e.g. Lenis): native scroll is better for keyboard and screen-reader users, and it's one dependency fewer |
+| Framework | **Astro** | Fast, static, good i18n routing, islands for the animated parts |
+| Illustration | **Layered images** (AVIF/WebP) | Kálmán as cut-out parts, the ice, the water and light per depth, in the design sheet's painted style. No 3D library |
+| Fish school | **Canvas 2D** | Many small fish drawn by the browser's own 2D canvas: no library needed |
+| Scroll/animation | **GSAP + ScrollTrigger** on native scroll | Kálmán's cut-out animation and the depth-driven scenes. No smooth-scroll library (e.g. Lenis): native scroll is better for keyboard and screen-reader users, and it's one dependency fewer |
 | Languages | **NL / HU / EN** via Astro i18n | `/nl`, `/hu`, `/en`. `/` shows the English site (no redirect); if the browser language is Dutch or Hungarian, a small hint in Kálmán's goofy voice offers that language. The visitor's choice is remembered, the switcher is always there, and every language version has `hreflang` links |
 | Charts | D3 or custom SVG | Visualisations in "Who I am" and the dive profile |
 | Hosting | **Cloudflare Pages** | Domain is already at Cloudflare; preview link per branch |
@@ -164,14 +166,14 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 
 ### 5.2 Quality requirements
 
-- **Performance:** Lighthouse ≥ 90 on mobile. The 3D part is lazy-loaded; the first paint is visible immediately, without waiting for WebGL.
-- **Fallback:** with `prefers-reduced-motion`, no WebGL or a weak device, you get a good-looking static version (rendered stills of the emperor). Never a broken or empty site. The check runs in three steps, from cheap to expensive:
+- **Performance:** Lighthouse ≥ 90 on mobile. Illustrations are responsive AVIF/WebP with explicit sizes; animation code loads after the first paint, which is visible immediately.
+- **Fallback:** with `prefers-reduced-motion`, Save-Data or a weak device, you get the **static version**: the same illustrations, standing still (Kálmán in a fitting pose per section). Never a broken or empty site. The check runs from cheap to expensive:
   1. `prefers-reduced-motion` → fallback.
-  2. No WebGL2, or Save-Data on → fallback.
-  3. Measure the first ~2 s: if the median frame time is over 33 ms (< 30 fps), first step down the quality (pixel ratio, fewer fish); still too slow → fallback.
+  2. Save-Data on → fallback.
+  3. Measure the first ~2 s: if the median frame time is over 33 ms (< 30 fps), first step down the quality (fewer fish); still too slow → fallback.
 
   Plus a **"lite mode"** switch in the footer, so the visitor can always choose. (`deviceMemory` is not used: only Chrome supports it.)
-- **Fallback stills:** a Playwright script renders them from the final Kálmán config, run locally on a GPU for the best quality, and they are committed as AVIF/WebP with the **config hash** in their metadata. A test fails if the config changes without new stills.
+- **Fallback stills:** no separate renders needed: the fallback shows the same illustrations, arranged in a still pose.
 - **Accessibility:** all content is plain, readable HTML (not in canvas), keyboard-navigable, with alt text and AA contrast.
 - **Mobile:** designed for phones first, with touch instead of a cursor.
 - **SEO/sharing:** good title, description and Open Graph image (the emperor on the ice), per language.
@@ -191,43 +193,44 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 
 **Principle:** top quality, while written so that Raymond (strong in Python/R/SQL, new to TypeScript) can read every line and explain it in a job interview. Employers will read this repo too.
 
-**Why TypeScript for the site and not Python in the browser:** Python in the browser (PyScript/Pyodide) first loads a Python runtime of several MB. That kills the first impression and the Lighthouse score, and there is no full-featured 3D library for it. Server frameworks like Streamlit or Reflex need a running server and aren't made for this kind of WebGL experience. So this repo is TypeScript only. Python and R show in their own projects, where they are strongest: r-Frica Predicts (R) and the Pi server (Python), linked from the case studies.
+**Why TypeScript for the site and not Python in the browser:** Python in the browser (PyScript/Pyodide) first loads a Python runtime of several MB. That kills the first impression and the Lighthouse score, and the animation tooling for it is thin. Server frameworks like Streamlit or Reflex need a running server and aren't made for this kind of animated experience. So this repo is TypeScript only. Python and R show in their own projects, where they are strongest: r-Frica Predicts (R) and the Pi server (Python), linked from the case studies.
 
 **Readability**
 - TypeScript in `strict` mode; no `any`.
 - Every file starts with a short comment block: what it does and how it fits into the whole.
-- Comments explain the *why*. In 3D and animation code, the maths or concept is briefly explained too (e.g. "quaternion = rotation without gimbal lock").
+- Comments explain the *why*. In animation code, the maths or concept is briefly explained too (e.g. "easing = how speed changes over a movement").
 - Small functions with descriptive names, named constants instead of magic numbers, and no clever one-liners when a clear version works just as well.
 - Where TypeScript does something that works differently in Python, a short comparison in the comment ("like a dataclass in Python").
 - `docs/architecture.md`: an overview with a diagram of how the parts fit together (content → pages, scroll → depth → scene, JSON content → charts).
-- `docs/glossary.md`: 3D and frontend terms in plain language.
+- `docs/glossary.md`: animation and frontend terms in plain language.
 
 **Structure**
 - `src/content/`: texts, projects and translations (Markdown/JSON, Astro content collections). Changing content = never changing code.
 - `src/components/`: UI components.
-- `src/scene/`: everything 3D, split into `kalman/` (model, config, animations), `school/` (fish), `environment/` (water, light, southern lights) and `scroll/` (depth → scene).
+- `src/scene/`: everything animated, split into `kalman/` (his layers, rig and animations), `school/` (the fish, canvas 2D), `environment/` (ice, water, light, southern lights) and `scroll/` (depth → scene).
+- `src/assets/`: the illustrations (Kálmán's parts, backgrounds), as Raymond supplies them.
 - `src/i18n/`, `src/lib/` (pure logic, easy to test), `docs/`, `tests/`.
-- Kálmán is **config-driven**: shape and colour in one file (the output of the playground).
-- **Logic outside the renderer:** all behaviour (depth mapping, boids and fleeing from the cursor, the personality state machine, config validation) lives as pure functions in `src/lib/`. Three.js only draws what they compute, so it can be tested without a browser.
+- Kálmán is **data-driven**: where each layer sits and pivots (his "rig") is one config file, so poses and animations never hard-code pixel positions.
+- **Logic outside the renderer:** all behaviour (depth mapping, boids and fleeing from the cursor, the personality state machine, rig and pose maths) lives as pure functions in `src/lib/`. The animation code only applies what they compute, so it can be tested without a browser.
 
 **Quality and tooling**
 - ESLint + Prettier (TS); Ruff + mypy wherever Python code lives (the Pi endpoint). Automatic on save and on every commit (pre-commit hooks).
 - Minimal dependencies: every package has to earn its place. Renovate/Dependabot keeps them up to date.
-- Performance budgets are **enforced**, not just hoped for: base JS ≈ 50 KB, Three.js and the scene in a separate deferred chunk, Kálmán low-poly, the fish school via instancing, 60 fps on a mid-range phone, capped pixel ratio, and no rendering when the tab isn't visible.
+- Performance budgets are **enforced**, not just hoped for: base JS ≈ 50 KB per page, image weight per section (the hero's images within a set budget), 60 fps on a mid-range phone, capped canvas resolution, and no animating when the tab isn't visible.
 
 **Testing** (quality comes first; "overkill" doesn't exist)
 - **Unit tests (Vitest):** all pure logic, such as depth mapping, dive profile, i18n and config validation.
 - **Python tests (pytest):** the Pi endpoint (Phase 5).
-- **End-to-end (Playwright):** every page in NL/HU/EN, no console errors, working navigation and language switcher, the reduced-motion and no-WebGL fallbacks, and mobile and desktop widths.
+- **End-to-end (Playwright):** every page in NL/HU/EN, no console errors, working navigation and language switcher, the reduced-motion and Save-Data fallbacks, and mobile and desktop widths.
 - **Visual regression in layers** (an unintended visual change fails the test):
   1. Logic in Vitest (see "Logic outside the renderer").
-  2. Screenshots of the HTML with the canvas masked: most baselines live here.
-  3. 3D smoke tests: the canvas draws, no errors, and `renderer.info` budgets for draw calls and triangles.
-  4. A few 3D snapshots with a fixed seed and clock, with a tolerance setting.
+  2. Screenshots of the pages, illustrations included, with the fish canvas masked: most baselines live here.
+  3. Animation smoke tests: the timelines run, the fish canvas draws within its budget, no errors.
+  4. A few snapshots of Kálmán's key poses at fixed moments of an animation, with a tolerance setting.
 
   Baselines are **always generated on Linux**, through a GitHub Action you trigger by hand (never on Windows, because font rendering differs). Scope: every section at 2 widths in EN, plus the hero in NL and HU.
 - **Accessibility:** axe checks in Playwright on every page.
-- **Lighthouse CI:** hard gate of ≥ 90 in all four categories on the **fallback version** (no WebGL), because that's reliable in CI. A second run on the **3D version** (software WebGL) only *reports* in the PR, so you can see trends, but it doesn't block the merge. Real 3D performance on a phone is checked by hand in Phase 4.
+- **Lighthouse:** hard gate of ≥ 90 in all four categories (median of 5 runs). Real animation performance on a phone is checked by hand in Phase 4.
 - **Bundle-size check** with hard limits.
 
 **Planning with OpenSpec**
@@ -263,10 +266,10 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 
 - [x] **Phase 0: setup.** Repo, Astro skeleton (TS strict), all tooling and the full CI pipeline from §5.4 (starting with one empty test page, so everything has to stay green from day 1), Cloudflare Pages preview, `docs/making-of.md`, `docs/architecture.md`. Plus the two skeletons everything else builds on, so CI tests them from day 1:
   - **i18n routing:** `/nl`, `/hu`, `/en`, one test string per language and a working language switcher.
-  - **Fallback switch:** detects `prefers-reduced-motion` and missing WebGL and serves the static path. With no 3D yet, it's just an empty scene slot.
+  - **Fallback switch:** detects `prefers-reduced-motion` and missing WebGL and serves the static path. With no 3D yet, it's just an empty scene slot. *(The WebGL check becomes unnecessary with the 2D direction and goes in Phase 1.)*
 
   **Rule from Phase 1 on:** every new feature ships in all three languages (placeholder text is fine) and with its fallback. Nothing gets "added later in polish".
-- [ ] **Phase 1: Keizer Kálmán.** Playground with sliders → Raymond picks the shape → final config. Then the animations (idle, dive, swim, launch).
+- [ ] **Phase 1: Keizer Kálmán (2D).** Final illustrations as cut-out layers, made from the design sheet → the rig (where each layer sits and pivots) → the animations (idle, dive, swim, bow, head-follow, launch) → the dev-only animation preview. Drop Three.js and the WebGL check.
 - [ ] **Phase 2: the dive.** All sections with depth gauge, colour gradient, fish school, and fish turning into charts. Placeholder text first.
 - [ ] **Phase 3: content.** Real texts in NL/HU/EN, the 3 case studies, the "more catch" cards and a CV download. **Then go live** (§6): content complete, CI green, fallback working.
 - [ ] **Phase 4: polish, on the live site.** Tuning and verifying, not building: performance, accessibility audit, mobile testing on real devices, SEO and Open Graph, and a review of the translations.
@@ -277,7 +280,8 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 - [x] Name of the emperor: Keizer Kálmán (§2.2)
 - [x] Record dive depth verified: 564 m, Guinness World Records (§2.3)
 - [x] Additional dive facts verified: 32.2 min longest dive, 50–225 m most profitable hunting depths (§2.3)
-- [ ] Fonts (§2.6): chosen with a font playground (specimen page with candidate pairs), like Kálmán
+- [x] Kálmán's look: Raymond's design sheet, 2D cut-out illustration (§2.1)
+- [ ] Fonts (§2.6): chosen with a font playground (specimen page with candidate pairs)
 - [x] Email address: `raymond@halaszraymond.com` (§3, §6)
 - [x] CV: one English PDF (§3); the file itself follows in Phase 3
 - [x] Repo name: `portfolio_site` (§6)
