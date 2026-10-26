@@ -4,9 +4,9 @@
     {
       "name": "body",
       "image": "sheet/body.png",
-      "size": [435, 915],
-      "position": [583.8, 360],
-      "pivot": [216.3, 910],
+      "size": [435, 917.5],
+      "position": [583.8, 357.5],
+      "pivot": [216.3, 912.5],
       "parent": null,
       "order": 20,
       "rotate": [-15, 15]
@@ -14,9 +14,9 @@
     {
       "name": "head",
       "image": "sheet/head.png",
-      "size": [280, 255],
-      "position": [661.3, 180],
-      "pivot": [138.8, 240],
+      "size": [302.5, 275],
+      "position": [651.3, 180],
+      "pivot": [148.8, 255],
       "parent": "body",
       "order": 30,
       "rotate": [-25, 25]
@@ -74,9 +74,9 @@
     {
       "name": "tie",
       "image": "sheet/tie.png",
-      "size": [572.5, 562.5],
-      "position": [516.3, 340],
-      "pivot": [283.8, 105],
+      "size": [290, 555],
+      "position": [658.8, 340],
+      "pivot": [141.3, 105],
       "parent": "body",
       "order": 50,
       "rotate": [-15, 15],

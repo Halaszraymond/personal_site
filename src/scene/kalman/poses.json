@@ -4,11 +4,11 @@
     "name": "bow",
     "label": "Bow",
     "layers": {
-      "body": { "offset": [0, 20] },
-      "head": { "offset": [0, 70] },
+      "body": { "offset": [0, 6] },
+      "head": { "offset": [0, 26] },
       "flipperLeft": { "rotate": -6 },
       "flipperRight": { "rotate": 6 },
-      "tie": { "offset": [0, 30] }
+      "tie": { "offset": [0, 14] }
     }
   },
   {
