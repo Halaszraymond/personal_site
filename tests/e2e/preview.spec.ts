@@ -257,10 +257,11 @@ test('the professional mood also shows on the turntable views', async ({ page })
   );
   await page.getByRole('switch', { name: /Professional/ }).check();
   await page.getByLabel('Turn around').fill('90');
-  await expect(
-    page.locator('[data-view="side-right"][data-view-mood="professional"]'),
-  ).toHaveAttribute('visibility', 'visible');
-  await expect(page.locator('[data-view="side-right"][data-view-mood="goofy"]')).toHaveAttribute(
+  await expect(page.locator('[data-view="side"][data-view-mood="professional"]')).toHaveAttribute(
+    'visibility',
+    'visible',
+  );
+  await expect(page.locator('[data-view="side"][data-view-mood="goofy"]')).toHaveAttribute(
     'visibility',
     'hidden',
   );

@@ -45,7 +45,8 @@ export function applySpin(figure: SVGSVGElement, rig: Rig, degrees: number): voi
   figure
     .querySelector('[data-spin]')
     ?.setAttribute('transform', toSvgTransform(spinMatrix(rig, degrees)));
-  figure.dataset['spin'] = String(degrees);
+  // `spinAngle` writes `data-spin-angle` (not `data-spin`, which marks the spin group itself).
+  figure.dataset['spinAngle'] = String(degrees);
 }
 
 /**
