@@ -2,7 +2,17 @@
  * Unit tests for the bundle-size budget (README §5.4: performance budgets are enforced).
  */
 import { describe, expect, it } from 'vitest';
-import { checkBudget, formatKilobytes, KILOBYTE } from '../../scripts/lib/budgets';
+import {
+  BASE_BUDGET_BYTES,
+  budgetFor,
+  checkBudget,
+  formatKilobytes,
+  importsInChunk,
+  KILOBYTE,
+  pagePathOf,
+  reachableChunks,
+  scriptsInHtml,
+} from '../../scripts/lib/budgets';
 
 const LIMIT = 50 * KILOBYTE;
 
@@ -39,5 +49,44 @@ describe('formatKilobytes', () => {
   it('shows kilobytes with one decimal', () => {
     expect(formatKilobytes(1536)).toBe('1.5 KB');
     expect(formatKilobytes(0)).toBe('0.0 KB');
+  });
+});
+
+describe('per-page budgets', () => {
+  it('gives every page, the dev-only preview included, the base budget', () => {
+    for (const page of ['/', '/nl/', '/hu/', '/en/', '/404.html', '/playground/']) {
+      expect(budgetFor(page)).toBe(BASE_BUDGET_BYTES);
+    }
+  });
+
+  it('turns built HTML files into page paths', () => {
+    expect(pagePathOf('index.html')).toBe('/');
+    expect(pagePathOf('nl/index.html')).toBe('/nl/');
+    // Windows lists files with backslashes.
+    expect(pagePathOf('playground\\index.html')).toBe('/playground/');
+    expect(pagePathOf('404.html')).toBe('/404.html');
+  });
+
+  it('finds the scripts a page loads', () => {
+    const html =
+      '<head><script type="module" src="/_astro/a.js"></script></head>' +
+      '<body><script>inline()</script><script type="module" src="/_astro/b.js"></script></body>';
+    expect(scriptsInHtml(html)).toEqual(['/_astro/a.js', '/_astro/b.js']);
+  });
+
+  it('finds static, side-effect and lazy imports in minified code', () => {
+    const code = 'import{a as b}from"./x.js";import"./y.js";const m=import("./z.js");';
+    expect(importsInChunk(code)).toEqual(['./x.js', './y.js', './z.js']);
+  });
+
+  it('follows imports through chunks and counts each chunk once', () => {
+    // a imports b and c; b imports c; c imports nothing: a small diamond-shaped graph.
+    const graph: Record<string, string[]> = {
+      '/_astro/a.js': ['./b.js', './c.js'],
+      '/_astro/b.js': ['./c.js'],
+      '/_astro/c.js': [],
+    };
+    const chunks = reachableChunks(['/_astro/a.js'], (chunk) => graph[chunk] ?? []);
+    expect(chunks.sort()).toEqual(['/_astro/a.js', '/_astro/b.js', '/_astro/c.js']);
   });
 });

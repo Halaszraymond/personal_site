@@ -8,11 +8,11 @@
 
 ## 2. Dev-only route and production check (carried over)
 
-- [ ] 2.1 Bring over `src/lib/playground-flag.ts` and its unit test from `change/kalman-playground`; verify the test passes
-- [ ] 2.2 Add the integration in `astro.config.ts` that injects `/playground/` → `src/playground/PreviewPage.astro` (a minimal page for now), plus `.env.playground` and `npm run build:playground`; verify `npm run build` has no `dist/playground/` and `npm run build:playground` does
-- [ ] 2.3 Add `showLanguageSwitcher` to `BaseLayout.astro` and use it (with no `canonicalPath`) on the preview page; add `tests/e2e/preview-page.spec.ts` for `noindex`, `lang="en"`, no alternates, no switcher, and no alternates on the 404; verify it passes
-- [ ] 2.4 Bring over `scripts/lib/production-check.ts` with the `kalman-preview` marker instead of `__THREE__`, its unit test and `scripts/check-production-build.ts` as `npm run check:production`; verify it passes on the production build and fails on the playground build
-- [ ] 2.5 Bring over the per-page budgets (`scripts/lib/budgets.ts`, `scripts/check-bundle-size.ts`, `tests/unit/budgets.test.ts`), with the 50 KB base budget for every page; verify `npm run size` prints one line per page and passes
+- [x] 2.1 Bring over `src/lib/playground-flag.ts` and its unit test from `change/kalman-playground`; verify the test passes
+- [x] 2.2 Add the integration in `astro.config.ts` that injects `/playground/` → `src/playground/PreviewPage.astro` (a minimal page for now), plus `.env.playground` and `npm run build:playground`; verify `npm run build` has no `dist/playground/` and `npm run build:playground` does
+- [x] 2.3 Add `showLanguageSwitcher` to `BaseLayout.astro` and use it (with no `canonicalPath`) on the preview page; add `tests/e2e/preview-page.spec.ts` for `noindex`, `lang="en"`, no alternates, no switcher, and no alternates on the 404; verify it passes
+- [x] 2.4 Bring over `scripts/lib/production-check.ts` with the `kalman-preview` marker instead of `__THREE__`, its unit test and `scripts/check-production-build.ts` as `npm run check:production`; verify it passes on the production build and fails on the playground build
+- [x] 2.5 Bring over the per-page budgets (`scripts/lib/budgets.ts`, `scripts/check-bundle-size.ts`, `tests/unit/budgets.test.ts`), with the 50 KB base budget for every page; verify `npm run size` prints one line per page and passes
 - [ ] 2.6 Update the CI workflow and `npm run check` to the order in design §10; verify by pushing the branch and seeing the CI `check` job green
 
 ## 3. Rig and pose logic

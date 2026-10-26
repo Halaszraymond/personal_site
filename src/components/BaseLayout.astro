@@ -16,9 +16,14 @@ interface Props {
   currentLocale: Locale | null;
   /** Path of the canonical URL, e.g. `/en/`. Leave out for pages search engines should not index. */
   canonicalPath?: string;
+  /** False for dev tools such as the Kálmán preview, which are not part of the public site. */
+  showLanguageSwitcher?: boolean;
+  /** A page-specific title for the browser tab; defaults to the site title. */
+  title?: string;
 }
 
-const { locale, currentLocale, canonicalPath } = Astro.props;
+// `= true` is a default value, like `def f(show_language_switcher=True)` in Python.
+const { locale, currentLocale, canonicalPath, showLanguageSwitcher = true, title } = Astro.props;
 
 // `Astro.site` comes from `site` in astro.config.ts. It is always set there,
 // but TypeScript cannot know that, so we check instead of assuming.
@@ -37,7 +42,7 @@ const indexable = canonicalPath !== undefined;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{UI[locale].siteTitle}</title>
+    <title>{title ?? UI[locale].siteTitle}</title>
     <meta name="description" content={UI[locale].description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     {indexable && <link rel="canonical" href={new URL(canonicalPath, site).href} />}
@@ -48,9 +53,11 @@ const indexable = canonicalPath !== undefined;
     {!indexable && <meta name="robots" content="noindex" />}
   </head>
   <body>
-    <header>
-      <LanguageSwitcher currentLocale={currentLocale} labelLocale={locale} />
-    </header>
+    {showLanguageSwitcher && (
+      <header>
+        <LanguageSwitcher currentLocale={currentLocale} labelLocale={locale} />
+      </header>
+    )}
     <RenderModeSwitch />
     <main>
       <slot />

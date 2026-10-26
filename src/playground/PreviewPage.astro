@@ -1,0 +1,18 @@
+---
+/**
+ * The dev-only Kálmán preview at /playground/.
+ *
+ * Not a file in src/pages/: astro.config.ts adds this page as a route only in the
+ * development server and in builds with PLAYGROUND=1, so production never contains it
+ * (spec: kalman-preview). English only while dev-only; not indexed; no language switcher.
+ */
+import BaseLayout from '../components/BaseLayout.astro';
+import { PREVIEW_EN as TEXT } from '../i18n/preview';
+---
+
+<BaseLayout locale="en" currentLocale={null} showLanguageSwitcher={false} title={TEXT.title}>
+  <div data-kalman-preview>
+    <h1>{TEXT.heading}</h1>
+    <p>{TEXT.intro}</p>
+  </div>
+</BaseLayout>

@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:playground": "node --env-file=.env.playground node_modules/astro/bin/astro.mjs build",
     "preview": "astro preview",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write . && eslint --fix .",
@@ -19,7 +20,8 @@
     "prepare": "simple-git-hooks",
     "e2e": "playwright test",
     "size": "node scripts/check-bundle-size.ts",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run size && npm run e2e && npm run lighthouse",
+    "check:production": "node scripts/check-production-build.ts",
+    "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run check:production && npm run build:playground && npm run size && npm run e2e && npm run lighthouse",
     "lighthouse": "node scripts/run-lighthouse.ts"
   },
   "dependencies": {
