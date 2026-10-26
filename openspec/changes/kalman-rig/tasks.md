@@ -17,10 +17,10 @@
 
 ## 3. Rig and pose logic
 
-- [ ] 3.1 Write `src/lib/kalman-rig.ts` types and the matrix helpers (`translate`, `rotateAround`, `multiply`, `applyToPoint`) with unit tests, including the NumPy comparison in comments; verify the tests pass
-- [ ] 3.2 Implement `validateRig()` for every failure in spec "An invalid rig fails the build checks" (duplicate name, unknown parent, loop, shared order, missing image, bad rotation range, not exactly one root) with one test each; verify the tests pass
-- [ ] 3.3 Implement `resolvePose()` (parents first, child moved by its parent's movement from rest, sorted by `order`, accessories hidden in the goofy mood, pivot on the artboard) with tests for rest, pivot stays put, glasses follow the head, far flipper behind the body and partial poses; verify the tests pass
-- [ ] 3.4 Implement `validatePose()` (unknown layer, non-finite value, rotation out of range) with tests; verify the tests pass
+- [x] 3.1 Write `src/lib/kalman-rig.ts` types and the matrix helpers (`translate`, `rotateAround`, `multiply`, `applyToPoint`) with unit tests, including the NumPy comparison in comments; verify the tests pass
+- [x] 3.2 Implement `validateRig()` for every failure in spec "An invalid rig fails the build checks" (duplicate name, unknown parent, loop, shared order, missing image, bad rotation range, not exactly one root) with one test each; verify the tests pass
+- [x] 3.3 Implement `resolvePose()` (parents first, child moved by its parent's movement from rest, sorted by `order`, accessories hidden in the goofy mood, pivot on the artboard) with tests for rest, pivot stays put, glasses follow the head, far flipper behind the body and partial poses; verify the tests pass
+- [x] 3.4 Implement `validatePose()` (unknown layer, non-finite value, rotation out of range) with tests; verify the tests pass
 
 ## 4. Placeholders, rig data and the figure
 
