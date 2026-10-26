@@ -1,0 +1,68 @@
+{
+  "views": [
+    {
+      "name": "front",
+      "angle": 0,
+      "images": {
+        "goofy": {
+          "image": "sheet/view-front.png",
+          "size": [577.5, 1222.5],
+          "position": [513.4, 177.5]
+        },
+        "professional": {
+          "image": "sheet/view-front-pro.png",
+          "size": [577.5, 1222.5],
+          "position": [513.3, 177.5]
+        }
+      }
+    },
+    {
+      "name": "side-right",
+      "angle": 90,
+      "images": {
+        "goofy": {
+          "image": "sheet/view-side-right.png",
+          "size": [577.5, 1217.5],
+          "position": [530.4, 182.5]
+        },
+        "professional": {
+          "image": "sheet/view-side-right-pro.png",
+          "size": [577.5, 1217.5],
+          "position": [525.7, 182.5]
+        }
+      }
+    },
+    {
+      "name": "back",
+      "angle": 180,
+      "images": {
+        "goofy": {
+          "image": "sheet/view-back.png",
+          "size": [560, 1192.5],
+          "position": [521.2, 207.5]
+        },
+        "professional": {
+          "image": "sheet/view-back-pro.png",
+          "size": [560, 1192.5],
+          "position": [521.2, 207.5]
+        }
+      }
+    },
+    {
+      "name": "side-left",
+      "angle": 270,
+      "images": {
+        "goofy": {
+          "image": "sheet/view-side-left.png",
+          "size": [522.5, 1230],
+          "position": [547.8, 170]
+        },
+        "professional": {
+          "image": "sheet/view-side-left-pro.png",
+          "size": [522.5, 1227.5],
+          "position": [547.8, 172.5]
+        }
+      }
+    }
+  ]
+}

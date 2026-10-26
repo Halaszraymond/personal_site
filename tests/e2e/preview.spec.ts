@@ -229,3 +229,31 @@ test('the spin slider turns the whole figure without changing the pose', async (
   expect(await transformOf(page, 'head')).toBe(head);
   await expect(page.getByLabel(/Pose JSON/)).toHaveValue(json);
 });
+
+test('turning around shows the drawn back view instead of the layers', async ({ page }) => {
+  await page.getByLabel('Turn around').fill('180');
+
+  await expect(figure(page)).toHaveAttribute('data-turn', '180');
+  await expect(page.locator('[data-layers]')).toHaveAttribute('display', 'none');
+  await expect(page.locator('[data-view="back"][data-view-mood="goofy"]')).toHaveAttribute(
+    'visibility',
+    'visible',
+  );
+  await expect(figure(page)).toHaveAttribute('aria-label', /seen from the back$/);
+
+  // Back to the front: the posable layers return.
+  await page.getByLabel('Turn around').fill('0');
+  await expect(page.locator('[data-layers]')).toHaveAttribute('display', 'inline');
+});
+
+test('the professional mood also shows on the turntable views', async ({ page }) => {
+  await page.getByRole('switch', { name: /Professional/ }).check();
+  await page.getByLabel('Turn around').fill('90');
+  await expect(
+    page.locator('[data-view="side-right"][data-view-mood="professional"]'),
+  ).toHaveAttribute('visibility', 'visible');
+  await expect(page.locator('[data-view="side-right"][data-view-mood="goofy"]')).toHaveAttribute(
+    'visibility',
+    'hidden',
+  );
+});

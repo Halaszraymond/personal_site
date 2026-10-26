@@ -66,6 +66,12 @@ const rest = poseNamed('rest');
     margin: 0 auto;
   }
 
+  /* Dragging sideways turns him; vertical swipes still scroll the page on a phone. */
+  .stage :global(.kalman-figure) {
+    touch-action: pan-y;
+    cursor: grab;
+  }
+
   .side {
     display: grid;
     gap: 1rem;

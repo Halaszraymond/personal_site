@@ -42,6 +42,14 @@ import { REPO_POSES, REPO_RIG } from '../scene/kalman/repo-rig';
   <fieldset>
     <legend>{TEXT.viewLegend}</legend>
     <div class="slider">
+      <label for="turn">{TEXT.turn}</label>
+      <input type="range" id="turn" data-turn-slider min="0" max="359" step="1" value="0" />
+      <output for="turn" data-turn-value>
+        0°
+      </output>
+    </div>
+    <p class="hint">{TEXT.turnHint}</p>
+    <div class="slider">
       <label for="spin">{TEXT.spin}</label>
       <input type="range" id="spin" data-spin-slider min="-180" max="180" step="1" value="0" />
       <output for="spin" data-spin-value>
@@ -139,6 +147,11 @@ import { REPO_POSES, REPO_RIG } from '../scene/kalman/repo-rig';
   .slider input {
     width: 100%;
     min-width: 0;
+  }
+
+  .hint {
+    margin: 0 0 0.5rem;
+    font-size: 0.875rem;
   }
 
   output {

@@ -38,7 +38,11 @@ export function poseToJson(pose: Pose): string {
   return JSON.stringify(pose, null, 2);
 }
 
-/** The figure's description for screen readers, e.g. "Kálmán, pose: Bow, mood: professional". */
-export function figureDescription(pose: Pose, mood: string): string {
-  return `Kálmán, pose: ${pose.label}, mood: ${mood}`;
+/**
+ * The figure's description for screen readers, e.g. "Kálmán, pose: Bow, mood: professional",
+ * plus the side he is seen from once he is turned around ("seen from the back").
+ */
+export function figureDescription(pose: Pose, mood: string, seenFrom?: string): string {
+  const base = `Kálmán, pose: ${pose.label}, mood: ${mood}`;
+  return seenFrom === undefined ? base : `${base}, seen from the ${seenFrom}`;
 }

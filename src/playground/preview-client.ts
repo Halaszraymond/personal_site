@@ -9,8 +9,9 @@
  */
 import type { Mood, Pose } from '../lib/kalman-rig';
 import { figureDescription, poseFromControls, poseToJson } from '../lib/preview-pose';
-import { applyPose, applySpin } from '../scene/kalman/kalman-figure-client';
-import { poseNamed, REPO_RIG } from '../scene/kalman/repo-rig';
+import { normaliseAngle, turntableFrame } from '../lib/kalman-turntable';
+import { applyPose, applySpin, applyTurn } from '../scene/kalman/kalman-figure-client';
+import { poseNamed, REPO_RIG, REPO_TURNTABLE } from '../scene/kalman/repo-rig';
 import { PREVIEW_EN as TEXT } from '../i18n/preview';
 
 /** The preview's root element; its `data-kalman-preview` attribute is also the production-check marker. */
@@ -26,6 +27,8 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
   const sliders = [...root.querySelectorAll<HTMLInputElement>('[data-rotation]')];
   const moodSwitch = root.querySelector<HTMLInputElement>('[data-mood-switch]');
   const pivotsSwitch = root.querySelector<HTMLInputElement>('[data-pivots-switch]');
+  const turnSlider = root.querySelector<HTMLInputElement>('[data-turn-slider]');
+  const turnValue = root.querySelector<HTMLElement>('[data-turn-value]');
   const spinSlider = root.querySelector<HTMLInputElement>('[data-spin-slider]');
   const spinValue = root.querySelector<HTMLElement>('[data-spin-value]');
   const copyButton = root.querySelector<HTMLButtonElement>('[data-copy-pose]');
@@ -60,13 +63,32 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
     if (output !== null) output.textContent = `${slider.value}°`;
   }
 
+  /** The side he is seen from, for the description: the most visible view, or none at the front. */
+  function seenFrom(turn: number): string | undefined {
+    if (normaliseAngle(turn) === 0) return undefined;
+    const frames = turntableFrame(REPO_TURNTABLE, turn);
+    const main = [...frames].sort((a, b) => b.opacity - a.opacity)[0];
+    const views: Record<string, string> = TEXT.views;
+    return main === undefined ? undefined : views[main.name];
+  }
+
+  /** Sets the turn slider (and its shown value) and redraws. */
+  function setTurn(degrees: number): void {
+    if (turnSlider === null) return;
+    turnSlider.value = String(Math.round(normaliseAngle(degrees)));
+    if (turnValue !== null) turnValue.textContent = `${turnSlider.value}°`;
+    render();
+  }
+
   /** Works out the pose from the controls and redraws everything that depends on it. */
   function render(): void {
     current = poseFromControls(base, rotations());
     const currentMood = mood();
     applyPose(figure, REPO_RIG, current, currentMood);
+    const turn = Number(turnSlider?.value ?? 0);
+    applyTurn(figure, REPO_RIG, REPO_TURNTABLE, turn, currentMood);
     const moodLabel = currentMood === 'professional' ? TEXT.moodProfessional : TEXT.moodGoofy;
-    figure.setAttribute('aria-label', figureDescription(current, moodLabel));
+    figure.setAttribute('aria-label', figureDescription(current, moodLabel, seenFrom(turn)));
     for (const button of poseButtons) {
       button.setAttribute('aria-pressed', String(button.dataset['poseButton'] === current.name));
     }
@@ -90,6 +112,27 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
   }
 
   moodSwitch?.addEventListener('change', render);
+
+  turnSlider?.addEventListener('input', () => {
+    setTurn(Number(turnSlider.value));
+  });
+
+  // Dragging sideways on Kálmán turns him too: half a degree per pixel, like a turntable.
+  // Pointer events cover mouse, pen and touch in one API.
+  let dragStart: { x: number; turn: number } | undefined;
+  figure.addEventListener('pointerdown', (event) => {
+    dragStart = { x: event.clientX, turn: Number(turnSlider?.value ?? 0) };
+    figure.setPointerCapture(event.pointerId);
+  });
+  figure.addEventListener('pointermove', (event) => {
+    if (dragStart === undefined) return;
+    setTurn(dragStart.turn + (event.clientX - dragStart.x) * 0.5);
+  });
+  const endDrag = () => {
+    dragStart = undefined;
+  };
+  figure.addEventListener('pointerup', endDrag);
+  figure.addEventListener('pointercancel', endDrag);
 
   // Spinning is a view setting, not part of the pose: it turns the whole figure and leaves the
   // pose (and the pose JSON) as they are.
