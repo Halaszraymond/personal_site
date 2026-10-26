@@ -50,7 +50,7 @@ The work for this group started on the local branch `experiment/sheet-layers`; e
 
 - [x] 7.1 Fast-forward `change/kalman-rig` to `experiment/sheet-layers` and continue there; verify with `git log` that the branch has the experiment's commits and that `npm test` passes
 - [x] 7.2 Declare `sharp` as a devDependency at the version Astro already installs (approved by Raymond); verify `npm ls sharp` shows one version and `npm ci` changes nothing else
-- [ ] 7.3 Write `scripts/lib/kalman-cut.ts` (design §5: background flood fill, soft edge, difference mask, gap per row, part masks with the neck fade, boxes to rig entries, the size check) with unit tests on tiny made-up images; verify the tests pass
+- [x] 7.3 Write `scripts/lib/kalman-cut.ts` (design §5: background flood fill, soft edge, difference mask, gap per row, part masks with the neck fade, boxes to rig entries, the size check) with unit tests on tiny made-up images; verify the tests pass
 - [ ] 7.4 Write `scripts/cut-kalman-layers.ts` as `npm run cut:kalman` (reads the two front views, writes `src/assets/kalman/front/`, `rig.json` and `turntable.json`); verify that running it on the committed images reproduces the committed files exactly (`git status` clean)
 - [ ] 7.5 Bring the spin (`figureCentre`, `spinMatrix`, `applySpin`, the spin slider) and the turntable (`src/lib/kalman-turntable.ts`, `applyTurn`, the turn control, dragging) up to the specs, including mirrored views and the control left out with one view; verify the unit tests and the preview e2e tests pass
 - [ ] 7.6 Rewrite `docs/kalman-layers.md` as the image guide for the final design (design §5b), with the Gemini prompts for the front views and the turntable views; verify every image the script reads or the turntable can use is covered
