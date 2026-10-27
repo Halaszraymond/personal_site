@@ -2,9 +2,9 @@
 
 ## 1. Setup and the side images
 
-- [ ] 1.1 Add `gsap@3.15` as a dependency (approved by Raymond); verify `npm ls gsap` shows 3.15 and `npm run build` still passes
-- [ ] 1.2 Add the side-view prompts to `docs/kalman-layers.md` (design §6: the goofy side view in rest pose, its professional edit and the edit without the near flipper); verify the prompts name the files `side-goofy.png`, `side-professional.png` and `side-no-flipper.png`
-- [ ] 1.3 Check Raymond's three side images (same size, pixel-aligned, no text) and save them in `docs/images/kalman-design/`; verify with the alignment check (best shift 0, 0) against `side-goofy.png`
+- [x] 1.1 Add `gsap@3.15` as a dependency (approved by Raymond); verify `npm ls gsap` shows 3.15 and `npm run build` still passes
+- [x] 1.2 Add the side-view prompts to `docs/kalman-layers.md` (design §6: the goofy side view in rest pose, its professional edit and the edit without the near flipper); verify the prompts name the files `side-goofy.png`, `side-professional.png` and `side-no-flipper.png`
+- [x] 1.3 Check Raymond's three side images (same size, pixel-aligned, no text) and save them in `docs/images/kalman-design/`; verify with the alignment check (best shift 0, 0) against `side-goofy.png`
 
 ## 2. Two figures: rigs and poses
 
