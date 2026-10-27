@@ -48,10 +48,25 @@
 - [x] 6.5 Add `eyeShift()` with unit tests ("Pointer far to the right", "Pointer straight above the head", "Pointer below and to the left") and move the pupils in the player's head-follow, faster than the head; verify with e2e tests for "Pointer to the right" and "Eyes in the professional mood" in all four browsers
 - [x] 6.6 Tune the eyes with Raymond in the preview (how far, how fast) and update `docs/architecture.md`, `docs/glossary.md` and `docs/kalman-layers.md` for the pupils; verify Raymond approves and the docs match the code
 
-## 7. Wrap-up
+## 7. Second round: knees, a smoother bow, head-follow and the belly landing
 
-- [x] 7.1 Measure the preview's JavaScript with `npm run size`; verify it is still within the 50 KB budget and public pages are unchanged
-- [ ] 7.2 Run `npm run check` (with no dev server on port 4321) and let CI pass on the branch; verify everything is green and Raymond has judged all animations
+- [ ] 7.1 Add `plant` to `LayerPose` and to `resolvePose()` (a planted layer mixed between following its parent and staying at rest, design §12), blended in `blendPoses()` and validated as 0–1; verify with unit tests for "Crouching on planted feet" and "Feet that leave the ground", and that a foot's own rotation still applies
+- [ ] 7.2 Use planted feet in the dive's crouch and push-off, the launch's wind-up and stand-up, and the bow; verify with the scenario tests of 5.1 (updated) and film strips
+- [ ] 7.3 Make the bow fold smoothly (shorter head on the way down, `fade` 0.5 s, earlier and overlapping cross-fade, `sine.inOut`); verify with the updated "On the way down" test and a film strip, and Raymond approves the bow
+- [ ] 7.4 Let the body turn along during head-follow (a fraction of the head's angle, slower) and reduce the head's own turn; verify with unit tests for the body's share and an e2e test that the body leans with the pointer, and Raymond approves
+- [ ] 7.5 Replace the launch's landing with the belly landing, slide and stand-up on planted feet; verify with the scenario tests "Landing on his belly" and "Standing up", a film strip, and Raymond approves
+
+## 8. The drawn swim figure
+
+- [x] 8.1 Add prompts 11–13 (swimming, goofy; its professional edit; without the near flipper) to `docs/kalman-layers.md`; verify the prompts name `swim-goofy.png`, `swim-professional.png` and `swim-no-flipper.png`
+- [ ] 8.2 Check Raymond's three swim images (same size, lined up, white background) and save them; verify with the alignment check and a side-by-side
+- [ ] 8.3 Add the `swim` figure (`Figure`, `FIGURES`, rigs, poses, the figure switch and the player) and cut its rig in `scripts/cut-kalman-layers.ts` (body from the edit without the flipper, flipper along a traced outline, tie and glasses); verify `cut:kalman`, `check:kalman`, the data test for its four layers, and "A stroking flipper" in a screenshot
+- [ ] 8.4 Move the swim animation to the swimming figure with its own poses (body pitch, flipper strokes with lag, a glance by tipping the body); verify with the updated swim scenario tests, the e2e test "Showing the swimming figure", and Raymond approves the swim
+
+## 9. Wrap-up
+
+- [x] 9.1 Measure the preview's JavaScript with `npm run size`; verify it is still within the 50 KB budget and public pages are unchanged
+- [ ] 9.2 Run `npm run check` (with no dev server on port 4321) and let CI pass on the branch; verify everything is green and Raymond has judged all animations
 
 ## Workflow follow-up
 

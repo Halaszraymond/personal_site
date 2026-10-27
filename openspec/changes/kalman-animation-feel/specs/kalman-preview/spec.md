@@ -28,6 +28,17 @@ While the head-follow animation is chosen, Kálmán's head SHALL turn towards th
 - **WHEN** head-follow is chosen in the professional mood and the pointer moves to the right edge of the stage
 - **THEN** the professional pupils behind the glasses move to the right
 
+### Requirement: A front/side switch
+The preview SHALL offer a switch between the front, the side and the swimming figure for posing. The turn-around control SHALL apply to the front figure.
+
+#### Scenario: Showing the side figure
+- **WHEN** Raymond switches to the side figure
+- **THEN** the side figure is shown in its rest pose
+
+#### Scenario: Showing the swimming figure
+- **WHEN** Raymond switches to the swimming figure
+- **THEN** the swimming figure is shown in its rest pose, with its own pose buttons and sliders
+
 ## ADDED Requirements
 
 ### Requirement: A stretch slider per stretchable layer

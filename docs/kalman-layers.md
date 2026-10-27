@@ -45,6 +45,14 @@ For the eyes that follow the pointer, the pupils become their own layers. Under 
 | `front-goofy-no-pupils.png` | The goofy front view with plain white eyes, no pupils | Prompt 9, an **edit** of `front-goofy.png` |
 | `front-professional-no-pupils.png` | The professional front view with the calm eyes plain white, no pupils | Prompt 10, an **edit** of `front-professional.png` |
 
+For swimming, Kálmán has a third figure, drawn lying horizontally (the side figure's neck can't bend into a torpedo). Like the side figure it needs three images:
+
+| File | What | How it's made |
+|---|---|---|
+| `swim-goofy.png` | Swimming, seen from the side: horizontal, bill first, head in line with the body, near flipper along his side | Prompt 11, with `side-goofy.png` as the reference |
+| `swim-professional.png` | The same with glasses, the calm eye and the tie | Prompt 12, an **edit** of `swim-goofy.png` |
+| `swim-no-flipper.png` | The same without the near flipper, the body painted underneath | Prompt 13, an **edit** of `swim-goofy.png` |
+
 **Why edits:** a professional image made as an edit of its goofy one lines up with it pixel for pixel. Then the difference between the two is exactly the tie, the glasses and the eyes, and that becomes the tie and glasses layers. A professional image drawn from scratch would never line up.
 
 ## Prompts for Gemini
@@ -150,6 +158,32 @@ Change nothing else: same pose, same position, same size, same lighting, same ba
 Edit this exact image. Remove only the pupils from his calm eyes behind the glasses, so the eyes are plain white, with the same eyelids, outline and shading. Keep the glasses, the tie and everything else exactly as they are.
 
 Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere outside the pupils.
+```
+
+### 11. Swimming, goofy (attach `side-goofy.png`)
+
+```text
+Use the attached image as the reference for this penguin character: same painted illustration style, same colours, same big round goofy eye.
+
+Draw ONE single view of him swimming underwater, seen exactly from the side, his bill pointing to the left of the picture. His whole body is horizontal and streamlined like a torpedo, his head stretched forward in line with his body with no bend at the neck, his bill pointing straight ahead to the left. His near flipper lies flat along his side, pointing back towards his tail. His feet are tucked back behind his tail.
+
+Pure plain white background: no water, no bubbles, no text, no labels, no shadow. Landscape format (3:2), the whole penguin in frame with some margin, as large as possible.
+```
+
+### 12. Swimming, professional (attach `swim-goofy.png` and `side-professional.png`)
+
+```text
+Edit the first image. Add the round black glasses, the calm professional eye and the purple patterned tie from the second image, as they would look on him swimming, seen from the side.
+
+Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere outside the glasses, the eye and the tie.
+```
+
+### 13. Swimming without the flipper (attach `swim-goofy.png`, nothing else)
+
+```text
+Edit this exact image. Remove his near flipper completely and paint the side of his body that was behind it, continuing the grey back and the white belly naturally, with the same feather texture and lighting.
+
+Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere outside the area where the flipper was.
 ```
 
 ## Before running the script, check

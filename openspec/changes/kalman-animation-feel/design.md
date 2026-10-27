@@ -100,7 +100,18 @@ The eyes are painted into the head (goofy) and into the glasses layer (the calm 
 - **Following:** a pure `eyeShift(point, eyes, shift, reach)` next to `headTurn()`: the offset grows with how far the point is from the eyes, in x and y, up to `shift`. The player glides the pupils there with `gsap.quickTo`, faster than the head (0.15 s against 0.3 s), so the eyes lead and the head follows: overlap again.
 - **Alternative:** drawing round pupils in code would be simpler, but Kálmán is drawn from Raymond's art only.
 
-### 12. Preview
+### 12. Second round: knees, a smoother bow, head-follow, the belly landing
+Raymond tried the first round and asked for these; the research is in the planning log.
+
+- **Planted feet (knees).** Penguins stand on bent knees inside the body; crouching is the body sinking over feet that stay put. A layer in a pose gets `plant` (0–1), which blends and lags like its rotation; the poses plant the feet. `resolvePose()` works out a planted layer's matrix twice, once following its parent as now and once from its rest position with only its own rotation, and mixes the two by `plant` (all six matrix numbers, which is fine for the small angles of a crouch). *Alternative:* counter-offsets for the feet in every pose: fiddly, and wrong as soon as the body also turns.
+- **The bow folds instead of snapping.** The head sinks with a stretch below 1 (shorter, as if it tips towards the viewer, down to the head's range of 0.92), the cross-fade is longer (`fade` 0.5 s) and centred earlier, and the descent uses `sine.inOut`, so the fold and the cross-fade overlap.
+- **Head-follow as one penguin.** The body turns along by a fraction of the head's angle (about a quarter), with a slower glide (0.5 s against the head's 0.3 s), and the head's own turn is reduced to about two thirds of its range: overlap between eyes, head and body.
+- **The belly landing.** New side poses: `landingBelly` (body close to −88°, belly down at ground level, squashed), `belly slide` (forward), `pushUp` (body about −45°, feet planted, flippers out against the ground), then the existing wobble and recovery on planted feet.
+
+### 13. The drawn swim figure
+The side figure's neck can't bend into a torpedo convincingly, so Raymond draws Kálmán swimming: horizontally, bill first, head in line with the body, the near flipper lying along his side, feet tucked behind the tail. Like the side figure there is a professional edit and an edit without the near flipper. The cut script cuts a third figure, `swim`: the body (head, feet and tail drawn in) from the edit without the flipper, the flipper along a traced outline, and the tie and glasses from the professional difference; placed so his body is as long as the side figure is tall, centred on the stage. `Figure` becomes `'front' | 'side' | 'swim'`; the swim animation uses it, with its own poses (stroke up, stroke down, glance) in which the body pitches a few degrees and the flipper strokes with a lag.
+
+### 14. Preview
 Each layer with a stretch range gets a stretch slider (step 0.01) below the rotation sliders, built from the same template. `preview-pose.ts` merges stretches like rotations, and Copy pose leaves out stretches at 1, as it leaves out rotations at 0. The scrub slider's range becomes `playLength`. Drawn poses are not posable; they appear only through an animation.
 
 ## Risks / Trade-offs

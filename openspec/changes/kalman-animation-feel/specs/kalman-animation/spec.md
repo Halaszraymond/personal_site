@@ -55,11 +55,11 @@ An animation that does not loop SHALL end with Kálmán back at rest, once every
 - **THEN** the animation keeps playing until the tail is at rest too, and only then counts as finished
 
 ### Requirement: The head follows a point
-For head-follow, the front figure's head SHALL turn towards a given point (such as the pointer) within its allowed range: the further to the side the point is from the head, the further the head turns, up to the end of its range. The pupils SHALL look towards the point as well, shifting within their allowed shift: sideways and up or down, further the further away the point is, and a moment ahead of the head. Without a point, the head and the pupils SHALL return to rest.
+For head-follow, the front figure's head SHALL turn towards a given point (such as the pointer) within its allowed range: the further to the side the point is from the head, the further the head turns, up to the end of its range. The pupils SHALL look towards the point as well, shifting within their allowed shift: sideways and up or down, further the further away the point is, and a moment ahead of the head. The body SHALL turn along a little, a moment after the head, so the head and the body move as one penguin. Without a point, the head, the pupils and the body SHALL return to rest.
 
 #### Scenario: Pointer far to the right
 - **WHEN** the point is far to the right of Kálmán's head
-- **THEN** the head is turned to the right end of its range and the pupils are shifted to the right end of their allowed shift
+- **THEN** the head is turned to the right, the pupils are shifted to the right end of their allowed shift, and the body leans a little to the right as well
 
 #### Scenario: Pointer straight above the head
 - **WHEN** the point is straight above the head
@@ -68,6 +68,13 @@ For head-follow, the front figure's head SHALL turn towards a given point (such 
 #### Scenario: Pointer below and to the left
 - **WHEN** the point is below and to the left of Kálmán's eyes
 - **THEN** the pupils shift down and to the left
+
+### Requirement: The right figure for each animation
+Idle, bow and head-follow SHALL use the front figure; dive and launch SHALL use the side figure; swim SHALL use the swimming figure. While an animation plays, the figure SHALL show the layers of the figure it uses.
+
+#### Scenario: Swimming from the side
+- **WHEN** the swim animation plays
+- **THEN** the swimming figure, seen from the side lying horizontally, is shown and its flipper strokes
 
 ## ADDED Requirements
 
@@ -102,14 +109,21 @@ The bow SHALL use the front figure and read as a polite, deep bow, like a butler
 
 #### Scenario: On the way down
 - **WHEN** the bow is held just before the cross-fade into the drawn bow
-- **THEN** the head is lowered by at least a quarter of its own height, the body is barely turned, and the flippers are within a few degrees of rest
+- **THEN** the head is lowered by at least a quarter of its own height and shorter than at rest, the body is barely turned, and the flippers are within a few degrees of rest
+
+### Requirement: The bow folds smoothly
+The bow's head SHALL fold down gradually: on the way down it gets shorter as it tips towards the viewer, and the drawn bow cross-fades in during the descent, not after it, so the fold never jumps from the face to the top of the head.
+
+#### Scenario: Cross-fading while he bends
+- **WHEN** the bow is sampled halfway through the cross-fade into the drawn bow
+- **THEN** the head is still moving down, not yet at its deepest
 
 ### Requirement: The dive moves like a dive
-The dive SHALL be a little goofy but natural: he leans forward with his flippers back, crouches and squashes, makes a small hop in which his flippers flail, and goes into the water face first, his head leading while his tail and feet trail behind.
+The dive SHALL be a little goofy but natural: he leans forward with his flippers back, crouches on bent knees with his feet on the ground, pushes off, makes a small hop in which his flippers flail, and goes into the water face first, his head leading while his tail and feet trail behind.
 
 #### Scenario: Crouch before the hop
 - **WHEN** the dive is held at the end of its crouch
-- **THEN** the body is leaning forward, lower than at rest and squashed
+- **THEN** the body is leaning forward, lower than at rest and squashed, and the feet are planted on the ground
 
 #### Scenario: The hop
 - **WHEN** the dive is sampled just after the hop
@@ -120,11 +134,11 @@ The dive SHALL be a little goofy but natural: he leans forward with his flippers
 - **THEN** the body is turned past horizontal so the head is lower than the tail, the body is stretched, and the tail and feet are behind the body's movement
 
 ### Requirement: The swim moves like a stroke
-The swim SHALL be elegant: he lies horizontally like a torpedo with his bill forward, and each stroke moves him, the body surging forward and stretching slightly on the down stroke and gliding on the up stroke, while the head, tail and feet follow a moment later. Once per loop he SHALL glance aside, as if at a passing fish, and then look ahead again.
+The swim SHALL be elegant: he swims as the swimming figure, horizontally like a torpedo with his bill forward, and each stroke moves him, the body surging forward and stretching slightly on the down stroke, pitching a little with it, and gliding on the up stroke, while the flipper follows a moment later. Once per loop he SHALL glance aside, as if at a passing fish, by tipping his whole body briefly, and then look ahead again.
 
 #### Scenario: Horizontal
 - **WHEN** the swim is held at any moment
-- **THEN** the body is turned close to horizontal with the bill forward
+- **THEN** the swimming figure is shown and its body is turned no more than a few degrees from its drawn, horizontal rest
 
 #### Scenario: Surge on the down stroke
 - **WHEN** the swim is sampled at the end of the down stroke and at the end of the up stroke
@@ -132,23 +146,23 @@ The swim SHALL be elegant: he lies horizontally like a torpedo with his bill for
 
 #### Scenario: Trailing
 - **WHEN** the swim plays
-- **THEN** the tail and feet reach each turning point of the stroke later than the body
+- **THEN** the flipper reaches each turning point of the stroke later than the body
 
 #### Scenario: A glance at a fish
 - **WHEN** the swim plays one whole loop
-- **THEN** the head turns away from straight ahead once and returns
+- **THEN** the body tips away from its swimming line once and returns
 
 ### Requirement: The launch is professional, the landing goofy
-The launch SHALL be clean and powerful: he rises upright like a rocket with his flippers pressed to his body and stretched, then flies out at an angle with his feet trailing. The landing SHALL be goofy: he lands on his feet with a squash, tips forward with his flippers out as if he almost loses his balance, wobbles, and straightens up to rest.
+The launch SHALL be clean and powerful: he rises upright like a rocket with his flippers pressed to his body and stretched, then flies out at an angle with his feet trailing. The landing SHALL be goofy, as in Raymond's stills: he lands on his belly, slides forward a little, pushes himself up with his feet and flippers on bent knees, wobbles as if he almost loses his balance, and straightens up to rest.
 
 #### Scenario: Rising
 - **WHEN** the launch is held halfway up
 - **THEN** the body is stretched and the flipper is close to the body
 
-#### Scenario: Landing
+#### Scenario: Landing on his belly
 - **WHEN** the launch is held at the moment he lands
-- **THEN** the body is at ground level and squashed
+- **THEN** the body lies close to horizontal, belly down, at ground level, and is squashed
 
-#### Scenario: Almost losing his balance
-- **WHEN** the launch is held just after the landing
-- **THEN** the body is tipped forward and the flipper is turned away from the body, and when the launch has finished he is at rest
+#### Scenario: Standing up
+- **WHEN** the launch is held while he pushes himself up
+- **THEN** the body is between lying and upright, the feet are planted on the ground and the flipper is turned away from the body, and when the launch has finished he is at rest

@@ -51,11 +51,11 @@ At rest no seam SHALL be visible where two layers meet. The head SHALL blend int
 - **THEN** the head still sits on the neck and the flippers on the shoulders, with no gap between them and the body
 
 ### Requirement: The rig has Kálmán's parts
-There SHALL be a rig for the front figure and one for the side figure. The front rig SHALL contain exactly these layers: body, head, left flipper, right flipper, left foot, right foot, tail, tie, glasses, goofy pupils and professional pupils. The side rig SHALL contain exactly these layers: body, head, flipper, front foot, back foot, tail, tie and glasses (the far flipper is hidden behind the body). In each rig the body SHALL be the only layer without a parent.
+There SHALL be a rig for the front figure, one for the side figure and one for the swimming figure. The front rig SHALL contain exactly these layers: body, head, left flipper, right flipper, left foot, right foot, tail, tie, glasses, goofy pupils and professional pupils. The side rig SHALL contain exactly these layers: body, head, flipper, front foot, back foot, tail, tie and glasses (the far flipper is hidden behind the body). The swimming rig SHALL contain exactly these layers: body (with the head, the feet and the tail drawn in), flipper, tie and glasses. In each rig the body SHALL be the only layer without a parent.
 
 #### Scenario: Layer set
 - **WHEN** the rig config in the repo is checked
-- **THEN** the front rig has exactly its eleven layers, the side rig exactly its eight, and in both the body is the only one without a parent
+- **THEN** the front rig has exactly its eleven layers, the side rig exactly its eight, the swimming rig exactly its four, and in each the body is the only one without a parent
 
 ### Requirement: The professional accessories can be shown or hidden
 The tie, the glasses and the professional pupils SHALL be shown only when Kálmán is in his professional mood and hidden otherwise, and the goofy pupils only in his goofy mood, independent of the pose.
@@ -113,3 +113,20 @@ The front figure's head and its professional eyes SHALL be cut from Raymond's ed
 - **WHEN** the pupils are shifted to the end of their allowed shift, in either mood
 - **THEN** where they were at rest the eye shows painted white, not a copy of the pupil
 
+### Requirement: Feet can stay on the ground
+A pose SHALL be able to plant the feet, by an amount from 0 to 1: at 1 the feet stay where they stand at rest, on the ground, while the body above them sinks, rises, leans or squashes (his knees, which are hidden in his body, bend); at 0 they move with the body as before; in between they follow the body partly. Between keyframes the amount blends like any other value. A foot's own rotation SHALL still apply when it is planted.
+
+#### Scenario: Crouching on planted feet
+- **WHEN** a pose lowers and squashes the side body with the feet planted at 1
+- **THEN** the feet are exactly where they are at rest, and the body is lower
+
+#### Scenario: Feet that leave the ground
+- **WHEN** a pose lifts the body with the feet not planted
+- **THEN** the feet move up with the body
+
+### Requirement: The swimming figure comes from the design images
+The swimming figure SHALL be cut by the cutting script from Raymond's drawing of Kálmán swimming horizontally (bill first, head in line with the body), its professional edit, and an edit without the near flipper: the body from the one without the flipper, the flipper along an outline traced once, and the tie and the glasses from where the professional edit differs.
+
+#### Scenario: A stroking flipper
+- **WHEN** the swimming figure's flipper is turned to the end of its range
+- **THEN** the body where the flipper was at rest shows painted body, not a copy of the flipper
