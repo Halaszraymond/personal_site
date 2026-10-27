@@ -17,6 +17,17 @@ The preview SHALL offer a "Copy pose" control that copies the current slider val
 - **WHEN** Raymond squashes the body with its stretch slider and activates "Copy pose"
 - **THEN** the copied pose holds the body's stretch, and leaves out the stretch of layers that are at 1
 
+### Requirement: Head-follow on the stage
+While the head-follow animation is chosen, Kálmán's head SHALL turn towards the pointer as it moves over the stage and his eyes SHALL look at it, in both moods; both return to rest when the pointer leaves.
+
+#### Scenario: Pointer to the right
+- **WHEN** head-follow is chosen and the pointer moves to the right edge of the stage
+- **THEN** Kálmán's head turns to the right and his pupils move to the right
+
+#### Scenario: Eyes in the professional mood
+- **WHEN** head-follow is chosen in the professional mood and the pointer moves to the right edge of the stage
+- **THEN** the professional pupils behind the glasses move to the right
+
 ## ADDED Requirements
 
 ### Requirement: A stretch slider per stretchable layer

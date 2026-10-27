@@ -14,6 +14,7 @@ Raymond judged the animations after Phase 1 was merged: the idle loop moves in a
 - **A dive that is a little goofy but natural:** lean forward, crouch with squash, a small hop with flailing flippers, and face first into the water with the tail and feet trailing.
 - **An elegant swim:** horizontal like a torpedo, surging on the down stroke and gliding on the up stroke, trailing feet and tail, and a glance at a passing fish once per loop.
 - **A professional launch with a goofy landing:** rising upright like a rocket with the flippers pressed to his body, flying out at an angle, landing on his feet with a squash, almost losing his balance with the flippers out, and straightening up.
+- **Eyes that follow:** during head-follow his pupils look at the pointer too, a moment ahead of the head, in both moods. The pupils become their own layers, cut from two new images by Raymond without pupils (goofy and professional), and the rig limits how far a pupil may shift so it stays inside its eye. *(Added after the first round, at Raymond's request.)*
 - **The idle loop** keeps its current keyframes, because Raymond likes how it moves.
 - **Tempo and travel:** animations may get longer where the feeling needs it (bow ~2.4 s, dive ~2.2 s, swim loop ~3.6 s, launch ~2.8 s). He stays in his spot sideways and moves up and down only where the story asks for it.
 - **The preview** gets a stretch slider for each layer that may stretch, and Copy pose includes stretch values, so Raymond can tune the new poses by eye.
@@ -26,15 +27,15 @@ None.
 
 ### Modified Capabilities
 
-- `kalman-rig`: poses can stretch layers within a stretch range from the rig; validation rejects a stretch outside it; children follow their parent's stretch; drawn poses are cut from the design images and placed on the front figure's ground line.
-- `kalman-animation`: animations can give layers a lag and can show a drawn pose with a cross-fade; overshooting easings are allowed with the blended pose kept inside the rig's ranges; a non-looping animation ends at rest only once every lagging layer has settled; the bow, dive, swim and launch each get their own requirement for how they move.
-- `kalman-preview`: a stretch slider per layer that may stretch; Copy pose includes stretch.
+- `kalman-rig`: the front rig gets pupil layers, shown in their own mood and limited to a shift range; poses can stretch layers within a stretch range from the rig; validation rejects a stretch outside it; children follow their parent's stretch; drawn poses are cut from the design images and placed on the front figure's ground line.
+- `kalman-animation`: head-follow moves the pupils towards the point as well; animations can give layers a lag and can show a drawn pose with a cross-fade; overshooting easings are allowed with the blended pose kept inside the rig's ranges; a non-looping animation ends at rest only once every lagging layer has settled; the bow, dive, swim and launch each get their own requirement for how they move.
+- `kalman-preview`: head-follow on the stage moves the eyes too; a stretch slider per layer that may stretch; Copy pose includes stretch.
 
 ## Impact
 
 - **Code:** `src/lib/kalman-rig.ts` (stretch in poses, rig layers, `resolvePose()` and validation), `src/lib/kalman-animation.ts` (lag, overshoot eases, clamping, play length, drawn-pose fades), `src/scene/kalman/kalman-player.ts` (play length, clamping, cross-fading drawn poses), `src/scene/kalman/KalmanFigure.astro` and `kalman-figure-client.ts` (drawing the drawn poses, hidden until used), `scripts/cut-kalman-layers.ts` (stretch ranges, the side body's wider range, cutting the drawn bow), `src/playground/preview-client.ts` and `src/lib/preview-pose.ts` (stretch sliders, Copy pose).
 - **Data:** `rig.json` (regenerated), a new `drawn-poses.json` (generated, like `turntable.json`), `poses.json` and `animations.json`.
-- **Art:** `front-bow-goofy.png` and `front-bow-professional.png` from Raymond (regenerated with warmer eyes), in `docs/images/kalman-design/`.
+- **Art:** `front-bow-goofy.png` and `front-bow-professional.png` from Raymond (regenerated with warmer eyes), and `front-goofy-no-pupils.png` and `front-professional-no-pupils.png` for the eyes, in `docs/images/kalman-design/`.
 - **Tests:** unit tests for stretch, lag, clamping, the new eases, the drawn-pose fade and each animation's scenarios against the repo data; e2e tests for the stretch sliders and the drawn bow; new snapshot baselines.
 - **Docs:** `docs/architecture.md`, `docs/glossary.md` (anticipation, follow-through, overlap, overshoot, squash and stretch, lag, drawn pose), `docs/kalman-layers.md` (prompts 7 and 8), `docs/making-of.md`, `src/scene/README.md`.
 - **Repo:** a `.gitignore` entry for a local `references/` folder, so reference stills of real penguins (other people's footage) never get committed.

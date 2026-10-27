@@ -38,6 +38,13 @@ For the bow the front figure gets a **drawn pose**: a whole drawing of him bowin
 | `front-bow-goofy.png` | Bowing politely, like a butler: head and shoulders tipped forward, bill pointing down at the chest, the round goofy eyes looking down, a small smile | Prompt 7, an **edit** of `front-goofy.png` |
 | `front-bow-professional.png` | The same bow with the glasses, the calm eyes and the tie | Prompt 8, an **edit** of `front-bow-goofy.png` |
 
+For the eyes that follow the pointer, the pupils become their own layers. Under a moving pupil the eye must be painted white, not a copy of the pupil, so two more edits are needed, without pupils:
+
+| File | What | How it's made |
+|---|---|---|
+| `front-goofy-no-pupils.png` | The goofy front view with plain white eyes, no pupils | Prompt 9, an **edit** of `front-goofy.png` |
+| `front-professional-no-pupils.png` | The professional front view with the calm eyes plain white, no pupils | Prompt 10, an **edit** of `front-professional.png` |
+
 **Why edits:** a professional image made as an edit of its goofy one lines up with it pixel for pixel. Then the difference between the two is exactly the tie, the glasses and the eyes, and that becomes the tie and glasses layers. A professional image drawn from scratch would never line up.
 
 ## Prompts for Gemini
@@ -127,6 +134,22 @@ If the eyes come out stern, add: *"his eyes are the same big round white eyes wi
 Edit the first image. Add the round black glasses and the calmer professional eyes from the second image, seen from above because his head is bowed: the glasses tip down with his head and sit on the base of his bill, his eyes look down behind them. Add the purple patterned tie exactly as in the second image. Keep the ear patches exactly where they are in the first image.
 
 Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere outside the glasses, the eyes and the tie.
+```
+
+### 9. The front view without pupils, goofy (attach `front-goofy.png`, nothing else)
+
+```text
+Edit this exact image. Remove only the black pupils, and the small white highlights in them, from both of his big round eyes, so the eyes are plain white, with the same outline, the same soft shading at their edges and the same size.
+
+Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere outside the pupils.
+```
+
+### 10. The front view without pupils, professional (attach `front-professional.png`, nothing else)
+
+```text
+Edit this exact image. Remove only the pupils from his calm eyes behind the glasses, so the eyes are plain white, with the same eyelids, outline and shading. Keep the glasses, the tie and everything else exactly as they are.
+
+Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere outside the pupils.
 ```
 
 ## Before running the script, check

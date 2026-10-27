@@ -39,10 +39,19 @@
 - [ ] 5.6 Update the snapshots of key moments (bow halfway through the cross-fade and at the drawn bow, the dive's crouch and entry, the swim at the end of the down stroke, the launch rising, landing and wobbling) and make the baselines with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
 - [ ] 5.7 Log the chosen values in `PLANNING_LOG.md` and record the session in `docs/making-of.md` (what made it look static, the references in words, the animation principles, before/after screenshots of Kálmán only); verify the files are updated
 
-## 6. Wrap-up
+## 6. Eyes that follow the pointer
 
-- [x] 6.1 Measure the preview's JavaScript with `npm run size`; verify it is still within the 50 KB budget and public pages are unchanged
-- [ ] 6.2 Run `npm run check` (with no dev server on port 4321) and let CI pass on the branch; verify everything is green and Raymond has judged all animations
+- [x] 6.1 Add prompts 9 and 10 (the front views without pupils, goofy and professional) to `docs/kalman-layers.md`; verify the prompts name the files `front-goofy-no-pupils.png` and `front-professional-no-pupils.png`
+- [ ] 6.2 Check Raymond's two images without pupils (same size as `front-goofy.png`, only the pupils changed) and save them in `docs/images/kalman-design/`; verify with the alignment check (best shift 0, 0) and a difference map that shows only the pupils
+- [ ] 6.3 Add `shift` and `mood` to `RigLayer` in `src/lib/kalman-rig.ts`: validation of a shift range and of a pose's offset against it, `clampToRig()` clamping such offsets, and `resolvePose()` showing a layer with `mood` only in that mood (design §11); verify with unit tests, including "Pupil at the edge", "Professional mood" and "Goofy mood"
+- [ ] 6.4 Cut the head and the glasses from the images without pupils and the two pupil layers from the differences in `scripts/cut-kalman-layers.ts`, with their shift measured on the images; verify `npm run cut:kalman` and `check:kalman` pass, the data test for the eleven front layers, and screenshots of the pupils at the ends of their shift in both moods with no copy left behind
+- [ ] 6.5 Add `eyeShift()` with unit tests ("Pointer far to the right", "Pointer straight above the head", "Pointer below and to the left") and move the pupils in the player's head-follow, faster than the head; verify with e2e tests for "Pointer to the right" and "Eyes in the professional mood" in all four browsers
+- [ ] 6.6 Tune the eyes with Raymond in the preview (how far, how fast) and update `docs/architecture.md`, `docs/glossary.md` and `docs/kalman-layers.md` for the pupils; verify Raymond approves and the docs match the code
+
+## 7. Wrap-up
+
+- [x] 7.1 Measure the preview's JavaScript with `npm run size`; verify it is still within the 50 KB budget and public pages are unchanged
+- [ ] 7.2 Run `npm run check` (with no dev server on port 4321) and let CI pass on the branch; verify everything is green and Raymond has judged all animations
 
 ## Workflow follow-up
 

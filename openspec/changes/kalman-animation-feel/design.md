@@ -91,7 +91,16 @@ A keyframe may say `"drawn": "bow"`. The layered pose of that keyframe (`bowDeep
 
 At `bowDeep`, the head offset of 80 is more than a quarter of the head's height (278), as the spec asks, and it brings the layered head close to where the drawn bow has it, so the cross-fade has little to bridge.
 
-### 11. Preview
+### 11. Eyes that follow (added after the first round)
+The eyes are painted into the head (goofy) and into the glasses layer (the calm professional eyes), so the pupils can't move yet. Like the side flipper, a moving part needs painted ground underneath: Raymond makes two edits **without pupils**, `front-goofy-no-pupils.png` and `front-professional-no-pupils.png`.
+
+- **Cutting:** the head comes from the goofy edit without pupils, and the glasses layer (glasses and calm eyes) from the professional one. The **goofy pupils** are where `front-goofy.png` differs from its edit, the **professional pupils** where `front-professional.png` differs from its edit, each as one layer for both eyes (they move together). Both hang from the head, so they turn with it, and are drawn above the head and the glasses.
+- **Mood:** the professional pupils are accessories (professional only); the goofy pupils get a new field `mood: "goofy"` (shown only in that mood), so they never peek out behind the calm eyes.
+- **Limit:** a layer may get `shift: [x, y]`, the furthest its offset may go from rest each way; validation rejects more, and `clampToRig()` clamps to it, so a pupil stays inside its eye. Starting value: about a third of an eye's width sideways and a quarter up or down, measured on the images.
+- **Following:** a pure `eyeShift(point, eyes, shift, reach)` next to `headTurn()`: the offset grows with how far the point is from the eyes, in x and y, up to `shift`. The player glides the pupils there with `gsap.quickTo`, faster than the head (0.15 s against 0.3 s), so the eyes lead and the head follows: overlap again.
+- **Alternative:** drawing round pupils in code would be simpler, but Kálmán is drawn from Raymond's art only.
+
+### 12. Preview
 Each layer with a stretch range gets a stretch slider (step 0.01) below the rotation sliders, built from the same template. `preview-pose.ts` merges stretches like rotations, and Copy pose leaves out stretches at 1, as it leaves out rotations at 0. The scrub slider's range becomes `playLength`. Drawn poses are not posable; they appear only through an animation.
 
 ## Risks / Trade-offs

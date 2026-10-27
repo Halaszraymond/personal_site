@@ -54,6 +54,21 @@ An animation that does not loop SHALL end with Kálmán back at rest, once every
 - **WHEN** the dive animation's last keyframe has passed but its tail is still catching up
 - **THEN** the animation keeps playing until the tail is at rest too, and only then counts as finished
 
+### Requirement: The head follows a point
+For head-follow, the front figure's head SHALL turn towards a given point (such as the pointer) within its allowed range: the further to the side the point is from the head, the further the head turns, up to the end of its range. The pupils SHALL look towards the point as well, shifting within their allowed shift: sideways and up or down, further the further away the point is, and a moment ahead of the head. Without a point, the head and the pupils SHALL return to rest.
+
+#### Scenario: Pointer far to the right
+- **WHEN** the point is far to the right of Kálmán's head
+- **THEN** the head is turned to the right end of its range and the pupils are shifted to the right end of their allowed shift
+
+#### Scenario: Pointer straight above the head
+- **WHEN** the point is straight above the head
+- **THEN** the head is not turned, and the pupils look up without shifting sideways
+
+#### Scenario: Pointer below and to the left
+- **WHEN** the point is below and to the left of Kálmán's eyes
+- **THEN** the pupils shift down and to the left
+
 ## ADDED Requirements
 
 ### Requirement: Layers can trail behind
