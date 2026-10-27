@@ -192,3 +192,30 @@ The last part of Phase 1: idle, bow, head-follow, dive, swim and launch, each ju
 - **Tooling:** Claude Code's auto mode depends on a server-side safety check per shell command; when that check was down for a while, work went on with file edits and continued in normal permission mode.
 
 Raymond judged the animations in the preview and approved them. With that, Phase 1 is done: Kálmán exists, is drawn from Raymond's own art, and moves.
+
+## 2026-10-27 · Kálmán comes alive: follow-through, squash and stretch
+
+### The plan
+
+After Phase 1 was merged, Raymond looked again: the idle loop moved naturally, but the bow wasn't deep enough and the dive, the swim and the launch looked *static*. The data showed why: every layer started and stopped together on the same keyframes, nothing overshot or settled, the crouch was tiny, the dive slid in a straight line, the feet never moved, he swam upright, and the bow from the front only slid his head down 26 px. A follow-up change, `kalman-animation-feel`, still under Phase 1.
+
+Raymond gave the feeling of each animation (a polite butler's bow; a dive that is a little goofy but natural, face first; an elegant swim, distracted by fish; a professional launch with a goofy landing) and stills from nature films. The stills stay out of the repo (other people's footage, a `references/` folder in `.gitignore`); what they showed is written down in the design. Two things in them changed the plan: a real bow barely moves the body (the head folds down), and penguins swim *horizontally*, like torpedoes.
+
+![Key moments of the new animations: the bow, the dive, the swim and the launch, one per row](images/phase-1/kalman-animation-feel.png)
+
+### How it works
+
+- **Squash and stretch.** A layer can stretch around its pivot: 0.9 is 10% shorter and 1 / 0.9 wider, so the area stays the same, like a rubber ball. Children follow, so the head stays on a squashed body.
+- **Follow-through as a time shift.** A layer with a lag shows where the animation was a moment ago: the tail trails 0.12 s behind the body. Still a pure function of time, so scrubbing and the tests stay exact.
+- **Overshoot, clamped.** GSAP's `back` easings go slightly past the target and settle; every pose is clamped to the rig's ranges before it is drawn.
+- **A drawn bow.** From the front a bow can't be made by turning flat layers, so Raymond made a drawing of the bow (two Gemini edits of the front view, goofy and professional). At the deepest moment it cross-fades in over the layers.
+- **Tested against the real data.** Every scenario ("the swim lies horizontally", "he lands squashed") is a unit test that samples the repo's animations exactly as the player draws them.
+
+### What went wrong, and what it taught us
+
+- **Gemini redraws more than you ask.** The first bowed images changed the whole upper body and gave him stern, realistic eyes. The lower half lined up, so the bow became a whole drawn pose instead of a new head; a second round with "keep his big round goofy eyes" gave Kálmán back.
+- **Feet that overlap can't be cut apart cleanly.** Turning the side feet showed a straight cut line, a white wedge of belly and ghost outlines. Cutting the feet from their dark pixels only, with a soft ankle, keeping a fading strip of leg on the body, and giving both feet one pivot fixed it; ±20° instead of ±30°.
+- **A 50/50 cross-fade is see-through.** Two pictures at 50% each cover only 75%. Fading the drawing in over solid layers first, then the layers out under the solid drawing, keeps him solid.
+- **Tip the body, and the bill tips along.** Lying horizontally, his bill pointed at the floor. Turning the head back up to 70° makes him swim bill first.
+- **Film strips before the preview.** Rendering a row of frames of each animation (with the same maths the player uses) showed these problems before anyone had to watch them.
+
