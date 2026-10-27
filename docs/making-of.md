@@ -164,3 +164,28 @@ Then the design itself moved on: Raymond chose a new final design (slate grey, a
 - **Joints are where cut-outs show their seams.** Every fix was about two layers meeting: the head needed a soft fade into the neck; the flippers first took a strip of the body along when raised, then left the flipper's outline behind on the body, and finally a hairline seam showed at rest. The answer: cut exactly at the real gap below the shoulder, share no pixel there, and let the flipper reach a little under the body above it.
 - **AI views drift in colour.** The back views came out lighter and darker than the front; the script now matches every view's plumage tone to the front view, and puts his feet on the same ground line.
 - **Small tooling lessons:** SVG children with `visibility="visible"` still show inside a hidden group (use `display`); two attributes with the same name on different elements break test selectors; and a dev server on the test port quietly turns e2e tests into tests of the dev server.
+
+---
+
+## 2026-10-27 · Kálmán moves: the animations
+
+### The plan
+
+The last part of Phase 1: idle, bow, head-follow, dive, swim and launch, each judged by Raymond in the preview. Raymond approved GSAP, chose a second, side-view figure for diving and swimming, and asked for play buttons plus an idle loop.
+
+![Key moments: the bow, the crouch, the dive, both swimming strokes, pointing up and the launch](images/phase-1/kalman-animations.png)
+
+### How it works
+
+- **Animations are data.** `animations.json` lists keyframes: a pose at a moment, with an easing towards the next one. The bow is rest → bow → hold → rest in 1.8 s. Raymond can tune timing and poses without touching code.
+- **GSAP is only the clock.** One tween moves a time value from 0 to the animation's length; on every frame our own `samplePose()` blends the two keyframes around that time (through GSAP's easing curve) and the figure draws the result. The maths is tested without GSAP or a browser.
+- **A side figure** for the movements that read from the side. Raymond made three Gemini images: the side view, its professional edit, and an edit *without* the near flipper. The body comes from that last one, so a swinging flipper shows painted body underneath instead of a ghost of itself.
+- **The preview** got a play button per animation, an idle loop (off with reduced motion), a scrub slider to hold any moment still, head-follow with the pointer, and a front/side switch. With GSAP it loads 36 KB of JavaScript, within the 50 KB budget.
+
+### What went wrong, and what it taught us
+
+- **A difference image isn't always clean.** For the side flipper, the difference with the flipper-less edit should have been the flipper. But Gemini's edit also changed the feathers around it, so the outline never closed. Tracing the flipper's outline once, as a polygon, was simpler and exact.
+- **Turn around the middle, not the feet.** The side body first turned around his feet, so a dive tipped him out of the frame. Turning around the middle of the body keeps him on the stage.
+- **Rotating isn't always the right move.** To make him point up for the launch, turning the whole body tipped him onto his back. A launch is an upright body with the head tilted back: the pose had to tell the story, not the angle.
+- **Tests that move the page.** On a phone, switching a control below the figure scrolled the page, so a drag test missed Kálmán entirely. Tests now scroll him back into view first.
+- **Tooling:** Claude Code's auto mode depends on a server-side safety check per shell command; when that check was down for a while, work went on with file edits and continued in normal permission mode.
