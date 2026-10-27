@@ -76,9 +76,18 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      # The download sometimes hangs instead of failing (seen on 2026-10-27), and then waits for
-      # the 30-minute job timeout. `timeout 5m` stops a hung try (a normal install takes about
-      # a minute) and the loop tries once more, like a `for attempt in range(2)` retry in Python.
+      # Playwright installs the browsers' system libraries with apt-get, and on 2026-10-27 the
+      # Ubuntu package mirror stalled: apt waited without failing until the job timed out.
+      # These settings make apt give up on a stuck connection after 30 s and try again itself.
+      - name: Make apt give up on a stuck mirror
+        run: |
+          printf '%s\n' 'Acquire::Retries "3";' 'Acquire::http::Timeout "30";' \
+            'Acquire::https::Timeout "30";' | sudo tee /etc/apt/apt.conf.d/99-ci-timeouts
+
+      # As a safety net, `timeout 5m` stops a hung try (a normal install takes about a minute)
+      # and the loop tries once more, like a `for attempt in range(2)` retry in Python.
+      # `timeout` only stops npx: the apt-get it started under sudo keeps running and holds
+      # apt's lock, so that is stopped too before the next try.
       - name: Install Playwright browsers
         if: steps.playwright-cache.outputs.cache-hit != 'true'
         timeout-minutes: 12
@@ -86,6 +95,9 @@ jobs:
           for attempt in 1 2; do
             timeout 5m npx playwright install --with-deps && exit 0
             echo "::warning::Playwright install try $attempt failed or hung; trying again."
+            sudo killall -q apt-get dpkg || true
+            sleep 5
+            sudo dpkg --configure -a || true
           done
           exit 1
 
