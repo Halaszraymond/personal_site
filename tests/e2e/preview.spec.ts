@@ -40,8 +40,20 @@ function repoRig(): Rig {
   return result.value;
 }
 
-test.beforeEach(async ({ page }) => {
+/**
+ * Opens the preview with the idle loop switched off: these tests are about posing, and the idle
+ * animation would keep moving the layers they compare. (animation.spec.ts tests the idle loop.)
+ */
+async function openPreview(page: Page): Promise<void> {
   await page.goto('/playground/');
+  await page.getByRole('switch', { name: /Idle when nothing else plays/ }).uncheck();
+}
+
+/** The front figure's sliders and their shown values (the side figure has its own). */
+const frontSliders = (page: Page) => page.locator('[data-figure-sliders="front"]');
+
+test.beforeEach(async ({ page }) => {
+  await openPreview(page);
 });
 
 test('a pose button changes the pose without a reload and is marked as pressed', async ({
@@ -65,7 +77,7 @@ test('a pose button changes the pose without a reload and is marked as pressed',
 
 test('the figure’s description names the pose and the mood', async ({ page }) => {
   await expect(figure(page)).toHaveAttribute('aria-label', 'Kálmán, pose: Rest, mood: goofy');
-  await page.getByRole('button', { name: 'Bow' }).click();
+  await page.getByRole('button', { name: 'Bow', exact: true }).click();
   await page.getByRole('switch', { name: /Professional/ }).check();
   await expect(figure(page)).toHaveAttribute('aria-label', 'Kálmán, pose: Bow, mood: professional');
 });
@@ -79,11 +91,11 @@ test('the sliders follow a named pose', async ({ page }) => {
 
 test('every slider’s limits are its layer’s rotation range', async ({ page }) => {
   for (const { name, rotate } of repoRig().layers) {
-    const slider = page.locator(`[data-rotation="${name}"]`);
+    const slider = frontSliders(page).locator(`[data-rotation="${name}"]`);
     await expect(slider).toHaveAttribute('min', String(rotate[0]));
     await expect(slider).toHaveAttribute('max', String(rotate[1]));
   }
-  await expect(page.locator('[data-rotation]')).toHaveCount(repoRig().layers.length);
+  await expect(frontSliders(page).locator('[data-rotation]')).toHaveCount(repoRig().layers.length);
 });
 
 test('a slider rotates its layer with the keyboard, one step per key press', async ({ page }) => {
@@ -93,11 +105,13 @@ test('a slider rotates its layer with the keyboard, one step per key press', asy
   await page.keyboard.press('ArrowRight');
 
   await expect(head).toHaveValue('1');
-  await expect(page.locator('[data-rotation-value="head"]')).toHaveText('1°');
+  await expect(frontSliders(page).locator('[data-rotation-value="head"]')).toHaveText('1°');
   expect(await transformOf(page, 'head')).not.toBe(restHead);
   // The pose is no longer a named one, so no pose button is pressed.
   await expect(figure(page)).toHaveAttribute('data-pose', 'custom');
-  await expect(page.locator('[data-pose-button][aria-pressed="true"]')).toHaveCount(0);
+  await expect(
+    page.locator('[data-figure-poses="front"] [data-pose-button][aria-pressed="true"]'),
+  ).toHaveCount(0);
 });
 
 test('the professional switch shows the tie and glasses without changing the pose', async ({
@@ -137,7 +151,7 @@ test('show pivots marks every pivot, and the markers move with their layers', as
 });
 
 test('the pose JSON is always visible as text and valid', async ({ page }) => {
-  await page.getByRole('button', { name: 'Bow' }).click();
+  await page.getByRole('button', { name: 'Bow', exact: true }).click();
   await page.getByLabel('Tail', { exact: true }).fill('12');
   const json = await page.getByLabel(/Pose JSON/).inputValue();
   const result = validatePose(JSON.parse(json), repoRig());
@@ -166,7 +180,7 @@ test.describe('when the clipboard is refused', () => {
         value: { writeText: () => Promise.reject(new DOMException('Denied', 'NotAllowedError')) },
       });
     });
-    await page.goto('/playground/');
+    await openPreview(page);
   });
 
   test('says so, keeps the JSON selectable and logs no error', async ({ page }) => {
@@ -211,7 +225,7 @@ test.describe('with reduced motion', () => {
 
   test('poses change the same way', async ({ page }) => {
     await page.goto('/playground/');
-    await page.getByRole('button', { name: 'Bow' }).click();
+    await page.getByRole('button', { name: 'Bow', exact: true }).click();
     await expect(figure(page)).toHaveAttribute('data-pose', 'bow');
   });
 });

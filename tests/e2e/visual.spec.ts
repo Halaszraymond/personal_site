@@ -58,7 +58,9 @@ for (const { name, button, professional } of POSES) {
     test.skip(!isCI, 'Visual baselines are Linux-only: these run in CI.');
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/playground/');
-    await page.getByRole('button', { name: button }).click();
+    // Idle off, so the figure holds still for the screenshot.
+    await page.getByRole('switch', { name: /Idle when nothing else plays/ }).uncheck();
+    await page.getByRole('button', { name: button, exact: true }).click();
     if (professional) await page.getByRole('switch', { name: /Professional/ }).check();
 
     await expect(page.locator('[data-kalman-figure]')).toHaveScreenshot(`${name}.png`, {

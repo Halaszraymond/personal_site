@@ -1,6 +1,7 @@
 /**
- * Kálmán's rigs and poses from the repo (rig.json, poses.json), validated once. There are two
- * figures, front and side (kalman-animations design §2), each with its own rig and poses.
+ * Kálmán's rigs, poses and animations from the repo (rig.json, poses.json, animations.json),
+ * validated once. There are two figures, front and side (kalman-animations design §2), each
+ * with its own rig and poses.
  *
  * Imported by the figure component (at build time) and by the preview's script (in the
  * browser). An invalid file throws here, so a bad edit fails the build with the validator's
@@ -17,7 +18,9 @@ import {
   type Rig,
   type Rigs,
 } from '../../lib/kalman-rig';
+import { validateAnimations, type Animation } from '../../lib/kalman-animation';
 import { turntableErrors, type TurntableEntry } from '../../lib/kalman-turntable';
+import animationData from './animations.json';
 import poseData from './poses.json';
 import rigData from './rig.json';
 import turntableData from './turntable.json';
@@ -78,4 +81,14 @@ function loadTurntable(): TurntableEntry[] {
   // TypeScript reads `[577.5, 1222.5]` in JSON as `number[]`, not as a pair; turntableErrors()
   // has just checked the pairs, so going through `unknown` is safe here.
   return turntableData.views as unknown as TurntableEntry[];
+}
+
+/** The animations from animations.json, checked against the repo's poses. */
+export const REPO_ANIMATIONS: readonly Animation[] = loadAnimations();
+
+function loadAnimations(): Animation[] {
+  const errors = validateAnimations(animationData, REPO_POSES);
+  if (errors.length > 0) fail('src/scene/kalman/animations.json', errors);
+  // Checked above (names, figures, keyframes and eases), so the JSON may be treated as typed.
+  return animationData as unknown as Animation[];
 }
