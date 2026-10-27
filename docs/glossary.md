@@ -140,6 +140,8 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 
 **Loop**: an animation that starts again when it ends (idle, swim), until something else starts.
 
-**Head-follow**: the head turning towards the pointer. The further to the side the pointer is, the further the head turns, up to the end of its range; `gsap.quickTo` makes it glide there instead of jumping.
+**Head-follow**: the head turning towards the pointer. The further to the side the pointer is, the further the head turns, up to the end of its range; `gsap.quickTo` makes it glide there instead of jumping. The pupils look along, a little faster than the head.
+
+**Shift limit**: how far a layer may move from rest each way (`shift` in the rig). The pupils have one, so they never slide out of the eye.
 
 **Figure (front, side)**: Kálmán is posable from two angles, each with its own rig of layers. Idle, bow and head-follow use the front figure; dive, swim and launch the side one.

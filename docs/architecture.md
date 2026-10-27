@@ -150,7 +150,7 @@ flowchart LR
 - **Overshoot, clamped.** The `back` easings go slightly past the target and settle back. Every sampled pose goes through `clampToRig()` before it is drawn, so no layer turns or stretches past its range.
 - **One at a time.** Starting an animation stops the previous one; a non-looping one ends with him at rest. The figure carries `data-animation` and `data-time`, which the preview and the tests read.
 - **Scrubbing** pauses the tween and sets its progress; **a hidden tab** pauses it (`visibilitychange`) and continues it when visible again.
-- **Head-follow** turns the front figure's head towards the pointer: `headTurn()` gives the angle from how far the pointer is to the side, and `gsap.quickTo` glides the head there.
+- **Head-follow** turns the front figure's head towards the pointer: `headTurn()` gives the angle from how far the pointer is to the side, and `gsap.quickTo` glides the head there. The **eyes** look along: the pupils are their own layers (goofy, and professional behind the glasses), and `eyeShift()` gives how far they shift towards the pointer, sideways and up or down, within the rig's `shift` limit. They glide twice as fast as the head, so the eyes look first and the head follows.
 - **Reduced motion:** nothing starts by itself; an animation only plays when it is explicitly started.
 
 ## The dev-only Kálmán preview

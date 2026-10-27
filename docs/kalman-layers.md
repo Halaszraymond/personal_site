@@ -165,9 +165,10 @@ Small differences in colour, height or position between the views are fine: the 
 1. **Background:** a flood fill from the edges through near-white pixels; the outline gets a soft edge.
 2. **The tie and glasses:** where the professional front view differs from the goofy one, within the area of the glasses and of the tie.
 3. **The nine parts** of the front view: head, body, both flippers, both feet and the tail. The flippers are cut at the gap Gemini drew between flipper and body, row by row; above it, along the shoulder. The head fades softly into the neck.
-4. **The side figure's feet:** only their dark pixels, fading in at the ankle like the neck, so a turning foot takes no white feathers along and shows no straight cut. The body keeps a fading strip under the ankles, painted leg behind a turning foot. The two side feet overlap in the drawing, so they share one pivot and always turn together.
-5. **The rig:** each part's box becomes its `size` and `position` on the 1600 × 1500 artboard, and the joints become the pivots.
-6. **The turntable:** the front view and the four views, whole, per mood, with the tone, ground line and centre matched, plus three mirrored views.
+4. **The pupils:** where each front view differs from its edit without pupils, within the area of the glasses, both eyes as one layer. The head and the glasses get empty eyes from the same edits, mixed in only where the pupils were. Two thresholds: a low one to empty the eyes (no ring of a pupil's soft edge stays behind), a high one for the moving pupils (no piece of the eye's outline, which Gemini redraws slightly, moves along).
+5. **The side figure's feet:** only their dark pixels, fading in at the ankle like the neck, so a turning foot takes no white feathers along and shows no straight cut. The body keeps a fading strip under the ankles, painted leg behind a turning foot. The two side feet overlap in the drawing, so they share one pivot and always turn together.
+6. **The rig:** each part's box becomes its `size` and `position` on the 1600 × 1500 artboard, and the joints become the pivots.
+7. **The turntable:** the front view and the four views, whole, per mood, with the tone, ground line and centre matched, plus three mirrored views.
 
 The cut lines belong to these images: they are in one settings object at the top of `scripts/cut-kalman-layers.ts`. A new front view needs its own numbers; check the result in the preview with **Show pivots** and the **Flippers up** pose. The logic itself is in `scripts/lib/kalman-cut.ts`, with unit tests.
 
@@ -183,6 +184,8 @@ The cut lines belong to these images: they are in one settings object at the top
 | `order` | Drawing order: higher is in front. The flippers are behind the body. |
 | `rotate` | How far it may turn from rest, `[min, max]` in degrees, clockwise positive. |
 | `stretch` | Only on layers that may squash and stretch (bodies and heads): `[min, max]`, around 1 (rest). 0.9 is 10% shorter and correspondingly wider. |
-| `accessory` | `true` for the tie and the glasses: only shown on his professional side. |
+| `shift` | Only on the pupils: how far the offset may go from rest, `[x, y]` each way, so they stay inside the eyes. |
+| `accessory` | `true` for the tie, the glasses and the professional pupils: only shown on his professional side. |
+| `mood` | `"goofy"` for the goofy pupils: only shown in that mood, so they never peek out behind the calm eyes. |
 
 **Left and right are as seen by the viewer** (the flipper on the left of the picture is `flipperLeft`).
