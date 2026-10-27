@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertSameSize,
+  blendImages,
   bodyCentreX,
   cutPart,
   darknessMap,
@@ -21,6 +22,7 @@ import {
   polygonCoverage,
   plumageTone,
   ramp,
+  restrictAlpha,
   sideRegions,
   type FrontCutSettings,
   type SideCutSettings,
@@ -340,5 +342,30 @@ describe('sideRegions', () => {
 
   it('fades the head into the neck', () => {
     expect([take('head', 5, 3), take('head', 5, 6), take('head', 5, 9)]).toEqual([1, 0.5, 0]);
+  });
+});
+
+describe('restrictAlpha and blendImages (the eyes without pupils)', () => {
+  it('keeps the alpha inside the bounds only', () => {
+    // A 4 × 2 alpha map, all 1; the bounds keep columns 1–2 of row 0.
+    const kept = restrictAlpha(new Float32Array(8).fill(1), 4, [1, 0, 2, 1]);
+    expect([...kept]).toEqual([0, 1, 1, 0, 0, 0, 0, 0]);
+  });
+
+  it('mixes the second image in where the alpha says so, and leaves the rest as it was', () => {
+    const base: RawImage = {
+      width: 2,
+      height: 1,
+      channels: 3,
+      data: new Uint8Array([0, 0, 0, 100, 100, 100]),
+    };
+    const other: RawImage = {
+      width: 2,
+      height: 1,
+      channels: 3,
+      data: new Uint8Array([200, 200, 200, 255, 255, 255]),
+    };
+    const mixed = blendImages(base, other, new Float32Array([0.5, 0]));
+    expect([...mixed.data]).toEqual([100, 100, 100, 100, 100, 100]);
   });
 });

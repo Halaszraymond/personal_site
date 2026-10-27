@@ -95,6 +95,30 @@
         "order": 60,
         "rotate": [-10, 10],
         "accessory": true
+      },
+      {
+        "name": "pupils",
+        "image": "front/pupils.png",
+        "size": [159.6, 20],
+        "position": [720.2, 251.8],
+        "pivot": [79.8, 10.6],
+        "parent": "head",
+        "order": 35,
+        "rotate": [-5, 5],
+        "shift": [12, 8],
+        "mood": "goofy"
+      },
+      {
+        "name": "pupilsProfessional",
+        "image": "front/pupils-professional.png",
+        "size": [244.7, 45.2],
+        "position": [677.6, 234.5],
+        "pivot": [122.4, 27.9],
+        "parent": "head",
+        "order": 65,
+        "rotate": [-5, 5],
+        "shift": [4, 2],
+        "accessory": true
       }
     ]
   },

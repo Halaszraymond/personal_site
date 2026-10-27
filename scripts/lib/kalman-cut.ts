@@ -121,6 +121,40 @@ export function darknessMap(image: RawImage, dark = 110, light = 160): AlphaMap 
   return map;
 }
 
+/**
+ * `alpha` with everything outside `bounds` set to 0, like masking a NumPy array. Used to keep
+ * a difference to the eyes: the edits without pupils also carry a little noise elsewhere.
+ */
+export function restrictAlpha(alpha: AlphaMap, width: number, bounds: PixelBounds): AlphaMap {
+  const kept = new Float32Array(alpha.length);
+  for (let i = 0; i < alpha.length; i++) {
+    const x = i % width;
+    const y = (i - x) / width;
+    const inside = x >= bounds[0] && y >= bounds[1] && x <= bounds[2] && y < bounds[3];
+    kept[i] = inside ? (alpha[i] ?? 0) : 0;
+  }
+  return kept;
+}
+
+/**
+ * `base` with `other` mixed in where `alpha` says so (0 = all `base`, 1 = all `other`). For the
+ * head with empty eyes: the original everywhere, and the edit only where its pupils were, so
+ * the head keeps exactly the original's colours and no seam shows at the neck.
+ */
+export function blendImages(base: RawImage, other: RawImage, alpha: AlphaMap): RawImage {
+  assertSameSize(base, other, 'blendImages');
+  const data = new Uint8Array(base.width * base.height * 3);
+  for (let i = 0; i < base.width * base.height; i++) {
+    const a = alpha[i] ?? 0;
+    const from = rgbAt(base, i);
+    const to = rgbAt(other, i);
+    for (let c = 0; c < 3; c++) {
+      data[i * 3 + c] = Math.round((from[c] ?? 0) * (1 - a) + (to[c] ?? 0) * a);
+    }
+  }
+  return { width: base.width, height: base.height, channels: 3, data };
+}
+
 /** Stops when two images that must line up pixel for pixel don't have the same size. */
 export function assertSameSize(a: RawImage, b: RawImage, what: string): void {
   if (a.width !== b.width || a.height !== b.height) {

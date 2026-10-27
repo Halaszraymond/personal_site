@@ -59,6 +59,8 @@ export const PREVIEW_EN = {
     tail: 'Tail',
     tie: 'Tie',
     glasses: 'Glasses',
+    pupils: 'Pupils',
+    pupilsProfessional: 'Pupils (professional)',
   },
   /**
    * The side figure's sliders get their own labels ("Side: head"), so no two sliders on the page

@@ -34,6 +34,8 @@ const PARTS: Record<Figure, string[]> = {
     'tail',
     'tie',
     'glasses',
+    'pupils',
+    'pupilsProfessional',
   ],
   // The far flipper is hidden behind the body in a side view, so it is part of the body.
   side: ['body', 'head', 'flipper', 'footFront', 'footBack', 'tail', 'tie', 'glasses'],
@@ -68,9 +70,16 @@ describe.each(FIGURES)('the %s rig in the repo', (figure) => {
     ]);
   });
 
-  it('marks exactly the tie and the glasses as accessories', () => {
+  it('marks exactly the tie, the glasses and (front) the professional pupils as accessories', () => {
     const accessories = repoRig(figure).layers.filter((layer) => layer.accessory === true);
-    expect(accessories.map((layer) => layer.name).sort()).toEqual(['glasses', 'tie']);
+    const expected =
+      figure === 'front' ? ['glasses', 'pupilsProfessional', 'tie'] : ['glasses', 'tie'];
+    expect(accessories.map((layer) => layer.name).sort()).toEqual(expected);
+  });
+
+  it('shows the goofy pupils only in the goofy mood (front)', () => {
+    const goofyOnly = repoRig(figure).layers.filter((layer) => layer.mood === 'goofy');
+    expect(goofyOnly.map((layer) => layer.name)).toEqual(figure === 'front' ? ['pupils'] : []);
   });
 
   it('shares the artboard with the other figure, so switching doesn’t make him jump', () => {

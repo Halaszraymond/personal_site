@@ -17,6 +17,7 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 import {
   assertSameSize,
+  blendImages,
   bodyCentreX,
   darknessMap,
   cutPart,
@@ -28,6 +29,7 @@ import {
   groundRow,
   matchTone,
   pivotIn,
+  restrictAlpha,
   placeBox,
   plumageTone,
   polygonCoverage,
@@ -81,6 +83,20 @@ const CUT: FrontCutSettings = {
   tail: { fromRow: 888, toRow: 952, minX: 294, maxX: 394 },
   glasses: [232, 68, 452, 178],
   tie: [222, 200, 466, 645],
+};
+
+/**
+ * The front views without pupils (kalman-animation-feel design §11): edits of the two front
+ * views in which only the pupils are gone. Two thresholds for two jobs: emptying the eyes takes
+ * everything that differs a little (so no ring of a pupil's soft edge stays behind on the
+ * head), while the moving pupils only take what differs a lot (so no piece of the eye's
+ * outline, which Gemini redraws slightly, moves along with them).
+ */
+const NO_PUPILS = {
+  goofy: `${DESIGN}/front-goofy-no-pupils.png`,
+  professional: `${DESIGN}/front-professional-no-pupils.png`,
+  empty: { threshold: 20, range: 20 },
+  pupils: { threshold: 80, range: 40 },
 };
 
 /** Image pixels → artboard: Kálmán (918 px tall) becomes ~1222 units, centred on x 800, top at 180. */
@@ -156,6 +172,29 @@ const LAYERS = [
     parent: 'head',
     order: 60,
     rotate: [-10, 10],
+    accessory: true,
+  },
+  // The pupils (kalman-animation-feel design §11): both eyes in one layer, hanging from the head,
+  // and only `shift` artboard units each way, so they stay inside the eyes. The goofy ones only
+  // show in the goofy mood; the professional ones are above the glasses, with the calm eyes.
+  {
+    name: 'pupils',
+    file: 'pupils',
+    pivot: [344, 115],
+    parent: 'head',
+    order: 35,
+    rotate: [-5, 5],
+    shift: [12, 8],
+    mood: 'goofy',
+  },
+  {
+    name: 'pupilsProfessional',
+    file: 'pupils-professional',
+    pivot: [344, 115],
+    parent: 'head',
+    order: 65,
+    rotate: [-5, 5],
+    shift: [4, 2],
     accessory: true,
   },
 ] as const;
@@ -339,6 +378,47 @@ assertSameSize(goofy, professional, 'The goofy and professional front views');
 const background = findBackground(goofy);
 const bodyAlpha = figureAlpha(goofy, background);
 const extrasAlpha = differenceAlpha(goofy, professional);
+
+// The eyes without pupils: the original views everywhere, and the edits only where the pupils
+// were, so everything else keeps exactly its colours. The pupils are that same difference.
+const goofyNoPupils = await readRgb(NO_PUPILS.goofy);
+const professionalNoPupils = await readRgb(NO_PUPILS.professional);
+assertSameSize(goofy, goofyNoPupils, 'The goofy front view and its edit without pupils');
+assertSameSize(
+  professional,
+  professionalNoPupils,
+  'The professional front view and its edit without pupils',
+);
+const eyeDifference = (
+  view: typeof goofy,
+  edit: typeof goofy,
+  { threshold, range }: { threshold: number; range: number },
+) => restrictAlpha(differenceAlpha(edit, view, threshold, range), view.width, CUT.glasses);
+const goofyPupils = eyeDifference(goofy, goofyNoPupils, NO_PUPILS.pupils);
+const professionalPupils = eyeDifference(professional, professionalNoPupils, NO_PUPILS.pupils);
+const goofyEmptyEyes = blendImages(
+  goofy,
+  goofyNoPupils,
+  eyeDifference(goofy, goofyNoPupils, NO_PUPILS.empty),
+);
+const professionalEmptyEyes = blendImages(
+  professional,
+  professionalNoPupils,
+  eyeDifference(professional, professionalNoPupils, NO_PUPILS.empty),
+);
+// The glasses (with the calm eyes) are where the professional view differs from the goofy one,
+// both with empty eyes; the tie stays as before.
+const glassesAlpha = differenceAlpha(goofyEmptyEyes, professionalEmptyEyes);
+
+/** Which image and which alpha each front layer is cut from. */
+function sourceOf(name: string): { image: typeof goofy; alpha: Float32Array } {
+  if (name === 'head') return { image: goofyEmptyEyes, alpha: bodyAlpha };
+  if (name === 'glasses') return { image: professionalEmptyEyes, alpha: glassesAlpha };
+  if (name === 'tie') return { image: professional, alpha: extrasAlpha };
+  if (name === 'pupils') return { image: goofy, alpha: goofyPupils };
+  if (name === 'pupilsProfessional') return { image: professional, alpha: professionalPupils };
+  return { image: goofy, alpha: bodyAlpha };
+}
 const rows = [CUT.flipper.gapFromRow, CUT.flipper.toRow] as const;
 const regions = frontRegions(
   CUT,
@@ -349,12 +429,10 @@ const regions = frontRegions(
 mkdirSync(OUT, { recursive: true });
 const rigLayers = [];
 for (const layer of LAYERS) {
-  const isExtra = layer.name === 'tie' || layer.name === 'glasses';
-  const region = regions[layer.name];
-  const part =
-    region === undefined
-      ? undefined
-      : cutPart(isExtra ? professional : goofy, isExtra ? extrasAlpha : bodyAlpha, region);
+  // The pupils need no region of their own: their alpha is already only the pupils.
+  const region = layer.name.startsWith('pupils') ? () => 1 : regions[layer.name];
+  const source = sourceOf(layer.name);
+  const part = region === undefined ? undefined : cutPart(source.image, source.alpha, region);
   if (part === undefined) throw new Error(`The ${layer.name} region is empty: check the settings.`);
   await writePng(join(OUT, `${layer.file}.png`), part.rgba, part.box.width, part.box.height);
   rigLayers.push({
@@ -366,7 +444,9 @@ for (const layer of LAYERS) {
     order: layer.order,
     rotate: layer.rotate,
     ...('stretch' in layer ? { stretch: layer.stretch } : {}),
+    ...('shift' in layer ? { shift: layer.shift } : {}),
     ...('accessory' in layer ? { accessory: true } : {}),
+    ...('mood' in layer ? { mood: layer.mood } : {}),
   });
   console.log(`${layer.name.padEnd(13)} ${part.box.width}×${part.box.height} px`);
 }

@@ -127,6 +127,43 @@ test('head-follow turns the head towards the pointer', async ({ page }) => {
   await expect(frontHead(page)).not.toHaveAttribute('transform', restHead ?? '', { timeout: 2000 });
 });
 
+/** The x of a pupil layer's position, read from its SVG matrix (the `e` of `matrix(a b c d e f)`). */
+async function pupilX(page: Page, layer: string): Promise<number> {
+  const transform = await page
+    .locator(`[data-layers][data-figure="front"] [data-layer="${layer}"]`)
+    .getAttribute('transform');
+  return Number(transform?.match(/matrix\(([^)]+)\)/)?.[1]?.split(' ')[4]);
+}
+
+/** Starts head-follow and moves the pointer to the right edge of the stage. */
+async function lookRight(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Play head-follow' }).click();
+  await figure(page).scrollIntoViewIfNeeded();
+  const box = await figure(page).boundingBox();
+  if (box === null) throw new Error('The figure has no box.');
+  await page.mouse.move(box.x + box.width - 5, box.y + box.height * 0.15, { steps: 5 });
+}
+
+test('head-follow moves the pupils towards the pointer as well', async ({ page }) => {
+  const rest = await pupilX(page, 'pupils');
+  await lookRight(page);
+  // The head turns too, so the pupils' position changes for both reasons; to the right is more x.
+  await expect.poll(() => pupilX(page, 'pupils')).toBeGreaterThan(rest);
+});
+
+test('in the professional mood the pupils behind the glasses follow the pointer', async ({
+  page,
+}) => {
+  await page.getByRole('switch', { name: /Professional/ }).check();
+  const rest = await pupilX(page, 'pupilsProfessional');
+  await lookRight(page);
+  await expect.poll(() => pupilX(page, 'pupilsProfessional')).toBeGreaterThan(rest);
+  // The goofy pupils stay hidden in this mood.
+  await expect(
+    page.locator('[data-layers][data-figure="front"] [data-layer="pupils"]'),
+  ).toHaveAttribute('visibility', 'hidden');
+});
+
 test('the front/side switch shows the side figure with its own poses and sliders', async ({
   page,
 }) => {
