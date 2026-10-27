@@ -83,8 +83,8 @@ Kálmán is a **cut-out figure**: flat images (layers) moved like a paper puppet
 
 ```mermaid
 flowchart LR
-    A["rig.json<br/>layers: image, size, position,<br/>pivot, parent, order, rotate"] --> C
-    B["poses.json<br/>per layer: rotate, offset"] --> C
+    A["rig.json<br/>layers: image, size, position,<br/>pivot, parent, order, rotate, stretch"] --> C
+    B["poses.json<br/>per layer: rotate, offset, stretch"] --> C
     C["resolvePose(rig, pose, mood)<br/>src/lib/kalman-rig.ts"] --> D["one matrix per layer,<br/>sorted by drawing order"]
     D --> E["KalmanFigure.astro<br/>SVG in the HTML (build time)"]
     D --> F["applyPose()<br/>kalman-figure-client.ts (browser)"]
@@ -93,8 +93,8 @@ flowchart LR
 
 - **Two figures.** `rig.json` holds a rig per figure (`{ "front": …, "side": … }`), on the same artboard and placement, so switching doesn't make him jump; every pose says its `figure`. The SVG has a `<g data-layers data-figure>` per figure, and `applyFigure()` shows one of them.
 - **The rig** (`src/scene/kalman/rig.json`) places every layer on a 1600 × 1500 **artboard**. Positions are absolute artboard coordinates, so they can be read off the design sheet; pivots are in the image's own coordinates. `docs/kalman-layers.md` explains every field.
-- **Poses** (`src/scene/kalman/poses.json`) only store differences from rest: rotation around the pivot and an offset. Layers a pose doesn't mention stay at rest.
-- **`resolvePose()`** turns rig + pose + mood into one SVG transform matrix per layer. A child gets its own movement plus its parent's *movement from rest*, so the glasses follow the head and everything follows the body. The tie and the glasses are `accessory` layers: hidden in the goofy mood.
+- **Poses** (`src/scene/kalman/poses.json`) only store differences from rest: rotation around the pivot, an offset, and a **stretch** (squash and stretch: 0.9 is 10% shorter and correspondingly wider, so the area stays the same). Layers a pose doesn't mention stay at rest. The rig limits each layer's rotation (`rotate`) and, for the layers that may stretch (bodies and heads), its stretch (`stretch`); `clampToRig()` keeps a pose inside those limits.
+- **`resolvePose()`** turns rig + pose + mood into one SVG transform matrix per layer: stretch around the pivot, turn around it, then move. A child gets its own movement plus its parent's *movement from rest*, stretch included, so the glasses follow the head, everything follows the body, and when the body squashes the head stays on the neck. The tie and the glasses are `accessory` layers: hidden in the goofy mood.
 - **Flat, not nested.** The SVG has one `<g>` per layer, sorted by `order`. Nested groups would let the browser combine the transforms, but in SVG a child is always drawn in front of its parent, and the far flipper must be able to sit behind the body.
 - **Validation.** `validateRig()` and `validatePose()` list every problem at once: unknown parents, loops, a shared drawing order, missing images, rotations outside a layer's range. `src/scene/kalman/repo-rig.ts` validates the repo's files when they are loaded (so the build fails on a bad edit), and `tests/unit/kalman-rig-data.test.ts` checks them in CI.
 - **Images.** `KalmanFigure.astro` looks every layer's image up in `src/assets/kalman/` with `import.meta.glob`, so Astro gives it a hashed file name; a missing file fails the build. They are cut from Raymond's design images by a script (see below), into `src/assets/kalman/front/`.

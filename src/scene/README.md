@@ -8,7 +8,8 @@ Everything animated on the site, in 2D (README §5.1), split into:
   changes his pose, spin and angle in the browser (`kalman-figure-client.ts`) and the player
   that runs the animations with GSAP (`kalman-player.ts`). `rig.json` and `turntable.json` are
   written by `npm run cut:kalman`; don't edit them by hand. `poses.json` and `animations.json`
-  are for tuning by hand.
+  are for tuning by hand: per layer a `rotate` (degrees), an `offset` and, for bodies and heads,
+  a `stretch` (below 1 squashes, above 1 stretches), each within the range `rig.json` gives.
 - `school/`: the fish (canvas 2D), Phase 2
 - `environment/`: ice, water, light and the southern lights, Phase 2
 - `scroll/`: depth → scene, Phase 2

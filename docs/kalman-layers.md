@@ -117,8 +117,9 @@ Small differences in colour, height or position between the views are fine: the 
 1. **Background:** a flood fill from the edges through near-white pixels; the outline gets a soft edge.
 2. **The tie and glasses:** where the professional front view differs from the goofy one, within the area of the glasses and of the tie.
 3. **The nine parts** of the front view: head, body, both flippers, both feet and the tail. The flippers are cut at the gap Gemini drew between flipper and body, row by row; above it, along the shoulder. The head fades softly into the neck.
-4. **The rig:** each part's box becomes its `size` and `position` on the 1600 × 1500 artboard, and the joints become the pivots.
-5. **The turntable:** the front view and the four views, whole, per mood, with the tone, ground line and centre matched, plus three mirrored views.
+4. **The side figure's feet:** only their dark pixels, fading in at the ankle like the neck, so a turning foot takes no white feathers along and shows no straight cut. The body keeps a fading strip under the ankles, painted leg behind a turning foot. The two side feet overlap in the drawing, so they share one pivot and always turn together.
+5. **The rig:** each part's box becomes its `size` and `position` on the 1600 × 1500 artboard, and the joints become the pivots.
+6. **The turntable:** the front view and the four views, whole, per mood, with the tone, ground line and centre matched, plus three mirrored views.
 
 The cut lines belong to these images: they are in one settings object at the top of `scripts/cut-kalman-layers.ts`. A new front view needs its own numbers; check the result in the preview with **Show pivots** and the **Flippers up** pose. The logic itself is in `scripts/lib/kalman-cut.ts`, with unit tests.
 
@@ -133,6 +134,7 @@ The cut lines belong to these images: they are in one settings object at the top
 | `parent` | The layer it hangs from: it moves along with that layer. |
 | `order` | Drawing order: higher is in front. The flippers are behind the body. |
 | `rotate` | How far it may turn from rest, `[min, max]` in degrees, clockwise positive. |
+| `stretch` | Only on layers that may squash and stretch (bodies and heads): `[min, max]`, around 1 (rest). 0.9 is 10% shorter and correspondingly wider. |
 | `accessory` | `true` for the tie and the glasses: only shown on his professional side. |
 
 **Left and right are as seen by the viewer** (the flipper on the left of the picture is `flipperLeft`).

@@ -98,6 +98,8 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 
 **Pose**: a still position of the figure, stored as "turn this layer so many degrees, shift that one so far" relative to rest. Layers a pose doesn't mention stay at rest.
 
+**Squash and stretch**: an animation principle: a figure gets shorter and wider when it lands or crouches (squash) and taller and thinner when it jumps or dives (stretch), but keeps its volume, like a rubber ball. Here a layer's `stretch` does that: 0.9 is 10% shorter and 1 / 0.9 wider.
+
 **Transform matrix**: six numbers that move, turn and scale points in one step; SVG writes it as `matrix(a b c d e f)`. Combining two transforms is multiplying their matrices, like `A @ B` in NumPy, and the order matters: turning then moving is not the same as moving then turning.
 
 **Drawing order (z-order)**: which layer is drawn on top of which. Later-drawn layers cover earlier ones. Here it is set per layer (`order`), separately from parent and child, so a flipper that hangs from the body can still be drawn behind it.
