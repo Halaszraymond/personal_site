@@ -2,9 +2,9 @@
 
 ## 1. Squash and stretch in the rig
 
-- [ ] 1.1 Add `stretch?: number` to `LayerPose` and `stretch?: Pair` to `RigLayer` in `src/lib/kalman-rig.ts`, with a `scaleAround()` matrix helper, and stretch each layer around its pivot in `resolvePose()` (design §1, §5); verify with unit tests: stretch 0.9 is 10% shorter and 1/0.9 wider with the pivot in place, no stretch changes nothing, the stretch turns with the layer, and a child's pivot stays attached on a squashed parent
-- [ ] 1.2 Validate stretch: `validateRig()` rejects a stretch range that is empty, inverted or without 1; `validatePose()` rejects a stretch outside the range, a stretch for a layer without a range, and a stretch that is not a finite number; verify with one unit test per message
-- [ ] 1.3 Add `clampToRig(pose, rig)` (design §4), which keeps every rotation and stretch inside its range and leaves offsets alone; verify with unit tests at, inside and beyond both ends of a range
+- [x] 1.1 Add `stretch?: number` to `LayerPose` and `stretch?: Pair` to `RigLayer` in `src/lib/kalman-rig.ts`, with a `scaleAround()` matrix helper, and stretch each layer around its pivot in `resolvePose()` (design §1, §5); verify with unit tests: stretch 0.9 is 10% shorter and 1/0.9 wider with the pivot in place, no stretch changes nothing, the stretch turns with the layer, and a child's pivot stays attached on a squashed parent
+- [x] 1.2 Validate stretch: `validateRig()` rejects a stretch range that is empty, inverted or without 1; `validatePose()` rejects a stretch outside the range, a stretch for a layer without a range, and a stretch that is not a finite number; verify with one unit test per message
+- [x] 1.3 Add `clampToRig(pose, rig)` (design §4), which keeps every rotation and stretch inside its range and leaves offsets alone; verify with unit tests at, inside and beyond both ends of a range
 - [ ] 1.4 Add the stretch ranges to `scripts/cut-kalman-layers.ts` (body [0.85, 1.15] and head [0.92, 1.08] for both figures), widen the side body's rotation to [−150, 100] and the side feet's to ±30° (design §6); verify `npm run cut:kalman` writes them to `rig.json`, `check:kalman` passes, and the side body at −150°, the side feet at ±30° and the bodies at both stretch ends show no cut edge or seam in the preview (screenshots)
 - [ ] 1.5 Update `docs/architecture.md` (stretch in the matrix chain), `docs/glossary.md` (squash and stretch) and `src/scene/README.md` (the `stretch` field in poses and the rig); verify they match the code
 

@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyToPoint,
+  clampToRig,
   compose,
   figureCentre,
   IDENTITY,
@@ -16,6 +17,7 @@ import {
   rotate,
   rotateAround,
   spinMatrix,
+  stretchAround,
   toSvgTransform,
   translate,
   validatePose,
@@ -418,5 +420,144 @@ describe('poses per figure', () => {
     expect(
       errorsOf(validateFigurePose({ name: 'x', label: 'X', figure: 'top', layers: {} }, RIGS)),
     ).toEqual(['Pose "x" needs "figure" as "front" or "side".']);
+  });
+});
+
+// ---------------------------------------------------------------------------------------
+// Squash and stretch (spec: "A layer can squash and stretch", "Children follow their
+// parent's stretch"; design §1, §5)
+// ---------------------------------------------------------------------------------------
+
+/** The rig with a stretch range on the body and the head. */
+const STRETCHY: Rig = {
+  ...RIG,
+  layers: RIG.layers.map((l) =>
+    l.name === 'body' || l.name === 'head' ? { ...l, stretch: [0.8, 1.2] as Pair } : l,
+  ),
+};
+
+describe('stretching a layer', () => {
+  it('stretchAround keeps the pivot and keeps the area', () => {
+    const squash = stretchAround(0.9, [100, 300]);
+    expectPointClose(applyToPoint(squash, [100, 300]), [100, 300]);
+    // 0.9 times as tall and 1 / 0.9 times as wide: the area stays the same.
+    expect(squash.d * squash.a).toBeCloseTo(1, 12);
+  });
+
+  it('squashes the body 10% shorter and correspondingly wider, with its pivot in place', () => {
+    const body = resolved(STRETCHY, pose({ body: { stretch: 0.9 } }), 'body');
+    // The body's top-left and bottom-right corners, from its own image to the artboard.
+    const [left, top] = applyToPoint(body.matrix, [0, 0]);
+    const [right, bottom] = applyToPoint(body.matrix, [200, 300]);
+    expect(bottom - top).toBeCloseTo(300 * 0.9, 9);
+    expect(right - left).toBeCloseTo(200 / 0.9, 9);
+    expectPointClose(body.pivotOnArtboard, [200, 500]);
+  });
+
+  it('changes nothing without a stretch, or with a stretch of 1', () => {
+    for (const layers of [{}, { body: { stretch: 1 } }]) {
+      expect(resolved(STRETCHY, pose(layers), 'body').matrix).toEqual(
+        resolved(STRETCHY, REST_POSE, 'body').matrix,
+      );
+    }
+  });
+
+  it('stretches along the layer’s own upright direction, so the stretch turns with it', () => {
+    // Turned 90° clockwise, the body's top points right; a stretch of 0.5 halves that length.
+    const body = resolved(STRETCHY, pose({ body: { rotate: 90, stretch: 0.5 } }), 'body');
+    expectPointClose(applyToPoint(body.matrix, [100, 0]), [200 + 150, 500]);
+  });
+
+  it('keeps a child attached: the head moves down with the top of a squashed body', () => {
+    // The head's pivot (the neck) sits on the top of the body, 300 above the body's pivot.
+    const head = resolved(STRETCHY, pose({ body: { stretch: 0.9 } }), 'head');
+    expectPointClose(head.pivotOnArtboard, [200, 500 - 300 * 0.9]);
+  });
+});
+
+describe('validating stretch', () => {
+  it('accepts a rig with stretch ranges, and a pose within them', () => {
+    expect(validateRig(rigWith({ body: { stretch: [0.8, 1.2] } }), allImagesExist).ok).toBe(true);
+    expect(
+      validatePose(
+        { name: 'squash', label: 'Squash', layers: { body: { stretch: 0.85 } } },
+        STRETCHY,
+      ).ok,
+    ).toBe(true);
+  });
+
+  it('rejects a stretch range that is empty, inverted, not positive or without 1', () => {
+    const errorsFor = (stretch: Pair) =>
+      errorsOf(validateRig(rigWith({ body: { stretch } }), allImagesExist));
+    expect(errorsFor([1.1, 1.1])).toContain(
+      'Layer "body" has an empty, inverted or non-positive stretch range [1.1, 1.1].',
+    );
+    expect(errorsFor([1.2, 0.8])).toContain(
+      'Layer "body" has an empty, inverted or non-positive stretch range [1.2, 0.8].',
+    );
+    expect(errorsFor([0, 1.2])).toContain(
+      'Layer "body" has an empty, inverted or non-positive stretch range [0, 1.2].',
+    );
+    expect(errorsFor([1.1, 1.3])).toContain(
+      'Layer "body" has a stretch range [1.1, 1.3] without 1, its rest size.',
+    );
+  });
+
+  it('rejects a stretch range that is not two numbers', () => {
+    const data = rigWith({ body: { stretch: 1.2 as unknown as Pair } });
+    expect(errorsOf(validateRig(data, allImagesExist))).toContain(
+      'Layer "body" needs "stretch" as two numbers, or none.',
+    );
+  });
+
+  it('rejects a stretch outside the range, naming the pose, the layer and the range', () => {
+    expect(
+      errorsOf(
+        validatePose({ name: 'x', label: 'X', layers: { body: { stretch: 0.5 } } }, STRETCHY),
+      ),
+    ).toEqual(['Pose "x" stretches "body" to 0.5, outside its range [0.8, 1.2].']);
+  });
+
+  it('rejects a stretch for a layer without a stretch range', () => {
+    expect(
+      errorsOf(
+        validatePose({ name: 'x', label: 'X', layers: { flipper: { stretch: 1.1 } } }, STRETCHY),
+      ),
+    ).toEqual(['Pose "x" stretches "flipper", which has no stretch range in the rig.']);
+  });
+
+  it('rejects a stretch that is not a finite number', () => {
+    expect(
+      errorsOf(
+        validatePose({ name: 'x', label: 'X', layers: { body: { stretch: Infinity } } }, STRETCHY),
+      ),
+    ).toEqual(['Pose "x", layer "body": "stretch" must be a number.']);
+  });
+});
+
+describe('clampToRig', () => {
+  it('leaves values inside the range, and at its ends, as they are', () => {
+    const inside = pose({ head: { rotate: 45 }, body: { stretch: 0.8 }, flipper: { rotate: 10 } });
+    expect(clampToRig(inside, STRETCHY)).toEqual(inside);
+  });
+
+  it('pulls rotations and stretches beyond either end back to that end', () => {
+    const beyond = pose({
+      head: { rotate: 50, stretch: 1.3 },
+      flipper: { rotate: -40 },
+      body: { stretch: 0.7 },
+    });
+    expect(clampToRig(beyond, STRETCHY).layers).toEqual({
+      head: { rotate: 45, stretch: 1.2 },
+      flipper: { rotate: -30 },
+      body: { stretch: 0.8 },
+    });
+  });
+
+  it('keeps offsets, and holds a layer without a stretch range at 1', () => {
+    const shifted = pose({ flipper: { offset: [500, -500], stretch: 1.4 } });
+    expect(clampToRig(shifted, STRETCHY).layers).toEqual({
+      flipper: { offset: [500, -500], stretch: 1 },
+    });
   });
 });

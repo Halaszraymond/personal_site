@@ -82,6 +82,16 @@ export function rotateAround(degrees: number, [px, py]: Pair): Matrix {
   return compose(translate([px, py]), rotate(degrees), translate([-px, -py]));
 }
 
+/**
+ * Stretches around `pivot`: `stretch` times as tall and `1 / stretch` times as wide, so the
+ * area stays the same (squash and stretch: a squashed ball gets wider). 1 changes nothing,
+ * below 1 squashes, above 1 stretches.
+ */
+export function stretchAround(stretch: number, [px, py]: Pair): Matrix {
+  const scale: Matrix = { a: 1 / stretch, b: 0, c: 0, d: stretch, e: 0, f: 0 };
+  return compose(translate([px, py]), scale, translate([-px, -py]));
+}
+
 /** Where a point ends up after the transform. */
 export function applyToPoint(m: Matrix, [x, y]: Pair): Pair {
   return [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f];
@@ -122,6 +132,11 @@ export interface RigLayer {
   readonly order: number;
   /** The allowed rotation from rest, `[min, max]` in degrees. It must include 0 (the rest pose). */
   readonly rotate: Pair;
+  /**
+   * The allowed stretch, `[min, max]`; it must include 1 (rest). Without it the layer may not
+   * stretch at all.
+   */
+  readonly stretch?: Pair;
   /** True for the professional accessories (tie, glasses): only shown in the professional mood. */
   readonly accessory?: boolean;
 }
@@ -133,12 +148,14 @@ export interface Rig {
   readonly layers: readonly RigLayer[];
 }
 
-/** How one layer differs from rest in a pose. Both fields are optional; missing means 0. */
+/** How one layer differs from rest in a pose. All fields are optional; missing means rest. */
 export interface LayerPose {
   /** Rotation around the layer's pivot, in degrees, clockwise. */
   readonly rotate?: number;
   /** Shift from the rest position, `[dx, dy]` in artboard units. */
   readonly offset?: Pair;
+  /** Squash (below 1) or stretch (above 1) around the pivot; missing means 1. */
+  readonly stretch?: number;
 }
 
 /** Kálmán's two posable figures: seen from the front, and seen from the side (for swimming). */
@@ -181,7 +198,8 @@ export interface ResolvedLayer {
  * order (back to front). Expects a rig that passed `validateRig()`.
  *
  * Per layer, two matrices:
- * - **local**: turn around the own pivot, then move to the rest position plus the offset;
+ * - **local**: stretch around the own pivot, turn around it, then move to the rest position
+ *   plus the offset (stretching first, so the stretch turns with the layer);
  * - **world**: the local matrix, then whatever the parent did. "What the parent did" is the
  *   parent's *movement from rest* (its world matrix with its rest position taken out), because
  *   positions are absolute: a child must move as far as its parent moved, not be placed again.
@@ -198,7 +216,9 @@ export function resolvePose(rig: Rig, pose: Pose, mood: Mood): ResolvedLayer[] {
     const local = compose(
       translate([layer.position[0] + dx, layer.position[1] + dy]),
       rotateAround(own.rotate ?? 0, layer.pivot),
+      stretchAround(own.stretch ?? 1, layer.pivot),
     );
+    // A child takes the parent's whole movement, its stretch included: it stays attached.
     const parent = layer.parent === null ? undefined : byName.get(layer.parent);
     return parent === undefined ? local : multiply(movementOf(parent), local);
   }
@@ -264,6 +284,7 @@ const LAYER_FIELDS = new Set([
   'parent',
   'order',
   'rotate',
+  'stretch',
   'accessory',
 ]);
 
@@ -284,6 +305,9 @@ function layerShapeErrors(value: unknown, index: number): string[] {
   }
   for (const key of ['size', 'position', 'pivot', 'rotate']) {
     if (!isPair(value[key])) errors.push(`${label} needs "${key}" as two numbers.`);
+  }
+  if (value['stretch'] !== undefined && !isPair(value['stretch'])) {
+    errors.push(`${label} needs "stretch" as two numbers, or none.`);
   }
   const size = value['size'];
   if (isPair(size) && (size[0] <= 0 || size[1] <= 0)) {
@@ -366,6 +390,18 @@ function rigRelationErrors(
         `Layer "${layer.name}" has a rotation range [${min}, ${max}] without 0, its rest position.`,
       );
     }
+    if (layer.stretch !== undefined) {
+      const [low, high] = layer.stretch;
+      if (low <= 0 || low >= high) {
+        errors.push(
+          `Layer "${layer.name}" has an empty, inverted or non-positive stretch range [${low}, ${high}].`,
+        );
+      } else if (low > 1 || high < 1) {
+        errors.push(
+          `Layer "${layer.name}" has a stretch range [${low}, ${high}] without 1, its rest size.`,
+        );
+      }
+    }
   }
   return errors;
 }
@@ -427,7 +463,7 @@ export function validatePose(data: unknown, rig: Rig): Validation<Pose> {
       continue;
     }
     for (const key of Object.keys(value)) {
-      if (key !== 'rotate' && key !== 'offset') {
+      if (key !== 'rotate' && key !== 'offset' && key !== 'stretch') {
         errors.push(`${label}, layer "${layerName}" has an unknown field "${key}".`);
       }
     }
@@ -445,9 +481,59 @@ export function validatePose(data: unknown, rig: Rig): Validation<Pose> {
     if (value['offset'] !== undefined && !isPair(value['offset'])) {
       errors.push(`${label}, layer "${layerName}": "offset" must be two numbers.`);
     }
+    errors.push(...stretchErrors(label, layer, value['stretch']));
   }
   if (errors.length > 0) return { ok: false, errors };
   return { ok: true, value: data as unknown as Pose };
+}
+
+/** Problems with one layer's stretch in a pose: not a number, not allowed, or out of range. */
+function stretchErrors(label: string, layer: RigLayer, stretch: unknown): string[] {
+  if (stretch === undefined) return [];
+  if (!isFiniteNumber(stretch))
+    return [`${label}, layer "${layer.name}": "stretch" must be a number.`];
+  if (layer.stretch === undefined) {
+    return [`${label} stretches "${layer.name}", which has no stretch range in the rig.`];
+  }
+  const [min, max] = layer.stretch;
+  if (stretch < min || stretch > max) {
+    return [
+      `${label} stretches "${layer.name}" to ${stretch}, outside its range [${min}, ${max}].`,
+    ];
+  }
+  return [];
+}
+
+// ---------------------------------------------------------------------------------------
+// Keeping a pose inside the rig's limits
+// ---------------------------------------------------------------------------------------
+
+/** `value` limited to `[min, max]`, like `numpy.clip` for one number. */
+function clamp(value: number, [min, max]: Pair): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * The pose with every rotation and stretch pulled back inside its layer's range (design §4).
+ * An overshooting easing may ask for a little more than a layer allows; this keeps the drawn
+ * figure within the rig. Offsets have no range, so they stay as they are, and layers the rig
+ * doesn't have are left alone.
+ */
+export function clampToRig(pose: Pose, rig: Rig): Pose {
+  const byName = new Map(rig.layers.map((layer) => [layer.name, layer]));
+  const layers: Record<string, LayerPose> = {};
+  for (const [name, own] of Object.entries(pose.layers)) {
+    const layer = byName.get(name);
+    if (layer === undefined) {
+      layers[name] = own;
+      continue;
+    }
+    const clamped: { rotate?: number; offset?: Pair; stretch?: number } = { ...own };
+    if (own.rotate !== undefined) clamped.rotate = clamp(own.rotate, layer.rotate);
+    if (own.stretch !== undefined) clamped.stretch = clamp(own.stretch, layer.stretch ?? [1, 1]);
+    layers[name] = clamped;
+  }
+  return { ...pose, layers };
 }
 
 // ---------------------------------------------------------------------------------------
