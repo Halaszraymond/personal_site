@@ -226,7 +226,9 @@ const firstDuration = firstAnimation === undefined ? 1 : playLength(firstAnimati
 
   .choices {
     display: flex;
-    gap: 1.5rem;
+    /* Three figures don't fit on one line on a small phone: let them wrap. */
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
   }
 
   button {
