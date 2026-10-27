@@ -192,7 +192,7 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 
 ### 5.4 Coding requirements
 
-**Principle:** top quality, while written so that Raymond (strong in Python/R/SQL, new to TypeScript) can read every line and explain it in a job interview. Employers will read this repo too.
+**Principle:** the highest quality and the best user experience come first. The code stays clear and well commented, because employers will read this repo too, but it no longer has to be simple enough for Raymond to explain every line (dropped on 2026-10-27, see PLANNING_LOG).
 
 **Why TypeScript for the site and not Python in the browser:** Python in the browser (PyScript/Pyodide) first loads a Python runtime of several MB. That kills the first impression and the Lighthouse score, and the animation tooling for it is thin. Server frameworks like Streamlit or Reflex need a running server and aren't made for this kind of animated experience. So this repo is TypeScript only. Python and R show in their own projects, where they are strongest: r-Frica Predicts (R) and the Pi server (Python), linked from the case studies.
 

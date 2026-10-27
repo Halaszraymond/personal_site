@@ -10,11 +10,11 @@
 - **Build log:** after each work session, record in `docs/making-of.md` what was decided and built, with screenshots where possible. This later becomes the "this website" case study.
 - **Quality:** respect `prefers-reduced-motion`, keep content in HTML (not only in canvas), test at mobile width, and aim for Lighthouse ≥ 90.
 - **The coding requirements (README §5.4) are mandatory.** The most important ones:
-  - Raymond must be able to understand and explain every line. He knows Python/R/SQL well and TypeScript less: write clearly, with a header comment per file, *why* comments, and a comparison with Python where useful. Readability never comes at the cost of quality.
+  - Highest quality and user experience first. Write clearly, with a header comment per file and *why* comments (a comparison with Python where it helps); Raymond no longer needs to be able to explain every line.
   - TypeScript `strict`, no `any`. Python with Ruff + mypy.
   - All new logic comes with tests. A task is only done when lint, type check, all tests, the build, Playwright and Lighthouse are green.
   - Keep `docs/architecture.md` and `docs/glossary.md` up to date when the structure changes or new concepts appear.
   - Don't add a dependency without asking Raymond and explaining why.
-- **Explain what you build:** end every task with a short plain-language explanation of how it works, so Raymond learns it and can explain it himself.
+- **Summarise what you build:** end every task with a short plain-language summary of what changed and why.
 - **Commits:** small, descriptive commits. Work on a feature branch and only push when Raymond asks.
 - **Don't touch the `stamlijst` subdomain or the existing DNS** without an explicit request.
