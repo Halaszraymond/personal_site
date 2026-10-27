@@ -30,7 +30,7 @@
 
 - [x] 5.1 Add the front/side switch, and let the pose buttons and rotation sliders follow the chosen figure (Copy pose includes `figure`); verify with e2e tests for switching and for side poses
 - [x] 5.2 Add the animation controls: a play button per animation, the idle loop switch, the scrub slider with its `<output>`; verify there is exactly one button per animation and the slider's range is the animation's duration
-- [ ] 5.3 Add e2e tests: playing the bow (marked while playing, rest afterwards), swim stops idle, idle on by default and off with reduced motion, scrubbing sets `data-time` and the layers, head-follow turns the head with the pointer, a hidden tab stops `data-time`; verify they pass in all four browsers
+- [x] 5.3 Add e2e tests: playing the bow (marked while playing, rest afterwards), swim stops idle, idle on by default and off with reduced motion, scrubbing sets `data-time` and the layers, head-follow turns the head with the pointer, a hidden tab stops `data-time`; verify they pass in all four browsers
 - [ ] 5.4 Add the snapshots of key moments (bow at its deepest, dive halfway, swim at the top of a stroke, launch pointing up), held with the scrub slider, and make the baselines with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
 
 ## 6. Docs and wrap-up

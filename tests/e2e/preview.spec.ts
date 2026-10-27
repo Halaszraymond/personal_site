@@ -286,6 +286,8 @@ test('the professional mood also shows on the turntable views', async ({ page })
 });
 
 test('dragging Kálmán sideways turns him, and vertical swipes still scroll', async ({ page }) => {
+  // On a phone, switching the idle loop off scrolled the page down to that switch.
+  await figure(page).scrollIntoViewIfNeeded();
   const box = await figure(page).boundingBox();
   if (box === null) throw new Error('The figure has no box.');
   const middle = { x: box.x + box.width / 2, y: box.y + box.height / 2 };

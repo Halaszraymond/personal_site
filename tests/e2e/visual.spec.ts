@@ -69,3 +69,33 @@ for (const { name, button, professional } of POSES) {
     });
   });
 }
+
+/**
+ * Key moments of the animations (README §5.4, visual layer 4), held still with the scrub slider
+ * so the screenshot is the same every run: the animation and the moment in seconds.
+ */
+const MOMENTS = [
+  { name: 'kalman-bow-deepest', animation: 'bow', at: '0.9' },
+  { name: 'kalman-dive-halfway', animation: 'dive', at: '1.2' },
+  { name: 'kalman-swim-stroke-up', animation: 'swim', at: '0.4' },
+  { name: 'kalman-launch-up', animation: 'launch', at: '1.1' },
+];
+
+for (const { name, animation, at } of MOMENTS) {
+  test(`${name} looks the same as the baseline`, async ({ page }) => {
+    test.skip(!isCI, 'Visual baselines are Linux-only: these run in CI.');
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/playground/');
+    await page.getByRole('switch', { name: /Idle when nothing else plays/ }).uncheck();
+    await page.getByRole('button', { name: `Play ${animation}` }).click();
+    await page.getByLabel('Position in the animation').fill(at);
+    await expect(page.locator('[data-kalman-figure]')).toHaveAttribute(
+      'data-time',
+      Number(at).toFixed(2),
+    );
+
+    await expect(page.locator('[data-kalman-figure]')).toHaveScreenshot(`${name}.png`, {
+      maxDiffPixelRatio: 0.01,
+    });
+  });
+}

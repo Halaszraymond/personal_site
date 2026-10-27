@@ -85,6 +85,8 @@ test('head-follow turns the head towards the pointer', async ({ page }) => {
   await page.getByRole('button', { name: 'Play head-follow' }).click();
   await expect(figure(page)).toHaveAttribute('data-animation', 'head-follow');
 
+  // On a phone the play button is below the figure, so clicking it scrolled the page down.
+  await figure(page).scrollIntoViewIfNeeded();
   const box = await figure(page).boundingBox();
   if (box === null) throw new Error('The figure has no box.');
   await page.mouse.move(box.x + box.width - 5, box.y + box.height * 0.2, { steps: 5 });
