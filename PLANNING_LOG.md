@@ -95,3 +95,4 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-27 — After merging Phase 1: the idle loop is natural, but the bow isn't deep enough and the dive looks static. This gets a follow-up change before Phase 2, `kalman-animation-feel`, still under Phase 1. Decided by: Raymond (proposed by Claude).
 - 2026-10-27 — The bow stays on the front figure and gets much deeper (head far down, body squashing, flippers out). Decided by: Raymond.
 - 2026-10-27 — Squash and stretch is part of `kalman-animation-feel`: a layer can stretch around its pivot within a range from the rig. Decided by: Raymond (proposed by Claude).
+- 2026-10-27 — Swim and launch are full parts of `kalman-animation-feel`, each with its own requirement and tuning session: the swim surges on the down stroke and glides on the up stroke, and the launch gets a wind-up, stretch in flight and a landing squash. Decided by: Raymond (proposed by Claude).

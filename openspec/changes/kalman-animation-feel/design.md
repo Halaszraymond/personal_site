@@ -55,8 +55,8 @@ The two `back` eases are added to the allowed eases: they go slightly past the t
 |---|---|
 | **Bow** (front) | rest → `bowRise` (body stretch 1.04, 0.25 s, `sine.out`) → `bowDeep` (head offset [0, 80], body stretch 0.9, flippers 30° outwards, tie offset [0, 30]; 0.8 s, `power2.in`) → hold until 1.3 s → rest (2.0 s, `back.out`). Lag: head 0.05, flippers 0.1, tie 0.08. |
 | **Dive** (side) | rest → `crouch` (body down 30, back 10°, stretch 0.85; 0.4 s) → `diveRise` (body up 60 and forward 20, nose up, stretch 1.1; 0.65 s) → `dive` (stretch 1.15; 1.0 s) → `diveDeep` (1.5 s) → hold → rest. Lag: tail 0.12, feet 0.1, flipper 0.08. The rise is the top of the arc. |
-| **Swim** (side) | body stretch 1.03 on the down stroke and 0.97 on the up stroke; lag: head 0.05, tail 0.1, feet 0.08. |
-| **Launch** (side) | a squash (`crouch`-like) before `pointUp`, stretch 1.15 at `launchHigh`, settle with `back.out`; lag: tail 0.12, feet 0.1. |
+| **Swim** (side) | `strokeDown`: body offset [−20, 0] (forward) and stretch 1.04, reached with `power2.out` (a fast surge, then a glide); `strokeUp`: offset [0, 0], stretch 0.97. Lag: head 0.05, tail 0.1, feet 0.08, flipper 0.04. |
+| **Launch** (side) | rest → `launchWindUp` (body down 25, stretch 0.85; 0.3 s) → `pointUp` → `launchHigh` (stretch 1.15, `power3.out`, so he slows at the top) → `landing` (ground level, stretch 0.85, `power2.in`, so the fall speeds up like gravity; 1.6 s) → rest (2.1 s, `back.out`). Lag: tail 0.12, feet 0.1, flipper 0.08. |
 | **Idle** | unchanged. |
 
 The bow's deepest head offset of 80 is more than a quarter of the head's height (278), as the spec asks.
@@ -72,6 +72,7 @@ Each layer with a stretch range gets a stretch slider (step 0.01) below the rota
 - [Lag makes a layer look detached] → Only its own rotation and stretch lag; where it hangs is still decided by its parent *now*, so it can't come loose.
 - [Clamping flattens an overshoot at the end of a range] → It is only visible when a pose sits at the very edge of the range; such poses get a little room, or the ease becomes `power2.out`.
 - [Longer non-looping animations change the scrub range and the e2e expectations] → The tests read the range from the data (`playLength`), not a fixed number.
+- [Surging in place reads as rocking back and forth] → The surge is tuned with Raymond; in Phase 2 the scene itself moves past him, which gives the forward travel.
 - [New snapshot baselines] → Made with "Update visual baselines" and checked by eye, as before.
 
 ## Migration Plan

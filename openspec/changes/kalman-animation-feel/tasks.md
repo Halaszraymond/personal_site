@@ -22,11 +22,13 @@
 
 ## 4. The new poses and animations, tuned with Raymond
 
-- [ ] 4.1 Add the poses and keyframes of design §7 to `poses.json` and `animations.json` (bow: `bowRise`, `bowDeep`; dive: `crouch` with squash, `diveRise`, stretched `dive`; swim and launch with stretch and lag; idle unchanged); verify the data tests pass, plus unit tests against the repo data for "The deepest moment" (head lowered by at least a quarter of its height, body squashed, flippers outwards), "Crouch before the jump", "Rising before the fall" and "Stretched in flight"
+- [ ] 4.1 Add the poses and keyframes of design §7 to `poses.json` and `animations.json` (bow: `bowRise`, `bowDeep`; dive: `crouch` with squash, `diveRise`, stretched `dive`; swim: surging `strokeDown`; launch: `launchWindUp`, stretched `launchHigh`, `landing`; idle unchanged); verify the data tests pass, plus unit tests against the repo data for "The deepest moment" (head lowered by at least a quarter of its height, body squashed, flippers outwards), "Crouch before the jump", "Rising before the fall", "Stretched in flight", "Surge on the down stroke", "Trailing", "Wind-up", "In flight" and "Landing"
 - [ ] 4.2 Tune the bow with Raymond in the preview (depth, timing, lag, settle) and put his values in the data; verify Raymond approves the bow and the tests of 4.1 still pass
-- [ ] 4.3 Tune the dive with Raymond in the same way, then swim and launch; verify Raymond approves each animation and the tests of 4.1 still pass
-- [ ] 4.4 Update the snapshots of key moments (bow at its deepest, crouch, dive halfway, swim at the top of a stroke, launch pointing up) and make the baselines with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
-- [ ] 4.5 Log the chosen values in `PLANNING_LOG.md` and record the session in `docs/making-of.md` (what made it look static, the animation principles, before/after screenshots); verify the files are updated
+- [ ] 4.3 Tune the dive with Raymond in the same way (crouch, arc, stretch, trailing); verify Raymond approves the dive and the tests of 4.1 still pass
+- [ ] 4.4 Tune the swim with Raymond (surge, glide, trailing, loop without a jump); verify Raymond approves the swim and the tests of 4.1 still pass
+- [ ] 4.5 Tune the launch with Raymond (wind-up, flight, top, fall, landing and settle); verify Raymond approves the launch and the tests of 4.1 still pass
+- [ ] 4.6 Update the snapshots of key moments (bow at its deepest, crouch, dive halfway, swim at the end of the down stroke, launch pointing up, launch landing) and make the baselines with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
+- [ ] 4.7 Log the chosen values in `PLANNING_LOG.md` and record the session in `docs/making-of.md` (what made it look static, the animation principles, before/after screenshots); verify the files are updated
 
 ## 5. Wrap-up
 

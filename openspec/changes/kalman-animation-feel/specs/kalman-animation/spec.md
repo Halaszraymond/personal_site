@@ -88,3 +88,29 @@ The dive SHALL show anticipation, an arc and follow-through: he crouches and squ
 #### Scenario: Stretched in flight
 - **WHEN** the dive is held halfway through the fall
 - **THEN** the body is stretched, and the tail and feet are behind the body's movement
+
+### Requirement: The swim moves like a stroke
+The swim SHALL make each stroke move him: on the down stroke the body surges forward and stretches slightly, on the up stroke it glides back; the head, tail and feet follow the body's movement a moment later.
+
+#### Scenario: Surge on the down stroke
+- **WHEN** the swim is sampled at the end of the down stroke and at the end of the up stroke
+- **THEN** the body is further forward at the end of the down stroke, and stretched
+
+#### Scenario: Trailing
+- **WHEN** the swim plays
+- **THEN** the tail and feet reach each turning point of the stroke later than the body
+
+### Requirement: The launch has a wind-up and a landing
+The launch SHALL squash before he shoots up, stretch while he rises, slow down at the top, fall faster as he comes down, and land with a squash that settles back to rest with a small overshoot.
+
+#### Scenario: Wind-up
+- **WHEN** the launch is held at the end of its wind-up
+- **THEN** the body is lower than at rest and squashed
+
+#### Scenario: In flight
+- **WHEN** the launch is held halfway up
+- **THEN** the body is stretched
+
+#### Scenario: Landing
+- **WHEN** the launch is held at the moment he lands
+- **THEN** the body is at ground level and squashed, and when the launch has finished he is at rest

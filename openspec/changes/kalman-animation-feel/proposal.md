@@ -2,7 +2,7 @@
 
 ## Why
 
-Raymond judged the animations after Phase 1 was merged: the idle loop moves in a relaxed, natural way, but the bow is not deep enough and the dive looks stiff, "too static". The cause is in the data and the rig. All layers start and stop together on the same keyframes, nothing overshoots or settles, the anticipation before the dive is tiny, the dive slides in a straight line, the feet never move, and the bow from the front only slides the head down 26 px. Phase 2 (the dive) builds on these animations, so they should feel alive before it starts.
+Raymond judged the animations after Phase 1 was merged: the idle loop moves in a relaxed, natural way, but the bow is not deep enough and the dive looks stiff, "too static". The cause is in the data and the rig. All layers start and stop together on the same keyframes, nothing overshoots or settles, the anticipation before the dive is tiny, the dive slides in a straight line, the feet never move, and the bow from the front only slides the head down 26 px. Raymond found the swim and the launch off too. Phase 2 (the dive) builds on these animations, so they should feel alive before it starts.
 
 ## What Changes
 
@@ -11,7 +11,9 @@ Raymond judged the animations after Phase 1 was merged: the idle loop moves in a
 - **Squash and stretch:** a layer can **stretch** (taller and thinner) or **squash** (shorter and wider) around its pivot, keeping its area roughly the same. The rig gives each layer an allowed stretch range; layers without one don't stretch. Children follow their parent's stretch, like they follow its rotation.
 - **A deeper bow on the front figure:** head far down, body squashing as he bends, flippers spreading out, a small rise beforehand, and a settle on the way back up.
 - **A natural dive:** a real crouch with squash (anticipation), a rise before the fall (an arc), stretch in the dive itself, and feet and tail that react and trail.
-- **The other animations** (swim, launch) get the same treatment where it helps; the idle loop keeps its current keyframes, because Raymond likes how it moves.
+- **A swim with a stroke:** the body surges forward and stretches a little on the down stroke and glides back on the up stroke; the head, tail and feet trail behind.
+- **A launch with a landing:** a wind-up squash before he shoots up, stretch in flight, slowing at the top, a fall that speeds up, and a landing squash that settles back to rest.
+- **The idle loop** keeps its current keyframes, because Raymond likes how it moves.
 - **The preview** gets a stretch slider for each layer that may stretch, and Copy pose includes stretch values, so Raymond can tune the new poses by eye.
 
 ## Capabilities
@@ -23,7 +25,7 @@ None.
 ### Modified Capabilities
 
 - `kalman-rig`: poses can stretch layers; the rig gives each layer an allowed stretch range; validation rejects a stretch outside it; children follow their parent's stretch; the rig config holds the stretch range.
-- `kalman-animation`: animations can give layers a lag; overshooting easings are allowed with the blended pose kept inside the rig's ranges; a non-looping animation ends at rest only once every lagging layer has settled; the bow, dive, swim and launch use these.
+- `kalman-animation`: animations can give layers a lag; overshooting easings are allowed with the blended pose kept inside the rig's ranges; a non-looping animation ends at rest only once every lagging layer has settled; the bow, dive, swim and launch each get their own requirement for how they move.
 - `kalman-preview`: a stretch slider per layer that may stretch; Copy pose includes stretch.
 
 ## Impact
