@@ -35,7 +35,7 @@
 
 ## 6. Docs and wrap-up
 
-- [ ] 6.1 Update `docs/architecture.md` (animations as data, the player, two figures), `docs/glossary.md` (keyframe, easing, timeline, interpolation, scrubbing), `src/scene/README.md` and `docs/kalman-layers.md` (the side figure); verify they match the code
+- [x] 6.1 Update `docs/architecture.md` (animations as data, the player, two figures), `docs/glossary.md` (keyframe, easing, timeline, interpolation, scrubbing), `src/scene/README.md` and `docs/kalman-layers.md` (the side figure); verify they match the code
 - [x] 6.2 Measure the preview's JavaScript with `npm run size` and log it in `PLANNING_LOG.md`; verify it is within the 50 KB budget
 - [ ] 6.3 Record the session in `docs/making-of.md` with screenshots of key moments, tick the animations in README §7 and mark Phase 1 done there once Raymond agrees; verify the files are updated
 - [ ] 6.4 Run `npm run check` and check the preview on the Cloudflare branch preview with Raymond; verify everything is green and Raymond has judged the animations
