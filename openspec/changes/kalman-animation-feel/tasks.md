@@ -46,7 +46,7 @@
 - [x] 6.3 Add `shift` and `mood` to `RigLayer` in `src/lib/kalman-rig.ts`: validation of a shift range and of a pose's offset against it, `clampToRig()` clamping such offsets, and `resolvePose()` showing a layer with `mood` only in that mood (design §11); verify with unit tests, including "Pupil at the edge", "Professional mood" and "Goofy mood"
 - [x] 6.4 Cut the head and the glasses from the images without pupils and the two pupil layers from the differences in `scripts/cut-kalman-layers.ts`, with their shift measured on the images; verify `npm run cut:kalman` and `check:kalman` pass, the data test for the eleven front layers, and screenshots of the pupils at the ends of their shift in both moods with no copy left behind
 - [x] 6.5 Add `eyeShift()` with unit tests ("Pointer far to the right", "Pointer straight above the head", "Pointer below and to the left") and move the pupils in the player's head-follow, faster than the head; verify with e2e tests for "Pointer to the right" and "Eyes in the professional mood" in all four browsers
-- [ ] 6.6 Tune the eyes with Raymond in the preview (how far, how fast) and update `docs/architecture.md`, `docs/glossary.md` and `docs/kalman-layers.md` for the pupils; verify Raymond approves and the docs match the code
+- [x] 6.6 Tune the eyes with Raymond in the preview (how far, how fast) and update `docs/architecture.md`, `docs/glossary.md` and `docs/kalman-layers.md` for the pupils; verify Raymond approves and the docs match the code
 
 ## 7. Wrap-up
 
