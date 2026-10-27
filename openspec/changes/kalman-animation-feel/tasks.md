@@ -31,7 +31,7 @@
 
 ## 5. The new poses and animations, tuned with Raymond
 
-- [ ] 5.1 Add the poses and keyframes of design §10 to `poses.json` and `animations.json` (bow with `drawn: "bow"`; dive with lean, crouch, hop and face-first entry; horizontal swim with surge, drift and glance; launch with wind-up, rise, flight, landing, wobble and recovery; idle unchanged); verify the data tests pass, plus unit tests against the repo data for every scenario of "The bow is a deep, polite bow", "The dive moves like a dive", "The swim moves like a stroke" and "The launch is professional, the landing goofy"
+- [x] 5.1 Add the poses and keyframes of design §10 to `poses.json` and `animations.json` (bow with `drawn: "bow"`; dive with lean, crouch, hop and face-first entry; horizontal swim with surge, drift and glance; launch with wind-up, rise, flight, landing, wobble and recovery; idle unchanged); verify the data tests pass, plus unit tests against the repo data for every scenario of "The bow is a deep, polite bow", "The dive moves like a dive", "The swim moves like a stroke" and "The launch is professional, the landing goofy"
 - [ ] 5.2 Tune the bow with Raymond in the preview (depth, the moment of the cross-fade, the hold, the settle); verify Raymond approves the bow and the tests of 5.1 still pass
 - [ ] 5.3 Tune the dive with Raymond (lean, crouch, hop, flailing flippers, face-first entry, trailing); verify Raymond approves the dive and the tests of 5.1 still pass
 - [ ] 5.4 Tune the swim with Raymond (horizontal glide, surge, drift, the glance at a fish, loop without a jump); verify Raymond approves the swim and the tests of 5.1 still pass

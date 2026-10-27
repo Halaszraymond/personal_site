@@ -106,7 +106,10 @@ export function duration(animation: Animation): number {
  */
 export function playLength(animation: Animation): number {
   if (animation.loop) return duration(animation);
-  return duration(animation) + Math.max(0, ...Object.values(animation.lag ?? {}));
+  const length = duration(animation) + Math.max(0, ...Object.values(animation.lag ?? {}));
+  // Rounded to milliseconds: 2.2 + 0.12 is 2.3200000000000003 in floating point, which a
+  // range slider refuses as a value (and nobody wants to read).
+  return Math.round(length * 1000) / 1000;
 }
 
 // ---------------------------------------------------------------------------------------
@@ -230,6 +233,18 @@ export function drawnFrame(animation: Animation, time: number): DrawnFrame | und
     if (opacity > 0 && (best === undefined || opacity > best.opacity)) best = { name, opacity };
   }
   return best;
+}
+
+/**
+ * How solid the drawing and the layers are drawn for a drawn pose's `opacity` (0 to 1). Not
+ * simply `opacity` and `1 − opacity`: two pictures at 50% each cover only 75%, so he would be
+ * see-through halfway. Instead the drawing first fades in over the solid layers (opacity 0 to
+ * 0.5), then the layers fade out under the solid drawing (0.5 to 1). Their lower halves are the
+ * same picture, so that part stays solid all the time, and what only one of them has (the
+ * layered head above the drawn bow) fades smoothly instead of popping.
+ */
+export function crossFade(opacity: number): { readonly drawing: number; readonly layers: number } {
+  return { drawing: Math.min(1, 2 * opacity), layers: Math.min(1, 2 * (1 - opacity)) };
 }
 
 /** 1 inside `[from, to]`, a straight ramp over `fade` seconds on both sides, 0 further out. */

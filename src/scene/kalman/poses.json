@@ -11,19 +11,19 @@
     "figure": "front",
     "layers": {
       "body": {
-        "offset": [0, 6]
+        "stretch": 0.96
       },
       "head": {
-        "offset": [0, 26]
+        "offset": [0, 90]
       },
       "flipperLeft": {
-        "rotate": -6
+        "rotate": 2
       },
       "flipperRight": {
-        "rotate": 6
+        "rotate": -2
       },
       "tie": {
-        "offset": [0, 14]
+        "offset": [0, 30]
       }
     }
   },
@@ -57,63 +57,6 @@
     "layers": {
       "head": {
         "rotate": 15
-      }
-    }
-  },
-  {
-    "name": "rest",
-    "label": "Rest",
-    "figure": "side",
-    "layers": {}
-  },
-  {
-    "name": "strokeUp",
-    "label": "Stroke up",
-    "figure": "side",
-    "layers": {
-      "flipper": {
-        "rotate": 50
-      },
-      "body": {
-        "rotate": -3
-      },
-      "head": {
-        "rotate": 2
-      }
-    }
-  },
-  {
-    "name": "strokeDown",
-    "label": "Stroke down",
-    "figure": "side",
-    "layers": {
-      "flipper": {
-        "rotate": -60
-      },
-      "body": {
-        "rotate": 3
-      },
-      "head": {
-        "rotate": -2
-      }
-    }
-  },
-  {
-    "name": "dive",
-    "label": "Dive",
-    "figure": "side",
-    "layers": {
-      "body": {
-        "rotate": -60
-      },
-      "flipper": {
-        "rotate": -40
-      },
-      "head": {
-        "rotate": -10
-      },
-      "tail": {
-        "rotate": 10
       }
     }
   },
@@ -156,16 +99,195 @@
     }
   },
   {
+    "name": "bowStart",
+    "label": "Bow (start)",
+    "figure": "front",
+    "layers": {
+      "body": {
+        "stretch": 1.03
+      },
+      "head": {
+        "offset": [0, -8]
+      }
+    }
+  },
+  {
+    "name": "rest",
+    "label": "Rest",
+    "figure": "side",
+    "layers": {}
+  },
+  {
+    "name": "strokeUp",
+    "label": "Stroke up",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -91,
+        "offset": [0, 6],
+        "stretch": 0.97
+      },
+      "flipper": {
+        "rotate": 40
+      },
+      "tail": {
+        "rotate": -8
+      },
+      "footBack": {
+        "rotate": 10
+      },
+      "footFront": {
+        "rotate": 10
+      },
+      "head": {
+        "rotate": 65
+      }
+    }
+  },
+  {
+    "name": "strokeDown",
+    "label": "Stroke down",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -85,
+        "offset": [-20, -6],
+        "stretch": 1.04
+      },
+      "flipper": {
+        "rotate": -60
+      },
+      "tail": {
+        "rotate": 8
+      },
+      "footBack": {
+        "rotate": 15
+      },
+      "footFront": {
+        "rotate": 15
+      },
+      "head": {
+        "rotate": 65
+      }
+    }
+  },
+  {
+    "name": "dive",
+    "label": "Dive",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -125,
+        "offset": [-120, 200],
+        "stretch": 1.15
+      },
+      "head": {
+        "rotate": 50
+      },
+      "flipper": {
+        "rotate": -15
+      },
+      "tail": {
+        "rotate": 10
+      },
+      "footBack": {
+        "rotate": 20
+      },
+      "footFront": {
+        "rotate": 20
+      }
+    }
+  },
+  {
     "name": "crouch",
     "label": "Crouch",
     "figure": "side",
     "layers": {
       "body": {
-        "rotate": 8,
-        "offset": [0, 15]
+        "rotate": -30,
+        "offset": [0, 30],
+        "stretch": 0.85
       },
       "head": {
-        "rotate": -6
+        "rotate": 10
+      },
+      "flipper": {
+        "rotate": -40
+      }
+    }
+  },
+  {
+    "name": "diveLean",
+    "label": "Dive (lean)",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -20
+      },
+      "flipper": {
+        "rotate": -30
+      }
+    }
+  },
+  {
+    "name": "diveHop",
+    "label": "Dive (hop)",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -60,
+        "offset": [-30, -120],
+        "stretch": 1.05
+      },
+      "flipper": {
+        "rotate": 55
+      },
+      "footBack": {
+        "rotate": 15
+      },
+      "footFront": {
+        "rotate": 15
+      }
+    }
+  },
+  {
+    "name": "swimGlance",
+    "label": "Swim (glance at a fish)",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -91,
+        "offset": [0, 6],
+        "stretch": 0.97
+      },
+      "head": {
+        "rotate": 45
+      },
+      "flipper": {
+        "rotate": 40
+      },
+      "tail": {
+        "rotate": -8
+      },
+      "footBack": {
+        "rotate": 10
+      },
+      "footFront": {
+        "rotate": 10
+      }
+    }
+  },
+  {
+    "name": "launchWindUp",
+    "label": "Launch (wind-up)",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "offset": [0, 25],
+        "stretch": 0.85
+      },
+      "head": {
+        "rotate": 5
       },
       "flipper": {
         "rotate": -20
@@ -173,61 +295,99 @@
     }
   },
   {
-    "name": "diveDeep",
-    "label": "Dive deep",
+    "name": "launchRise",
+    "label": "Launch (rise)",
     "figure": "side",
     "layers": {
       "body": {
-        "rotate": -70,
-        "offset": [-120, 180]
-      },
-      "flipper": {
-        "rotate": -40
+        "offset": [0, -200],
+        "stretch": 1.15
       },
       "head": {
-        "rotate": -10
-      },
-      "tail": {
         "rotate": 10
-      }
-    }
-  },
-  {
-    "name": "pointUp",
-    "label": "Point up",
-    "figure": "side",
-    "layers": {
-      "body": {
+      },
+      "flipper": {
+        "rotate": -5
+      },
+      "footBack": {
         "rotate": 15
       },
-      "head": {
-        "rotate": 30
-      },
-      "flipper": {
-        "rotate": -80
-      },
-      "tail": {
-        "rotate": -10
+      "footFront": {
+        "rotate": 15
       }
     }
   },
   {
-    "name": "launchHigh",
-    "label": "Launch high",
+    "name": "launchFly",
+    "label": "Launch (fly)",
     "figure": "side",
     "layers": {
       "body": {
-        "rotate": 15,
-        "offset": [0, -300]
+        "rotate": -40,
+        "offset": [-60, -300],
+        "stretch": 1.08
+      },
+      "flipper": {
+        "rotate": -10
+      },
+      "tail": {
+        "rotate": -10
+      },
+      "footBack": {
+        "rotate": 20
+      },
+      "footFront": {
+        "rotate": 20
       },
       "head": {
         "rotate": 30
+      }
+    }
+  },
+  {
+    "name": "landing",
+    "label": "Landing",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -10,
+        "stretch": 0.85
+      },
+      "flipper": {
+        "rotate": -30
+      }
+    }
+  },
+  {
+    "name": "landingWobble",
+    "label": "Landing (wobble)",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -25,
+        "offset": [-10, 0]
+      },
+      "head": {
+        "rotate": 15
       },
       "flipper": {
         "rotate": -90
+      }
+    }
+  },
+  {
+    "name": "landingRecover",
+    "label": "Landing (recover)",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": 6
       },
-      "tail": {
-        "rotate": -15
+      "head": {
+        "rotate": -5
+      },
+      "flipper": {
+        "rotate": -40
       }
     }
   }

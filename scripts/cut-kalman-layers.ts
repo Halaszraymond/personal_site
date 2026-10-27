@@ -251,7 +251,8 @@ const SIDE_LAYERS = [
     pivot: [350, 236],
     parent: 'body',
     order: 30,
-    rotate: [-30, 30],
+    // Up to 70° back, so when he swims horizontally his bill can point forward (kalman-animation-feel).
+    rotate: [-30, 70],
     stretch: [0.92, 1.08],
     from: 'goofy',
   },

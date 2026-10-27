@@ -76,7 +76,7 @@ A keyframe SHALL be able to name a drawn pose: a whole drawing of Kálmán in th
 
 #### Scenario: Halfway through the cross-fade
 - **WHEN** an animation is held halfway through the cross-fade into a drawn pose
-- **THEN** the layers and the drawing both show, each half see-through
+- **THEN** the layers and the drawing both show, and the figure is nowhere see-through
 
 ### Requirement: The bow is a deep, polite bow
 The bow SHALL use the front figure and read as a polite, deep bow, like a butler welcoming a guest: the body stays almost upright, the head folds down until the bill points at the chest and the top of the head shows, and the flippers stay calmly at his sides. At its deepest moment it SHALL show the drawn bow and hold it briefly before he comes back up and settles.

@@ -9,6 +9,7 @@
  */
 import type { Page } from '@playwright/test';
 import animations from '../../src/scene/kalman/animations.json' with { type: 'json' };
+import poses from '../../src/scene/kalman/poses.json' with { type: 'json' };
 import { expect, test } from './fixtures';
 
 const figure = (page: Page) => page.locator('[data-kalman-figure]');
@@ -138,7 +139,11 @@ test('the front/side switch shows the side figure with its own poses and sliders
 
   // A side pose from its button, and its JSON says it is a side pose.
   await page.getByRole('button', { name: 'Stroke up' }).click();
-  await expect(page.getByLabel('Side: flipper')).toHaveValue('50');
+  const strokeUp = poses.find((p) => p.figure === 'side' && p.name === 'strokeUp');
+  const flipper = (strokeUp?.layers as Record<string, { rotate?: number }> | undefined)?.[
+    'flipper'
+  ];
+  await expect(page.getByLabel('Side: flipper')).toHaveValue(String(flipper?.rotate ?? 0));
   expect(JSON.parse(await page.getByLabel(/Pose JSON/).inputValue())).toMatchObject({
     name: 'strokeUp',
     figure: 'side',

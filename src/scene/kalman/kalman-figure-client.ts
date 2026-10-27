@@ -17,6 +17,7 @@ import {
   type Pose,
   type Rig,
 } from '../../lib/kalman-rig';
+import { crossFade } from '../../lib/kalman-animation';
 import {
   normaliseAngle,
   turntableFrame,
@@ -59,9 +60,10 @@ export function applyFigure(figure: SVGSVGElement, which: Figure): void {
 }
 
 /**
- * Shows the drawn pose of `frame` (from drawnFrame()) over the layers of `which` figure, at its
- * opacity, and fades those layers the opposite way: a cross-fade. Without a frame the drawn
- * poses hide and the layers are solid again.
+ * Shows the drawn pose of `frame` (from drawnFrame()) over the layers of `which` figure and
+ * cross-fades the two (crossFade(): the drawing in over the layers, then the layers out under
+ * the drawing, so he is never see-through). Without a frame the drawn poses hide and the
+ * layers are solid again.
  */
 export function applyDrawn(
   figure: SVGSVGElement,
@@ -70,6 +72,7 @@ export function applyDrawn(
   mood: Mood,
 ): void {
   const opacity = frame === undefined ? 0 : Math.round(frame.opacity * 1000) / 1000;
+  const fade = crossFade(opacity);
   // `display` for the whole group (see applyTurn), `visibility` and `opacity` per drawing:
   // SVG attributes, so the Content-Security-Policy allows them.
   figure
@@ -81,11 +84,11 @@ export function applyDrawn(
       group.dataset['drawnPose'] === frame.name &&
       group.dataset['drawnMood'] === mood;
     group.setAttribute('visibility', shown ? 'visible' : 'hidden');
-    group.setAttribute('opacity', shown ? String(opacity) : '0');
+    group.setAttribute('opacity', shown ? String(fade.drawing) : '0');
   }
   figure
     .querySelector(`[data-layers][data-figure="${which}"]`)
-    ?.setAttribute('opacity', String(1 - opacity));
+    ?.setAttribute('opacity', String(fade.layers));
   // `dataset.drawn` writes `data-drawn`, so the preview and the tests can read what shows.
   if (frame !== undefined && opacity > 0) figure.dataset['drawn'] = `${frame.name} ${opacity}`;
   else delete figure.dataset['drawn'];

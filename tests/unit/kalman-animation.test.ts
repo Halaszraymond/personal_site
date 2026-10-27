@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   blendPoses,
+  crossFade,
   drawnFrame,
   duration,
   EASES,
@@ -394,5 +395,23 @@ describe('validating drawn poses and the fade', () => {
     expect(validateAnimations([bow, ...others], poses, RIGS, DRAWN)).toEqual([
       'Animation "bow" needs "fade" as 0 or more seconds.',
     ]);
+  });
+});
+
+describe('crossFade', () => {
+  it('fades the drawing in over solid layers, then the layers out under a solid drawing', () => {
+    expect(crossFade(0)).toEqual({ drawing: 0, layers: 1 });
+    expect(crossFade(0.25)).toEqual({ drawing: 0.5, layers: 1 });
+    expect(crossFade(0.75)).toEqual({ drawing: 1, layers: 0.5 });
+    expect(crossFade(1)).toEqual({ drawing: 1, layers: 0 });
+  });
+
+  it('is never see-through: halfway both are solid (scenario "Halfway through the cross-fade")', () => {
+    expect(crossFade(0.5)).toEqual({ drawing: 1, layers: 1 });
+    for (let opacity = 0; opacity <= 1; opacity += 0.05) {
+      const { drawing, layers } = crossFade(opacity);
+      // Where both pictures are the same, the one on top covers what the other leaves open.
+      expect(Math.max(drawing, layers)).toBe(1);
+    }
   });
 });
