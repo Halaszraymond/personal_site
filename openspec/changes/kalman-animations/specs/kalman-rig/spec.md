@@ -21,7 +21,7 @@ Named poses SHALL be stored as data per figure, each giving per-layer rotations 
 - **THEN** every pose belongs to the front or the side figure and only names layers of that figure's rig
 
 ### Requirement: Layers come from the design images
-Every layer image SHALL be cut from Raymond's final-design images: the front figure from the goofy and professional front views, the side figure from the goofy and professional side views made for posing plus a side view without the near flipper. The body parts come from the goofy view (the side figure's body from the view without the flipper), the side flipper from where the goofy view differs from the one without it, and the tie and the glasses (with the calmer professional eyes) from where the professional view differs from the goofy one. The cutting SHALL be done by a script in the repo, so the same images always give the same layers.
+Every layer image SHALL be cut from Raymond's final-design images: the front figure from the goofy and professional front views, the side figure from the goofy and professional side views made for posing plus a side view without the near flipper. The body parts come from the goofy view (the side figure's body from the view without the flipper), the side flipper along an outline traced once on the goofy side view, and the tie and the glasses (with the calmer professional eyes) from where the professional view differs from the goofy one. The cutting SHALL be done by a script in the repo, so the same images always give the same layers.
 
 #### Scenario: Layers in place
 - **WHEN** the rig config in the repo is checked
