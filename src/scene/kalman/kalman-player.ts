@@ -13,7 +13,7 @@ import { gsap } from 'gsap';
 import {
   drawnFrame,
   eyeShift,
-  headTurn,
+  followAngles,
   playLength,
   samplePose,
   type Animation,
@@ -40,6 +40,8 @@ const HEAD_REACH = 500;
 const HEAD_LAG = 0.3;
 /** The eyes are quicker than the head: they look first, and the head follows (overlap). */
 const EYES_LAG = 0.15;
+/** The body is slower than the head: it turns along last. */
+const BODY_LAG = 0.5;
 /** The layers that hold the pupils (goofy and professional); each moves only if the rig has it. */
 const PUPIL_LAYERS = ['pupils', 'pupilsProfessional'] as const;
 
@@ -131,6 +133,8 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   // -------------------------------------------------------------------------------------
 
   const head = { rotate: 0 };
+  // The body's share of the turn, which it glides towards more slowly than the head.
+  const body = { rotate: 0 };
   // The pupils' offset, which they glide towards (like `head.rotate`).
   const eyes = { x: 0, y: 0 };
   const frontRig = REPO_RIGS.front;
@@ -153,7 +157,14 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
       name: 'head-follow',
       label: 'Head-follow',
       figure: 'front',
-      layers: { head: { rotate: head.rotate }, ...pupils },
+      layers: {
+        body: { rotate: body.rotate },
+        head: { rotate: head.rotate },
+        // On the ground: the body leans over feet that stay where they are.
+        footLeft: { plant: 1 },
+        footRight: { plant: 1 },
+        ...pupils,
+      },
     };
     // Clamped, so neither pupil layer goes past its own limit.
     applyPose(figure, frontRig, clampToRig(pose, frontRig), moodOf());
@@ -181,6 +192,11 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
     return applyToPoint(m, [event.clientX, event.clientY]);
   }
 
+  const turnBodyTo = gsap.quickTo(body, 'rotate', {
+    duration: BODY_LAG,
+    ease: 'power2.out',
+    onUpdate: drawHead,
+  });
   // The eyes glide like the head, but faster, and both directions at once.
   const moveEyesX = gsap.quickTo(eyes, 'x', {
     duration: EYES_LAG,
@@ -196,13 +212,16 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   const onPointerMove = (event: PointerEvent) => {
     const point = pointerOnArtboard(event);
     if (point === undefined || headLayer === undefined) return;
-    turnHeadTo(headTurn(point, headPivot, headLayer.rotate, HEAD_REACH));
+    const angles = followAngles(point, headPivot, headLayer.rotate, HEAD_REACH);
+    turnHeadTo(angles.head);
+    turnBodyTo(angles.body);
     const [x, y] = eyeShift(point, eyesAt, eyesShift, HEAD_REACH);
     moveEyesX(x);
     moveEyesY(y);
   };
   const onPointerLeave = () => {
     turnHeadTo(0);
+    turnBodyTo(0);
     moveEyesX(0);
     moveEyesY(0);
   };
@@ -221,8 +240,10 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
     figure.removeEventListener('pointermove', onPointerMove);
     figure.removeEventListener('pointerleave', onPointerLeave);
     gsap.killTweensOf(head);
+    gsap.killTweensOf(body);
     gsap.killTweensOf(eyes);
     head.rotate = 0;
+    body.rotate = 0;
     eyes.x = 0;
     eyes.y = 0;
   }

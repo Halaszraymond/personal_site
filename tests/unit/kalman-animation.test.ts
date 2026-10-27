@@ -8,8 +8,11 @@ import {
   crossFade,
   drawnFrame,
   duration,
+  BODY_SHARE,
   EASES,
   eyeShift,
+  followAngles,
+  HEAD_SHARE,
   headTurn,
   playLength,
   samplePose,
@@ -447,5 +450,18 @@ describe('blending plant', () => {
     const planted: Pose = { ...REST, name: 'crouch', layers: { footLeft: { plant: 1 } } };
     expect(blendPoses(REST, planted, 0.25).layers['footLeft']?.plant).toBeCloseTo(0.25, 12);
     expect(blendPoses(REST, NOD, 0.5).layers['head']).not.toHaveProperty('plant');
+  });
+});
+
+describe('followAngles', () => {
+  it('turns the head part of its range and the body part of the head’s angle (spec: "Pointer far to the right")', () => {
+    const { head, body } = followAngles([5000, 100], [200, 100], [-25, 25], 500);
+    expect(head).toBeCloseTo(25 * HEAD_SHARE, 9);
+    expect(body).toBeCloseTo(head * BODY_SHARE, 9);
+    expect(body).toBeGreaterThan(0);
+  });
+
+  it('turns neither for a point straight above the head', () => {
+    expect(followAngles([200, -500], [200, 100], [-25, 25], 500)).toEqual({ head: 0, body: 0 });
   });
 });

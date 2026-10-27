@@ -38,28 +38,28 @@
         "ease": "sine.out"
       },
       {
-        "at": 0.3,
+        "at": 0.35,
         "pose": "bowStart",
-        "ease": "power2.out"
+        "ease": "sine.inOut"
       },
       {
-        "at": 0.9,
+        "at": 1.1,
         "pose": "bow",
         "ease": "none",
         "drawn": "bow"
       },
       {
-        "at": 1.6,
+        "at": 1.7,
         "pose": "bow",
         "ease": "back.out",
         "drawn": "bow"
       },
       {
-        "at": 2.4,
+        "at": 2.5,
         "pose": "rest"
       }
     ],
-    "fade": 0.2,
+    "fade": 0.4,
     "lag": {
       "head": 0.05,
       "flipperLeft": 0.08,
@@ -204,22 +204,32 @@
         "ease": "power2.in"
       },
       {
-        "at": 1.5,
+        "at": 1.45,
         "pose": "landing",
-        "ease": "back.out"
+        "ease": "power2.out"
       },
       {
-        "at": 1.8,
+        "at": 1.75,
+        "pose": "landingSlide",
+        "ease": "power2.inOut"
+      },
+      {
+        "at": 2.2,
+        "pose": "pushUp",
+        "ease": "power2.inOut"
+      },
+      {
+        "at": 2.55,
         "pose": "landingWobble",
         "ease": "sine.inOut"
       },
       {
-        "at": 2.2,
+        "at": 2.9,
         "pose": "landingRecover",
         "ease": "back.out"
       },
       {
-        "at": 2.8,
+        "at": 3.4,
         "pose": "rest"
       }
     ],

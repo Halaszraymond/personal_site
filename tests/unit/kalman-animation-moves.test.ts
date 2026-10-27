@@ -18,11 +18,14 @@ import {
   type EaseOf,
 } from '../../src/lib/kalman-animation';
 import {
+  applyToPoint,
   clampToRig,
   figureOf,
+  resolvePose,
   validateRig,
   type Figure,
   type LayerPose,
+  type Pair,
   type Pose,
   type Rig,
 } from '../../src/lib/kalman-rig';
@@ -83,14 +86,23 @@ describe('the bow (spec: "The bow is a deep, polite bow")', () => {
     expect(drawnFrame(bow, deepest)).toEqual({ name: 'bow', opacity: 1 });
   });
 
-  it('has the head well down, the body upright and the flippers calm just before the cross-fade (scenario "On the way down")', () => {
-    const justBefore = deepest - (bow.fade ?? 0.2);
-    const layers = at('bow', justBefore);
+  // Halfway through the cross-fade: the drawing fades in from `fade` before the deepest moment.
+  const halfway = deepest - (bow.fade ?? 0.2) / 2;
+
+  it('has the head well down and shorter, the body upright and the flippers calm halfway through the cross-fade (scenario "On the way down")', () => {
+    const layers = at('bow', halfway);
     const headHeight = rigOf('front').layers.find((l) => l.name === 'head')?.size[1] ?? 0;
     expect(offset(layers, 'head')[1]).toBeGreaterThanOrEqual(headHeight / 4);
+    expect(stretch(layers, 'head')).toBeLessThan(1);
     expect(Math.abs(rotate(layers, 'body'))).toBeLessThanOrEqual(2);
     expect(Math.abs(rotate(layers, 'flipperLeft'))).toBeLessThanOrEqual(3);
     expect(Math.abs(rotate(layers, 'flipperRight'))).toBeLessThanOrEqual(3);
+  });
+
+  it('is still bending while the drawn bow fades in (spec: "The bow folds smoothly")', () => {
+    expect(offset(at('bow', halfway), 'head')[1]).toBeLessThan(
+      offset(at('bow', deepest), 'head')[1],
+    );
   });
 
   it('ends at rest, with the drawing gone', () => {
@@ -109,6 +121,9 @@ describe('the dive (spec: "The dive moves like a dive")', () => {
     expect(rotate(layers, 'body')).toBeLessThan(0);
     expect(offset(layers, 'body')[1]).toBeGreaterThan(0);
     expect(stretch(layers, 'body')).toBeLessThan(1);
+    // On bent knees: the body sinks over feet that stay on the ground.
+    expect(layers['footFront']?.plant).toBeCloseTo(1, 6);
+    expect(layers['footBack']?.plant).toBeCloseTo(1, 6);
   });
 
   it('is higher than at rest, with the flipper flung out, just after the hop (scenario "The hop")', () => {
@@ -185,16 +200,37 @@ describe('the launch (spec: "The launch is professional, the landing goofy")', (
     expect(Math.abs(rotate(layers, 'flipper'))).toBeLessThanOrEqual(10);
   });
 
-  it('lands at ground level, squashed (scenario "Landing")', () => {
+  it('lands on his belly, close to horizontal, at ground level, squashed (scenario "Landing on his belly")', () => {
     const layers = at('launch', keyframeAt('launch', 'landing'));
-    expect(Math.abs(offset(layers, 'body')[1])).toBeLessThanOrEqual(1);
+    expect(rotate(layers, 'body')).toBeGreaterThan(-100);
+    expect(rotate(layers, 'body')).toBeLessThan(-75);
     expect(stretch(layers, 'body')).toBeLessThan(1);
+    // Ground level: the lowest point of his body is on the ground line (where his feet stand at
+    // rest), within a few pixels of the drawing.
+    const rig = rigOf('side');
+    const ground = Math.max(...rig.layers.map((l) => l.position[1] + l.size[1]));
+    const body = resolvePose(rig, { name: 'x', label: 'x', figure: 'side', layers }, 'goofy').find(
+      (l) => l.name === 'body',
+    );
+    const size = rig.layers.find((l) => l.name === 'body')?.size ?? [0, 0];
+    const corners: Pair[] = [
+      [0, 0],
+      [size[0], 0],
+      [0, size[1]],
+      [size[0], size[1]],
+    ];
+    // The image's box corners overshoot the round belly a little, so allow a margin.
+    const lowest = Math.max(...corners.map((c) => (body ? applyToPoint(body.matrix, c)[1] : 0)));
+    expect(Math.abs(lowest - ground)).toBeLessThanOrEqual(120);
   });
 
-  it('tips forward with the flipper out, then ends at rest (scenario "Almost losing his balance")', () => {
-    const layers = at('launch', keyframeAt('launch', 'landingWobble'));
-    expect(rotate(layers, 'body')).toBeLessThan(0);
-    expect(Math.abs(rotate(layers, 'flipper'))).toBeGreaterThanOrEqual(60);
+  it('pushes himself up on planted feet with the flipper out, then ends at rest (scenario "Standing up")', () => {
+    const layers = at('launch', keyframeAt('launch', 'pushUp'));
+    expect(rotate(layers, 'body')).toBeGreaterThan(-80);
+    expect(rotate(layers, 'body')).toBeLessThan(-10);
+    // Firmly planted: the feet have a lag, so they are still settling onto the ground.
+    expect(layers['footFront']?.plant).toBeGreaterThan(0.9);
+    expect(Math.abs(rotate(layers, 'flipper'))).toBeGreaterThan(30);
     for (const layer of Object.values(at('launch', playLength(launch)))) {
       expect(layer.rotate ?? 0).toBeCloseTo(0, 6);
       expect(layer.stretch ?? 1).toBeCloseTo(1, 6);

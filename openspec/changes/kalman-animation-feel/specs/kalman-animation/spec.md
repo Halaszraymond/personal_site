@@ -108,7 +108,7 @@ The bow SHALL use the front figure and read as a polite, deep bow, like a butler
 - **THEN** the drawn bow shows in the current mood, standing on the same ground line as the layered figure
 
 #### Scenario: On the way down
-- **WHEN** the bow is held just before the cross-fade into the drawn bow
+- **WHEN** the bow is held halfway through the cross-fade into the drawn bow
 - **THEN** the head is lowered by at least a quarter of its own height and shorter than at rest, the body is barely turned, and the flippers are within a few degrees of rest
 
 ### Requirement: The bow folds smoothly

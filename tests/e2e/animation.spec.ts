@@ -127,6 +127,13 @@ test('head-follow turns the head towards the pointer', async ({ page }) => {
   await expect(frontHead(page)).not.toHaveAttribute('transform', restHead ?? '', { timeout: 2000 });
 });
 
+test('head-follow lets the body lean along, so the head is not turning alone', async ({ page }) => {
+  const body = page.locator('[data-layers][data-figure="front"] [data-layer="body"]');
+  const restBody = await body.getAttribute('transform');
+  await lookRight(page);
+  await expect(body).not.toHaveAttribute('transform', restBody ?? '', { timeout: 2000 });
+});
+
 /** The x of a pupil layer's position, read from its SVG matrix (the `e` of `matrix(a b c d e f)`). */
 async function pupilX(page: Page, layer: string): Promise<number> {
   const transform = await page

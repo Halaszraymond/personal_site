@@ -280,6 +280,26 @@ export function headTurn(point: Pair, headPivot: Pair, range: Pair, reach: numbe
   return Math.min(range[1], Math.max(range[0], turn));
 }
 
+/** How much of its range the head turns on its own while following (the body does the rest). */
+export const HEAD_SHARE = 2 / 3;
+/** How much of the head's angle the body turns along: shoulders following the head. */
+export const BODY_SHARE = 1 / 4;
+
+/**
+ * The angles for head-follow (design §12): the head turns towards `point` within a part of its
+ * range, and the body turns along by a part of the head's angle, so the head and the body move
+ * as one penguin instead of a head turning alone on its neck.
+ */
+export function followAngles(
+  point: Pair,
+  headPivot: Pair,
+  range: Pair,
+  reach: number,
+): { readonly head: number; readonly body: number } {
+  const head = headTurn(point, headPivot, [range[0] * HEAD_SHARE, range[1] * HEAD_SHARE], reach);
+  return { head, body: head * BODY_SHARE };
+}
+
 /**
  * How far the pupils shift towards `point`, as an offset `[x, y]`: in both directions
  * proportional to how far the point is from the eyes, reaching `shift` (the rig's limit) at
