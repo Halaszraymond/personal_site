@@ -14,11 +14,11 @@ Kálmán's layers SHALL be described in one rig config: for each layer its name,
 - **THEN** the figure shows the illustration, with no code changed
 
 ### Requirement: The rig has Kálmán's parts
-The rig SHALL contain exactly these layers: body, head, left flipper, right flipper, left foot, right foot, tail, tie and glasses. The body SHALL be the only layer without a parent.
+There SHALL be a rig for the front figure and one for the side figure. The front rig SHALL contain exactly these layers: body, head, left flipper, right flipper, left foot, right foot, tail, tie and glasses. The side rig SHALL contain exactly these layers: body, head, flipper, front foot, back foot, tail, tie and glasses (the far flipper is hidden behind the body). In each rig the body SHALL be the only layer without a parent.
 
 #### Scenario: Layer set
 - **WHEN** the rig config in the repo is checked
-- **THEN** it has exactly those nine layers and the body is the only one without a parent
+- **THEN** the front rig has exactly its nine layers, the side rig exactly its eight, and in both the body is the only one without a parent
 
 ### Requirement: An invalid rig fails the build checks
 A rig config SHALL be rejected, with a message naming the problem, when a layer name is repeated, a parent does not exist, the parents form a loop, two layers share a drawing order, an image file does not exist, or a rotation range is empty or inverted.
@@ -53,11 +53,15 @@ Layers SHALL be drawn in the order the rig gives them, regardless of which layer
 - **THEN** it is drawn behind the body even though it hangs from the body
 
 ### Requirement: Poses are data
-Named poses SHALL be stored as data, each giving per-layer rotations and offsets relative to the rest position. Layers a pose does not mention SHALL stay at rest. The repo SHALL contain at least the poses rest, bow, flippers up, head tilt left and head tilt right.
+Named poses SHALL be stored as data per figure, each giving per-layer rotations and offsets relative to the rest position. Layers a pose does not mention SHALL stay at rest. The repo SHALL contain at least the front poses rest, bow, flippers up, head tilt left and head tilt right, and the side poses rest, stroke up, stroke down and dive.
 
 #### Scenario: Partial pose
 - **WHEN** a pose mentions only the head
 - **THEN** every other layer is at its rest position
+
+#### Scenario: Poses per figure
+- **WHEN** the poses in the repo are checked
+- **THEN** every pose belongs to the front or the side figure and only names layers of that figure's rig
 
 ### Requirement: A pose stays within the rig's limits
 A pose SHALL be rejected when it names a layer that is not in the rig, uses a value that is not a finite number, or rotates a layer outside its allowed range.
@@ -85,18 +89,22 @@ The figure SHALL be part of the page's HTML in the rest pose, so it shows when J
 - **THEN** Kálmán is visible in the rest pose
 
 ### Requirement: Layers come from the design images
-Every layer image SHALL be cut from Raymond's final-design front views: the body parts from the goofy front view, and the tie and the glasses (with the calmer professional eyes) from where the professional front view differs from the goofy one. The cutting SHALL be done by a script in the repo, so the same images always give the same layers.
+Every layer image SHALL be cut from Raymond's final-design images: the front figure from the goofy and professional front views, the side figure from the goofy and professional side views made for posing plus a side view without the near flipper. The body parts come from the goofy view (the side figure's body from the view without the flipper), the side flipper along an outline traced once on the goofy side view, and the tie and the glasses (with the calmer professional eyes) from where the professional view differs from the goofy one. The cutting SHALL be done by a script in the repo, so the same images always give the same layers.
 
 #### Scenario: Layers in place
 - **WHEN** the rig config in the repo is checked
-- **THEN** every layer points to an existing image cut from the final design
+- **THEN** every layer of both rigs points to an existing image cut from the final design
 
 #### Scenario: Cutting again
-- **WHEN** the cutting script is run again on the same two front views
+- **WHEN** the cutting script is run again on the same images
 - **THEN** it produces the same layer images and the same rig config
 
+#### Scenario: A swinging flipper
+- **WHEN** the side figure's flipper is turned to the end of its range
+- **THEN** the body where the flipper was at rest shows painted body, not a copy of the flipper
+
 #### Scenario: Images that don't line up
-- **WHEN** the professional front view is not the same size as the goofy one
+- **WHEN** a professional view is not the same size as its goofy view
 - **THEN** the script stops with a message instead of producing misaligned accessories
 
 ### Requirement: Joints don't show
