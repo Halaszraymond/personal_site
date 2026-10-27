@@ -92,3 +92,6 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-27 — The animations (idle, bow, head-follow, dive, swim, launch) are approved as built, and Phase 1 is done. Decided by: Raymond.
 - 2026-10-27 — CI's Playwright browser install stops a try after 5 minutes and tries once more (step limit 12 minutes), because the download hung twice and then waited for the 30-minute job timeout. Decided by: Raymond (proposed by Claude).
 - 2026-10-27 — Correction to the CI install line above: the hang was apt-get (the Ubuntu mirror), not the browser download. apt now gives up on a stuck connection after 30 s with 3 retries, and a hung apt-get is stopped before the second try. Decided by: Claude (found in the CI log; fixes the approved retry).
+- 2026-10-27 — After merging Phase 1: the idle loop is natural, but the bow isn't deep enough and the dive looks static. This gets a follow-up change before Phase 2, `kalman-animation-feel`, still under Phase 1. Decided by: Raymond (proposed by Claude).
+- 2026-10-27 — The bow stays on the front figure and gets much deeper (head far down, body squashing, flippers out). Decided by: Raymond.
+- 2026-10-27 — Squash and stretch is part of `kalman-animation-feel`: a layer can stretch around its pivot within a range from the rig. Decided by: Raymond (proposed by Claude).

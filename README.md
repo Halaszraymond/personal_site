@@ -274,6 +274,7 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
   - [x] The rig, the named poses and the dev-only preview with placeholder layers; the WebGL check dropped (change `kalman-rig`). The layer list with prompts is in [`docs/kalman-layers.md`](docs/kalman-layers.md).
   - [x] The final illustrations (Raymond's Gemini images in the final design) cut into the rig by `npm run cut:kalman`, plus a turntable of eight angles and a spin slider in the preview.
   - [x] The animations (idle, bow, head-follow, dive, swim, launch), with GSAP, on a front and a side figure (change `kalman-animations`).
+  - [ ] Follow-up after Raymond's review: more natural animations, with follow-through, overshoot and squash and stretch, a deeper bow and a natural dive (change `kalman-animation-feel`).
 - [ ] **Phase 2: the dive.** All sections with depth gauge, colour gradient, fish school, and fish turning into charts. Placeholder text first.
 - [ ] **Phase 3: content.** Real texts in NL/HU/EN, the 3 case studies, the "more catch" cards and a CV download. **Then go live** (§6): content complete, CI green, fallback working.
 - [ ] **Phase 4: polish, on the live site.** Tuning and verifying, not building: performance, accessibility audit, mobile testing on real devices, SEO and Open Graph, and a review of the translations.
