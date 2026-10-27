@@ -41,7 +41,7 @@
 
 ## 6. Wrap-up
 
-- [ ] 6.1 Measure the preview's JavaScript with `npm run size`; verify it is still within the 50 KB budget and public pages are unchanged
+- [x] 6.1 Measure the preview's JavaScript with `npm run size`; verify it is still within the 50 KB budget and public pages are unchanged
 - [ ] 6.2 Run `npm run check` (with no dev server on port 4321) and let CI pass on the branch; verify everything is green and Raymond has judged all animations
 
 ## Workflow follow-up
