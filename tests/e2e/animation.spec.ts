@@ -8,6 +8,7 @@
  * slider, instead of guessing from pixels or waiting for time to pass.
  */
 import type { Page } from '@playwright/test';
+import animations from '../../src/scene/kalman/animations.json' with { type: 'json' };
 import { expect, test } from './fixtures';
 
 const figure = (page: Page) => page.locator('[data-kalman-figure]');
@@ -89,6 +90,26 @@ test('the scrub slider holds a moment still and draws it', async ({ page }) => {
   // And the side figure is drawn at that moment: its body is turned (diving).
   const body = page.locator('[data-layers][data-figure="side"] [data-layer="body"]');
   await expect(body).not.toHaveAttribute('transform', /^matrix\(1 0 0 1 /);
+});
+
+test('lagging layers settle: the dive only ends once its tail is at rest', async ({ page }) => {
+  await page.getByRole('switch', { name: /Idle when nothing else plays/ }).uncheck();
+  const tail = page.locator('[data-layers][data-figure="side"] [data-layer="tail"]');
+  const restTail = await tail.getAttribute('transform');
+  const lastKeyframe = animations.find((a) => a.name === 'dive')?.keyframes.at(-1)?.at ?? 0;
+  await page.getByRole('button', { name: 'Play dive' }).click();
+
+  // The slider runs to the play length: past the last keyframe, by the tail's lag.
+  const end = Number(await scrub(page).getAttribute('max'));
+  expect(end).toBeGreaterThan(lastKeyframe);
+  // At the last keyframe the body is at rest, but the tail is still catching up...
+  await scrub(page).fill(String(lastKeyframe));
+  await expect(figure(page)).toHaveAttribute('data-time', lastKeyframe.toFixed(2));
+  expect(await tail.getAttribute('transform')).not.toBe(restTail);
+  // ...and only at the end of the play length is it at rest too.
+  await scrub(page).fill(String(end));
+  await expect(figure(page)).toHaveAttribute('data-time', end.toFixed(2));
+  expect(await tail.getAttribute('transform')).toBe(restTail);
 });
 
 test('head-follow turns the head towards the pointer', async ({ page }) => {

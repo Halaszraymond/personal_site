@@ -10,7 +10,7 @@
  * preview-client.ts connects everything to the figure and the player.
  */
 import { layerLabel, PREVIEW_EN as TEXT } from '../i18n/preview';
-import { duration } from '../lib/kalman-animation';
+import { playLength } from '../lib/kalman-animation';
 import { FIGURES } from '../lib/kalman-rig';
 import { canTurn } from '../lib/kalman-turntable';
 import { posesFor, REPO_ANIMATIONS, REPO_RIGS, REPO_TURNTABLE } from '../scene/kalman/repo-rig';
@@ -18,7 +18,7 @@ import { posesFor, REPO_ANIMATIONS, REPO_RIGS, REPO_TURNTABLE } from '../scene/k
 const showTurnControl = canTurn(REPO_TURNTABLE);
 // The scrub slider starts on the first animation (idle); the script changes it per animation.
 const firstAnimation = REPO_ANIMATIONS[0];
-const firstDuration = firstAnimation === undefined ? 1 : duration(firstAnimation);
+const firstDuration = firstAnimation === undefined ? 1 : playLength(firstAnimation);
 ---
 
 <div class="controls">

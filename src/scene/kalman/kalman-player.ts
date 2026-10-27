@@ -2,7 +2,7 @@
  * Plays Kálmán's animations on a drawn figure (spec: kalman-animation; design §4–§5).
  *
  * GSAP is only the clock here: one tween moves a plain `time` value from 0 to the animation's
- * length, and on every frame `samplePose()` (src/lib/kalman-animation.ts) works out the pose at
+ * play length (its keyframes plus the largest lag, `playLength()`), and on every frame `samplePose()` (src/lib/kalman-animation.ts) works out the pose at
  * that time from the keyframes in animations.json, and `applyPose()` draws it. GSAP also gives
  * the easing curves (`gsap.parseEase`) and the smooth pointer following (`gsap.quickTo`).
  *
@@ -11,14 +11,15 @@
  */
 import { gsap } from 'gsap';
 import {
-  duration,
   headTurn,
+  playLength,
   samplePose,
   type Animation,
   type EaseOf,
 } from '../../lib/kalman-animation';
 import {
   applyToPoint,
+  clampToRig,
   resolvePose,
   type Figure,
   type Mood,
@@ -67,9 +68,14 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
 
   /** Draws `animation` at `time` seconds, and writes the state on the figure. */
   function draw(animation: Animation, time: number): void {
-    const pose = samplePose(animation, posesByName(animation.figure), time, easeOf);
+    const rig = REPO_RIGS[animation.figure];
+    // Clamped, because an overshooting easing may ask a layer for a little more than its range.
+    const pose = clampToRig(
+      samplePose(animation, posesByName(animation.figure), time, easeOf),
+      rig,
+    );
     applyFigure(figure, animation.figure);
-    applyPose(figure, REPO_RIGS[animation.figure], pose, moodOf());
+    applyPose(figure, rig, pose, moodOf());
     figure.dataset['animation'] = animation.name;
     figure.dataset['time'] = time.toFixed(2);
     for (const listener of frameListeners) listener(animation, time);
@@ -91,7 +97,7 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   /** A paused or playing tween of the clock over `animation`, drawing every frame. */
   function tweenFor(animation: Animation, paused: boolean): gsap.core.Tween {
     clock.time = 0;
-    const length = duration(animation);
+    const length = playLength(animation);
     return gsap.to(clock, {
       time: length,
       duration: length,

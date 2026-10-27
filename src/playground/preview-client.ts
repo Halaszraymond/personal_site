@@ -10,7 +10,7 @@
  *   loop plays while nothing else does and the front figure is chosen, unless the switch is off;
  *   with reduced motion it starts off, so nothing moves until a play button is pressed.
  */
-import { duration, type Animation } from '../lib/kalman-animation';
+import { playLength, type Animation } from '../lib/kalman-animation';
 import type { Figure, Mood, Pose } from '../lib/kalman-rig';
 import { normaliseAngle, turntableFrame } from '../lib/kalman-turntable';
 import {
@@ -244,10 +244,10 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
     }
   }
 
-  /** Points the scrub slider at an animation: its range is that animation's length. */
+  /** Points the scrub slider at an animation: its range is that animation's play length. */
   function scrubTo(animation: Animation, time: number): void {
     if (scrubSlider === null) return;
-    scrubSlider.max = String(duration(animation));
+    scrubSlider.max = String(playLength(animation));
     scrubSlider.dataset['animation'] = animation.name;
     scrubSlider.value = time.toFixed(2);
     if (scrubValue !== null) scrubValue.textContent = `${time.toFixed(2)} s`;
@@ -291,7 +291,7 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
     const name = scrubSlider.dataset['animation'] ?? REPO_ANIMATIONS[0]?.name;
     const animation = REPO_ANIMATIONS.find((a) => a.name === name);
     if (animation === undefined) return;
-    const length = duration(animation);
+    const length = playLength(animation);
     // Holding a moment pauses the animation there (spec: "Scrubbing through an animation").
     player.scrub(length === 0 ? 0 : Number(scrubSlider.value) / length, animation.name);
     markPlaying(animation);
