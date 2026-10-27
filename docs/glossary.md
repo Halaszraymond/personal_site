@@ -108,6 +108,8 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 
 **Crossfade**: fading one image in while another is still showing, so a switch doesn't jump. On the turntable the next view fades in on top of the current one.
 
+**Drawn pose**: a whole drawing of Kálmán in one pose, used where turning layers can't make it (the bow from the front). An animation cross-fades it in over the layers at a keyframe and back out afterwards.
+
 **Mirroring**: flipping an image left to right. The side seen from the left is the side seen from the right, flipped, so four drawn views give eight angles.
 
 **Flood fill**: colouring every connected pixel of the same kind, starting from one point, like the paint-bucket tool. The cutting script uses it from the image's edges to find the white background, which leaves the (enclosed) white belly alone.
