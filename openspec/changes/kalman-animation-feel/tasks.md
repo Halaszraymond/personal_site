@@ -36,7 +36,7 @@
 - [ ] 5.3 Tune the dive with Raymond (lean, crouch, hop, flailing flippers, face-first entry, trailing); verify Raymond approves the dive and the tests of 5.1 still pass
 - [ ] 5.4 Tune the swim with Raymond (horizontal glide, surge, drift, the glance at a fish, loop without a jump); verify Raymond approves the swim and the tests of 5.1 still pass
 - [ ] 5.5 Tune the launch with Raymond (wind-up, rocket rise, flight, landing, wobble, recovery); verify Raymond approves the launch and the tests of 5.1 still pass
-- [ ] 5.6 Update the snapshots of key moments (bow halfway through the cross-fade and at the drawn bow, the dive's crouch and entry, the swim at the end of the down stroke, the launch rising, landing and wobbling) and make the baselines with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
+- [x] 5.6 Update the snapshots of key moments (bow halfway through the cross-fade and at the drawn bow, the dive's crouch and entry, the swim at the end of the down stroke, the launch rising, landing and wobbling) and make the baselines with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
 - [ ] 5.7 Log the chosen values in `PLANNING_LOG.md` and record the session in `docs/making-of.md` (what made it look static, the references in words, the animation principles, before/after screenshots of Kálmán only); verify the files are updated
 
 ## 6. Eyes that follow the pointer
