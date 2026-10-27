@@ -79,7 +79,7 @@ const MOMENTS = [
   { name: 'kalman-dive-halfway', animation: 'dive', at: '1.2' },
   { name: 'kalman-swim-stroke-up', animation: 'swim', at: '0.4' },
   // Pointing up, just before he shoots up out of the frame.
-  { name: 'kalman-launch-up', animation: 'launch', at: '0.6' },
+  { name: 'kalman-launch-up', animation: 'launch', at: '0.4' },
 ];
 
 for (const { name, animation, at } of MOMENTS) {
