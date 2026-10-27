@@ -44,8 +44,8 @@ if (Astro.site === undefined) {
 const site = Astro.site;
 const indexable = canonicalPath !== undefined;
 
-// Pages start in fallback mode (`data-render-mode="fallback"` below); the client switches
-// to `full` only after its checks pass (see RenderModeSwitch.astro).
+// Pages are built in fallback mode (`data-render-mode="fallback"` below); public/render-mode.js
+// switches to `full` in <head>, before the first paint, only when its checks pass.
 ---
 
 <!doctype html>
@@ -56,6 +56,8 @@ const indexable = canonicalPath !== undefined;
     <title>{title ?? UI[locale].siteTitle}</title>
     <meta name="description" content={UI[locale].description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/* Full or fallback, decided before the body is drawn (see public/render-mode.js). */}
+    <script is:inline src="/render-mode.js"></script>
     {indexable && <link rel="canonical" href={new URL(canonicalPath, site).href} />}
     {indexable &&
       homeAlternates(site).map(({ hreflang, href }) => (

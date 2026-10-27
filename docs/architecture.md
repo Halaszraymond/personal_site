@@ -65,14 +65,14 @@ flowchart TD
     A[Cloudflare Pages serves the static HTML] --> B["html data-render-mode = fallback<br/>all content already readable"]
     B --> C{JavaScript runs?}
     C -- no --> F[Stays in fallback]
-    C -- yes --> D["RenderModeSwitch collects 2 signals:<br/>reduced motion · Save-Data"]
+    C -- yes --> D["public/render-mode.js in head, before the first paint,<br/>reads 2 signals: reduced motion · Save-Data"]
     D --> E{"chooseRenderMode()<br/>src/lib/render-mode.ts"}
     E -- any check fails --> F
     E -- all checks pass --> G["data-render-mode = full<br/>scene slot shown: the dive on the home pages"]
 ```
 
 - **The decision** is a pure function, `chooseRenderMode()` in `src/lib/render-mode.ts`, unit-tested for all 4 combinations of the two signals.
-- **The browser glue** is `src/components/RenderModeSwitch.astro`: it reads `prefers-reduced-motion` and `navigator.connection.saveData` (Chromium only; missing means "no"), and writes the result to `data-render-mode` on `<html>`.
+- **The browser glue** is `public/render-mode.js`, a classic script in `<head>`: it reads `prefers-reduced-motion` and `navigator.connection.saveData` (Chromium only; missing means "no"), and writes the result to `data-render-mode` on `<html>` before the body is drawn, so the page paints once in the right layout (a module script ran after the first paint, and the dive jumped from the fallback layout to the full one). It is plain JavaScript served as-is, so `tests/unit/render-mode-boot.test.ts` runs it for every combination and checks it agrees with `chooseRenderMode()`. `RenderModeSwitch.astro` only holds the scene slot.
 - **No WebGL check.** The site is 2D (images, SVG and canvas 2D), so a browser without WebGL can run the full mode. That check was removed in Phase 1.
 - **The scene slot** is a `<div aria-hidden="true">`: decorative only, hidden in fallback mode. A page fills it through BaseLayout's `scene` slot: the home pages put Kálmán's stage there, other pages leave it empty. All text and links live in the HTML around it, identical in both modes. The e2e tests compare the two.
 - **Still to come:** step 3 of README §5.2 (measuring frame time once the animated scene runs) and the "lite mode" switch in the footer.

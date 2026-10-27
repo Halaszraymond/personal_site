@@ -257,6 +257,7 @@ Phase 2 is split into small changes; the first, `dive-scroll`, lays the foundati
 - **The security policy blocks inline styles,** so per-section colours can't go in `style="…"`. They are written at build time into a small stylesheet, `/dive.css`, from the same functions.
 - **No fixed accent survives every depth.** On mid-tone water no golden orange reaches 4.5:1 against the background, so the accent (and the text) is lightened or darkened just enough per depth.
 - **The size check counted too little.** Vite writes lazy imports with backticks, which the budget script didn't recognise, so the home pages looked like 4 KB instead of 40 KB.
+- **A jump Lighthouse saw and we didn't.** CI scored the home pages 78: the page painted in the fallback layout, then the mode script switched to full and the whole dive jumped (a layout shift of 0.58, in three runs out of five). The mode is now decided by a tiny classic script in `<head>`, before the first paint, kept in step with the tested function by a unit test that runs the real file. Back to 98–99.
 - **Same specificity, wrong winner.** On a phone, Kálmán's own `height: auto` beat the stage's sizing and he spilled over the language links, so they couldn't be tapped. The e2e tests in mobile browsers caught it.
 
 ### Raymond's eye

@@ -1,11 +1,11 @@
 ---
 /**
- * The scene slot and the switch between the static fallback and full (animated) mode.
+ * The scene slot, shown in full (animated) mode only.
  *
  * Every page is built in fallback mode (`data-render-mode="fallback"` on <html>, set in
- * BaseLayout). The script below collects two browser signals, asks
- * `chooseRenderMode()` (src/lib/render-mode.ts) and switches to `full` only if all checks
- * pass. So no JavaScript, a script error or a slow load all leave a working page.
+ * BaseLayout). public/render-mode.js, a classic script in <head>, switches to `full` before the
+ * first paint when every check of `chooseRenderMode()` (src/lib/render-mode.ts) passes; a unit
+ * test keeps the two in step. No JavaScript or a script error leaves a working fallback page.
  *
  * The scene slot holds the page's animated scene, passed in as the default slot: on the home
  * pages Kálmán following the dive (DivePage.astro), elsewhere nothing. It is decorative only,
@@ -16,26 +16,6 @@
 <div class="scene-slot" data-scene-slot aria-hidden="true">
   <slot />
 </div>
-
-<script>
-  import { chooseRenderMode } from '../lib/render-mode';
-
-  /** Has the visitor asked to save data? */
-  function detectSaveData(): boolean {
-    // `navigator.connection` only exists in Chromium, so TypeScript's standard types leave it
-    // out. We describe the one field we read and treat "missing" as "not asked" (spec).
-    const { connection } = navigator as Navigator & { connection?: { saveData?: boolean } };
-    return connection?.saveData === true;
-  }
-
-  const mode = chooseRenderMode({
-    prefersReducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-    saveData: detectSaveData(),
-  });
-
-  // `dataset.renderMode` writes the `data-render-mode` attribute.
-  document.documentElement.dataset['renderMode'] = mode;
-</script>
 
 <style>
   /* In fallback mode the slot takes no space; the animated scene only appears in full mode. */
