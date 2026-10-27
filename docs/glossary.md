@@ -144,4 +144,8 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 
 **Shift limit**: how far a layer may move from rest each way (`shift` in the rig). The pupils have one, so they never slide out of the eye.
 
-**Figure (front, side)**: Kálmán is posable from two angles, each with its own rig of layers. Idle, bow and head-follow use the front figure; dive, swim and launch the side one.
+**Figure (front, side, swim)**: Kálmán is posable as three figures, each with its own rig of layers: from the front (idle, bow, head-follow), from the side (dive, launch), and drawn horizontally for swimming.
+
+**Planted (feet)**: a foot that stays on the ground while the body above it sinks or leans, as a penguin's hidden knees bend; it still moves with the body, so it never comes loose.
+
+**Smooth curve (spline)**: one flowing line through all the keyframes instead of separate pieces. It only slows down where a movement turns around, so he doesn't pause at every keyframe.
