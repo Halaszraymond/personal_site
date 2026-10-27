@@ -126,6 +126,14 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 
 **Timeline / tween**: GSAP's words. A *tween* changes a value from A to B over time (here: the animation's clock, from 0 to its length); a *timeline* strings tweens together. Here GSAP only runs the clock; the poses come from the keyframes.
 
+**Anticipation**: a small movement the other way before the main one, so the eye sees it coming: a crouch before a jump, a little rise before a bow.
+
+**Follow-through and overlap**: parts of a figure don't start and stop together. The body moves first; the tail, feet and flippers follow a moment later and settle after the body has stopped. Without it, a figure moves like one piece of cardboard.
+
+**Lag**: how we make follow-through here: a layer shows the pose the animation had a fraction of a second earlier. A tail with a lag of 0.12 s is always 0.12 s behind the body.
+
+**Overshoot**: going slightly past the target and settling back, like a nod that goes a bit too far. GSAP's `back` easings do this.
+
 **Scrubbing**: moving through an animation by hand, like dragging the playhead of a video. The preview's scrub slider holds the animation still at a chosen moment.
 
 **Loop**: an animation that starts again when it ends (idle, swim), until something else starts.

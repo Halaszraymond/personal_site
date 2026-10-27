@@ -136,13 +136,17 @@ The six animations (idle, bow, head-follow, dive, swim, launch) are keyframes of
 
 ```mermaid
 flowchart LR
-    A["animations.json<br/>keyframes: at, pose, ease"] --> S
+    A["animations.json<br/>keyframes: at, pose, ease<br/>lag per layer"] --> S
     P[poses.json] --> S
-    G["GSAP tween<br/>moves a clock 0 → length"] -->|time, every frame| S
-    S["samplePose(animation, poses, time, ease)<br/>src/lib/kalman-animation.ts"] --> D["applyFigure() + applyPose()<br/>kalman-figure-client.ts"]
+    G["GSAP tween<br/>moves a clock 0 → play length"] -->|time, every frame| S
+    S["samplePose(animation, poses, time, ease)<br/>src/lib/kalman-animation.ts"] --> C["clampToRig()<br/>src/lib/kalman-rig.ts"]
+    C --> D["applyFigure() + applyPose()<br/>kalman-figure-client.ts"]
 ```
 
 - **GSAP is only the clock.** `kalman-player.ts` makes one tween of a plain `time` value per animation; on every frame `samplePose()` blends the two keyframes around that time (through GSAP's easing curve, `gsap.parseEase`) and `applyPose()` draws it. So the poses and timing are data, and the maths is tested without GSAP.
+- **Lag is a time shift.** An animation may give layers a `lag` in seconds: such a layer takes its values from the pose `lag` seconds earlier, so the head leads and the tail and feet trail behind and settle later (follow-through and overlap). In a loop that earlier moment wraps around into the previous round. It is still a pure function of time, so a scrubbed moment looks exactly like a played one; a spring would depend on the previous frames.
+- **Play length.** A non-looping animation plays until its slowest layer has caught up: the last keyframe plus the largest lag (`playLength()`). The tween, the scrub slider and "finished" all use it. A loop keeps its keyframe length.
+- **Overshoot, clamped.** The `back` easings go slightly past the target and settle back. Every sampled pose goes through `clampToRig()` before it is drawn, so no layer turns or stretches past its range.
 - **One at a time.** Starting an animation stops the previous one; a non-looping one ends with him at rest. The figure carries `data-animation` and `data-time`, which the preview and the tests read.
 - **Scrubbing** pauses the tween and sets its progress; **a hidden tab** pauses it (`visibilitychange`) and continues it when visible again.
 - **Head-follow** turns the front figure's head towards the pointer: `headTurn()` gives the angle from how far the pointer is to the side, and `gsap.quickTo` glides the head there.
