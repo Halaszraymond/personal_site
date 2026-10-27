@@ -58,6 +58,39 @@ export function applyFigure(figure: SVGSVGElement, which: Figure): void {
   figure.dataset['figure'] = which;
 }
 
+/**
+ * Shows the drawn pose of `frame` (from drawnFrame()) over the layers of `which` figure, at its
+ * opacity, and fades those layers the opposite way: a cross-fade. Without a frame the drawn
+ * poses hide and the layers are solid again.
+ */
+export function applyDrawn(
+  figure: SVGSVGElement,
+  which: Figure,
+  frame: { readonly name: string; readonly opacity: number } | undefined,
+  mood: Mood,
+): void {
+  const opacity = frame === undefined ? 0 : Math.round(frame.opacity * 1000) / 1000;
+  // `display` for the whole group (see applyTurn), `visibility` and `opacity` per drawing:
+  // SVG attributes, so the Content-Security-Policy allows them.
+  figure
+    .querySelector('[data-drawn-poses]')
+    ?.setAttribute('display', opacity > 0 ? 'inline' : 'none');
+  for (const group of figure.querySelectorAll<SVGGElement>('[data-drawn-pose]')) {
+    const shown =
+      frame !== undefined &&
+      group.dataset['drawnPose'] === frame.name &&
+      group.dataset['drawnMood'] === mood;
+    group.setAttribute('visibility', shown ? 'visible' : 'hidden');
+    group.setAttribute('opacity', shown ? String(opacity) : '0');
+  }
+  figure
+    .querySelector(`[data-layers][data-figure="${which}"]`)
+    ?.setAttribute('opacity', String(1 - opacity));
+  // `dataset.drawn` writes `data-drawn`, so the preview and the tests can read what shows.
+  if (frame !== undefined && opacity > 0) figure.dataset['drawn'] = `${frame.name} ${opacity}`;
+  else delete figure.dataset['drawn'];
+}
+
 /** Turns the whole figure as one piece by `degrees` around its centre; the pose stays as it is. */
 export function applySpin(figure: SVGSVGElement, rig: Rig, degrees: number): void {
   figure

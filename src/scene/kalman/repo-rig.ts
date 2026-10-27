@@ -99,7 +99,7 @@ function loadDrawnPoses(): DrawnPose[] {
 export const REPO_ANIMATIONS: readonly Animation[] = loadAnimations();
 
 function loadAnimations(): Animation[] {
-  const errors = validateAnimations(animationData, REPO_POSES, REPO_RIGS);
+  const errors = validateAnimations(animationData, REPO_POSES, REPO_RIGS, REPO_DRAWN_POSES);
   if (errors.length > 0) fail('src/scene/kalman/animations.json', errors);
   // Checked above (names, figures, keyframes and eases), so the JSON may be treated as typed.
   return animationData as unknown as Animation[];

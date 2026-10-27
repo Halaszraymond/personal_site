@@ -11,6 +11,7 @@
  */
 import { gsap } from 'gsap';
 import {
+  drawnFrame,
   headTurn,
   playLength,
   samplePose,
@@ -26,7 +27,7 @@ import {
   type Pair,
   type Pose,
 } from '../../lib/kalman-rig';
-import { applyFigure, applyPose } from './kalman-figure-client';
+import { applyDrawn, applyFigure, applyPose } from './kalman-figure-client';
 import { poseNamed, posesFor, REPO_ANIMATIONS, REPO_RIGS } from './repo-rig';
 
 /** GSAP's own curves for the easing names in animations.json. */
@@ -76,6 +77,7 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
     );
     applyFigure(figure, animation.figure);
     applyPose(figure, rig, pose, moodOf());
+    applyDrawn(figure, animation.figure, drawnFrame(animation, time), moodOf());
     figure.dataset['animation'] = animation.name;
     figure.dataset['time'] = time.toFixed(2);
     for (const listener of frameListeners) listener(animation, time);
@@ -88,6 +90,7 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
     stopFollowing();
     if (playing !== undefined) {
       applyPose(figure, REPO_RIGS[playing.figure], poseNamed('rest', playing.figure), moodOf());
+      applyDrawn(figure, playing.figure, undefined, moodOf());
     }
     playing = undefined;
     delete figure.dataset['animation'];

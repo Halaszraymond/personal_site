@@ -9,12 +9,14 @@
  * image per mood, placed on the artboard exactly like the front figure. This file only checks
  * that data; the figure draws it and the player fades it in and out.
  */
-import type { Mood } from './kalman-rig';
+import type { Figure, Mood } from './kalman-rig';
 import { isPlacedImage, type PlacedImage } from './kalman-turntable';
 
-/** One drawn pose: its name (used by keyframes) and a placed image per mood. */
+/** One drawn pose: its name (used by keyframes), its figure, and a placed image per mood. */
 export interface DrawnPose {
   readonly name: string;
+  /** The figure it replaces while it shows: an animation can only use its own figure's. */
+  readonly figure: Figure;
   readonly images: Readonly<Record<Mood, PlacedImage>>;
 }
 
@@ -28,11 +30,18 @@ export function drawnPoseErrors(data: unknown): string[] {
   const errors: string[] = [];
   const names = new Set<string>();
   poses.forEach((value: unknown, index) => {
-    const { name, images } = (value ?? {}) as { name?: unknown; images?: unknown };
+    const { name, figure, images } = (value ?? {}) as {
+      name?: unknown;
+      figure?: unknown;
+      images?: unknown;
+    };
     const label = typeof name === 'string' ? `Drawn pose "${name}"` : `Drawn pose ${index + 1}`;
     if (typeof name !== 'string' || name === '') errors.push(`${label} needs a "name".`);
     else if (names.has(name)) errors.push(`${label} is listed twice.`);
     else names.add(name);
+    if (figure !== 'front' && figure !== 'side') {
+      errors.push(`${label} needs "figure" as "front" or "side".`);
+    }
     const byMood = (images ?? {}) as Record<string, unknown>;
     for (const mood of MOODS) {
       if (!isPlacedImage(byMood[mood])) {

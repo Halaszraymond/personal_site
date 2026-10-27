@@ -463,7 +463,8 @@ for (const drawn of DRAWN_POSES) {
     await writePng(join(DRAWN_OUT, file), whole.rgba, whole.box.width, whole.box.height);
     images[mood] = { image: `drawn/${file}`, ...placeBox(whole.box, PLACEMENT) };
   }
-  drawnPoses.push({ name: drawn.name, images });
+  // Edits of the front view, so they replace the front figure.
+  drawnPoses.push({ name: drawn.name, figure: 'front', images });
   console.log(`drawn ${drawn.name}`);
 }
 writeJson(DRAWN_FILE, { poses: drawnPoses });

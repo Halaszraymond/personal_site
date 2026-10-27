@@ -5,6 +5,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   blendPoses,
+  drawnFrame,
   duration,
   EASES,
   headTurn,
@@ -128,6 +129,8 @@ const rigOf = (...names: string[]): Rig => ({
   })),
 });
 const RIGS: Rigs = { front: rigOf('body', 'head'), side: rigOf('body', 'tail') };
+/** One drawn pose, the front figure's bow. */
+const DRAWN = [{ name: 'bow', figure: 'front' as const }];
 
 describe('validateAnimations', () => {
   const poses: Pose[] = [
@@ -145,7 +148,7 @@ describe('validateAnimations', () => {
   const all = ['idle', 'bow', 'head-follow', 'dive', 'swim', 'launch'].map((name) => valid(name));
 
   it('accepts valid animations', () => {
-    expect(validateAnimations(all, poses, RIGS)).toEqual([]);
+    expect(validateAnimations(all, poses, RIGS, DRAWN)).toEqual([]);
   });
 
   it('rejects keyframes out of order, naming the animation and the two keyframes', () => {
@@ -157,21 +160,21 @@ describe('validateAnimations', () => {
         { at: 0.5, pose: 'rest' },
       ],
     };
-    expect(validateAnimations([...all.slice(0, 1), late, ...all.slice(2)], poses, RIGS)).toEqual([
-      'Animation "bow": the keyframe at 0.5 s comes after the one at 1 s.',
-    ]);
+    expect(
+      validateAnimations([...all.slice(0, 1), late, ...all.slice(2)], poses, RIGS, DRAWN),
+    ).toEqual(['Animation "bow": the keyframe at 0.5 s comes after the one at 1 s.']);
   });
 
   it('rejects a pose its figure doesn’t have (spec: "Unknown pose")', () => {
     const swim = { ...valid('swim', 'side'), keyframes: [{ at: 0, pose: 'nod' }] };
     expect(
-      validateAnimations([...all.filter((a) => a.name !== 'swim'), swim], poses, RIGS),
+      validateAnimations([...all.filter((a) => a.name !== 'swim'), swim], poses, RIGS, DRAWN),
     ).toEqual(['Animation "swim" names the pose "nod", which its side figure doesn\'t have.']);
   });
 
   it('rejects a late start, an unknown easing and a missing animation', () => {
     const bow = { ...valid('bow'), keyframes: [{ at: 0.2, pose: 'rest', ease: 'elastic.out' }] };
-    expect(validateAnimations([bow], poses, RIGS)).toEqual([
+    expect(validateAnimations([bow], poses, RIGS, DRAWN)).toEqual([
       'Animation "bow" must start with a keyframe at 0 seconds.',
       'Animation "bow" uses the unknown easing "elastic.out".',
       'The animation "idle" is missing.',
@@ -294,25 +297,102 @@ describe('validating the lag', () => {
 
   it('accepts a lag for the figure’s own layers', () => {
     const bow = { ...named('bow'), lag: { head: 0.05 } };
-    expect(validateAnimations([bow, ...others], poses, RIGS)).toEqual([]);
+    expect(validateAnimations([bow, ...others], poses, RIGS, DRAWN)).toEqual([]);
   });
 
   it('rejects a lag for a layer only the other figure has (spec: "Lag for an unknown layer")', () => {
     const bow = { ...named('bow'), lag: { tail: 0.1 } };
-    expect(validateAnimations([bow, ...others], poses, RIGS)).toEqual([
+    expect(validateAnimations([bow, ...others], poses, RIGS, DRAWN)).toEqual([
       'Animation "bow" gives a lag to the layer "tail", which its figure doesn\'t have.',
     ]);
   });
 
   it('rejects a negative lag, a lag that is not a number, and a lag that is not an object', () => {
     const negative = { ...named('bow'), lag: { head: -0.1, body: '0.2' } };
-    expect(validateAnimations([negative, ...others], poses, RIGS)).toEqual([
+    expect(validateAnimations([negative, ...others], poses, RIGS, DRAWN)).toEqual([
       'Animation "bow" needs the lag of "head" as 0 or more seconds.',
       'Animation "bow" needs the lag of "body" as 0 or more seconds.',
     ]);
     const list = { ...named('bow'), lag: [0.1] };
-    expect(validateAnimations([list, ...others], poses, RIGS)).toEqual([
+    expect(validateAnimations([list, ...others], poses, RIGS, DRAWN)).toEqual([
       'Animation "bow" needs "lag" as an object of layer names and seconds.',
+    ]);
+  });
+});
+
+// ---------------------------------------------------------------------------------------
+// Drawn poses (spec: "An animation can show a drawn pose"; design §8)
+// ---------------------------------------------------------------------------------------
+
+describe('drawnFrame', () => {
+  // A bow: down by 1 s, the drawn bow held from 1 s to 1.6 s, back up by 2.4 s; fade 0.2 s.
+  const BOWING: Animation = {
+    ...NODDING,
+    name: 'bowing',
+    fade: 0.2,
+    keyframes: [
+      { at: 0, pose: 'rest' },
+      { at: 1, pose: 'nod', drawn: 'bow' },
+      { at: 1.6, pose: 'nod', drawn: 'bow' },
+      { at: 2.4, pose: 'rest' },
+    ],
+  };
+
+  it('shows the drawing fully from the first to the last keyframe naming it (spec: "Holding the drawn pose")', () => {
+    for (const time of [1, 1.3, 1.6]) {
+      expect(drawnFrame(BOWING, time)).toEqual({ name: 'bow', opacity: 1 });
+    }
+  });
+
+  it('is half see-through halfway through the cross-fade, in and out (spec: "Halfway through the cross-fade")', () => {
+    expect(drawnFrame(BOWING, 0.9)?.opacity).toBeCloseTo(0.5, 9);
+    expect(drawnFrame(BOWING, 1.7)?.opacity).toBeCloseTo(0.5, 9);
+  });
+
+  it('shows nothing before the fade starts or after it ends, and without drawn keyframes', () => {
+    expect(drawnFrame(BOWING, 0.79)).toBeUndefined();
+    expect(drawnFrame(BOWING, 1.81)).toBeUndefined();
+    expect(drawnFrame(NODDING, 1)).toBeUndefined();
+  });
+
+  it('fades over 0.2 s when the animation doesn’t say, and switches at once with a fade of 0', () => {
+    const { fade, ...withoutFade } = BOWING;
+    expect(fade).toBe(0.2);
+    expect(drawnFrame(withoutFade, 0.9)?.opacity).toBeCloseTo(0.5, 9);
+    expect(drawnFrame({ ...BOWING, fade: 0 }, 0.99)).toBeUndefined();
+  });
+});
+
+describe('validating drawn poses and the fade', () => {
+  const poses: Pose[] = [REST, { name: 'stroke', label: 'Stroke', figure: 'side', layers: {} }];
+  const named = (name: string, figure = 'front') => ({
+    name,
+    label: name,
+    figure,
+    loop: false,
+    keyframes: [{ at: 0, pose: figure === 'front' ? 'rest' : 'stroke' }],
+  });
+  const others = ['idle', 'head-follow', 'dive', 'swim', 'launch'].map((name) => named(name));
+
+  it('accepts a keyframe showing a drawn pose of its own figure', () => {
+    const bow = { ...named('bow'), keyframes: [{ at: 0, pose: 'rest', drawn: 'bow' }] };
+    expect(validateAnimations([bow, ...others], poses, RIGS, DRAWN)).toEqual([]);
+  });
+
+  it('rejects an unknown drawn pose, and one of the other figure', () => {
+    const bow = { ...named('bow'), keyframes: [{ at: 0, pose: 'rest', drawn: 'curtsy' }] };
+    const dive = { ...named('dive', 'side'), keyframes: [{ at: 0, pose: 'stroke', drawn: 'bow' }] };
+    const rest = others.filter((a) => a.name !== 'dive');
+    expect(validateAnimations([bow, dive, ...rest], poses, RIGS, DRAWN)).toEqual([
+      'Animation "bow" shows the drawn pose "curtsy", which its front figure doesn\'t have.',
+      'Animation "dive" shows the drawn pose "bow", which its side figure doesn\'t have.',
+    ]);
+  });
+
+  it('rejects a fade that is negative or not a number', () => {
+    const bow = { ...named('bow'), fade: -1 };
+    expect(validateAnimations([bow, ...others], poses, RIGS, DRAWN)).toEqual([
+      'Animation "bow" needs "fade" as 0 or more seconds.',
     ]);
   });
 });

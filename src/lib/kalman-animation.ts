@@ -25,6 +25,11 @@ export interface Keyframe {
   readonly pose: string;
   /** The easing from this keyframe to the next one; `none` (linear) when left out. */
   readonly ease?: EaseName;
+  /**
+   * A drawn pose (drawn-poses.json) to show instead of the layers at this keyframe, such as
+   * the bow from the front, which layers can't make (design §7–§8).
+   */
+  readonly drawn?: string;
 }
 
 /** An animation: which figure it uses, whether it loops, and its keyframes. */
@@ -42,6 +47,17 @@ export interface Animation {
    * `dict[str, float]`; layers without a lag follow the keyframes exactly.
    */
   readonly lag?: Readonly<Record<string, number>>;
+  /** How long a drawn pose takes to cross-fade in and out, in seconds; DRAWN_FADE when left out. */
+  readonly fade?: number;
+}
+
+/** The default cross-fade time of a drawn pose: short, so nothing pops, but no ghost lingers. */
+export const DRAWN_FADE = 0.2;
+
+/** Which drawn pose shows at a moment, and how solid it is (0 = not at all, 1 = fully). */
+export interface DrawnFrame {
+  readonly name: string;
+  readonly opacity: number;
 }
 
 /**
@@ -188,6 +204,43 @@ function keyframePoseAt(
 }
 
 // ---------------------------------------------------------------------------------------
+// Drawn poses
+// ---------------------------------------------------------------------------------------
+
+/**
+ * The drawn pose at `time`, if any (design §8). Keyframes in a row that name the same drawn
+ * pose form a span: from the first of them to the last, the drawing shows fully. It fades in
+ * over the `fade` seconds before the span and out over the `fade` seconds after it, so the
+ * layers and the drawing cross-fade. Like everything here a pure function of time, so a
+ * scrubbed moment looks exactly like a played one.
+ */
+export function drawnFrame(animation: Animation, time: number): DrawnFrame | undefined {
+  const fade = animation.fade ?? DRAWN_FADE;
+  let best: DrawnFrame | undefined;
+  const frames = animation.keyframes;
+  for (let start = 0; start < frames.length; start++) {
+    const name = frames[start]?.drawn;
+    // Only the first keyframe of a span starts one.
+    if (name === undefined || frames[start - 1]?.drawn === name) continue;
+    let end = start;
+    while (frames[end + 1]?.drawn === name) end++;
+    const from = frames[start]?.at ?? 0;
+    const to = frames[end]?.at ?? from;
+    const opacity = spanOpacity(time, from, to, fade);
+    if (opacity > 0 && (best === undefined || opacity > best.opacity)) best = { name, opacity };
+  }
+  return best;
+}
+
+/** 1 inside `[from, to]`, a straight ramp over `fade` seconds on both sides, 0 further out. */
+function spanOpacity(time: number, from: number, to: number, fade: number): number {
+  if (time >= from && time <= to) return 1;
+  if (fade <= 0) return 0;
+  const distance = time < from ? from - time : time - to;
+  return Math.max(0, 1 - distance / fade);
+}
+
+// ---------------------------------------------------------------------------------------
 // Head-follow
 // ---------------------------------------------------------------------------------------
 
@@ -231,15 +284,17 @@ function lagErrors(title: string, lag: unknown, layerNames: ReadonlySet<string>)
   return errors;
 }
 
-/** The problems with one animation, given the pose names and layer names its figure has. */
-function animationErrors(
-  value: unknown,
-  index: number,
-  poseNames: (figure: Figure) => Set<string>,
-  layerNames: (figure: Figure) => ReadonlySet<string>,
-): string[] {
+/** What an animation's figure has: its poses, its layers and its drawn poses, by name. */
+interface FigureNames {
+  readonly poses: (figure: Figure) => ReadonlySet<string>;
+  readonly layers: (figure: Figure) => ReadonlySet<string>;
+  readonly drawn: (figure: Figure) => ReadonlySet<string>;
+}
+
+/** The problems with one animation, given the names its figure has. */
+function animationErrors(value: unknown, index: number, names: FigureNames): string[] {
   if (!isRecord(value)) return [`Animation ${index + 1} is not an object.`];
-  const { name, label, figure, loop, follow, keyframes, lag } = value;
+  const { name, label, figure, loop, follow, keyframes, lag, fade } = value;
   const title =
     typeof name === 'string' && name !== '' ? `Animation "${name}"` : `Animation ${index + 1}`;
   const errors: string[] = [];
@@ -250,20 +305,25 @@ function animationErrors(
   if (typeof loop !== 'boolean') errors.push(`${title} needs "loop" as true or false.`);
   if (follow !== undefined && follow !== 'head') errors.push(`${title} can only follow "head".`);
   if (figure === 'front' || figure === 'side') {
-    errors.push(...lagErrors(title, lag, layerNames(figure)));
+    errors.push(...lagErrors(title, lag, names.layers(figure)));
+  }
+  if (fade !== undefined && (typeof fade !== 'number' || !Number.isFinite(fade) || fade < 0)) {
+    errors.push(`${title} needs "fade" as 0 or more seconds.`);
   }
   if (!Array.isArray(keyframes) || keyframes.length === 0) {
     errors.push(`${title} needs a list of "keyframes".`);
     return errors;
   }
-  const known = figure === 'front' || figure === 'side' ? poseNames(figure) : new Set<string>();
+  const hasFigure = figure === 'front' || figure === 'side';
+  const known = hasFigure ? names.poses(figure) : new Set<string>();
+  const drawnKnown = hasFigure ? names.drawn(figure) : new Set<string>();
   let previous: number | undefined;
   keyframes.forEach((keyframe: unknown, k) => {
     if (!isRecord(keyframe)) {
       errors.push(`${title}, keyframe ${k + 1} is not an object.`);
       return;
     }
-    const { at, pose, ease } = keyframe;
+    const { at, pose, ease, drawn } = keyframe;
     if (typeof at !== 'number' || !Number.isFinite(at) || at < 0) {
       errors.push(`${title}, keyframe ${k + 1} needs "at" as a time in seconds.`);
     } else {
@@ -281,6 +341,11 @@ function animationErrors(
     if (ease !== undefined && !isEase(ease)) {
       errors.push(`${title} uses the unknown easing "${String(ease)}".`);
     }
+    if (drawn !== undefined && (typeof drawn !== 'string' || !drawnKnown.has(drawn))) {
+      errors.push(
+        `${title} shows the drawn pose "${String(drawn)}", which its ${String(figure)} figure doesn't have.`,
+      );
+    }
   });
   return errors;
 }
@@ -288,15 +353,24 @@ function animationErrors(
 /**
  * Checks animations.json (spec: "An invalid animation is rejected"): every problem at once.
  * `poses` are all poses of both figures, to check the keyframes' pose names; `rigs` give each
- * figure's layer names, to check the lags.
+ * figure's layer names, to check the lags; `drawnPoses` the drawn poses, to check `drawn`.
  */
-export function validateAnimations(data: unknown, poses: readonly Pose[], rigs: Rigs): string[] {
+export function validateAnimations(
+  data: unknown,
+  poses: readonly Pose[],
+  rigs: Rigs,
+  drawnPoses: readonly { readonly name: string; readonly figure: Figure }[],
+): string[] {
   if (!Array.isArray(data)) return ['The animations must be a list.'];
-  const poseNames = (figure: Figure) =>
-    new Set(poses.filter((pose) => figureOf(pose) === figure).map((pose) => pose.name));
-  const layerNames = (figure: Figure) => new Set(rigs[figure].layers.map((layer) => layer.name));
+  const figureNames: FigureNames = {
+    poses: (figure) =>
+      new Set(poses.filter((pose) => figureOf(pose) === figure).map((pose) => pose.name)),
+    layers: (figure) => new Set(rigs[figure].layers.map((layer) => layer.name)),
+    drawn: (figure) =>
+      new Set(drawnPoses.filter((pose) => pose.figure === figure).map((pose) => pose.name)),
+  };
   const errors = data.flatMap((value: unknown, index) =>
-    animationErrors(value, index, poseNames, layerNames),
+    animationErrors(value, index, figureNames),
   );
   const names = data.map((value: unknown) => (isRecord(value) ? value['name'] : undefined));
   for (const required of REQUIRED_ANIMATIONS) {

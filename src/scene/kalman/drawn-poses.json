@@ -2,6 +2,7 @@
   "poses": [
     {
       "name": "bow",
+      "figure": "front",
       "images": {
         "goofy": {
           "image": "drawn/bow.png",
