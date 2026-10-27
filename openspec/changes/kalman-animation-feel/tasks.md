@@ -10,9 +10,9 @@
 
 ## 2. Lag, overshoot and length in the animations
 
-- [ ] 2.1 Add `lag` to `Animation` in `src/lib/kalman-animation.ts`, and sample each lagging layer at `t − lag` in `samplePose()`: the first pose before the start of a non-looping animation, wrapped around the loop's length in a loop (design §2); verify with unit tests for "A trailing tail" and "Lag in a loop", and that a layer without lag is unchanged
-- [ ] 2.2 Add `playLength()` (last keyframe + largest lag for a non-looping animation, the keyframe length for a loop) and blend `stretch` in `blendPoses()`; verify with unit tests for both lengths and for a stretch halfway between 1 and 0.9
-- [ ] 2.3 Add `back.out` and `back.inOut` to `EASES` and the lag checks to `validateAnimations()` (negative, not a number, a layer the figure doesn't have); verify with unit tests, including "Lag for an unknown layer"
+- [x] 2.1 Add `lag` to `Animation` in `src/lib/kalman-animation.ts`, and sample each lagging layer at `t − lag` in `samplePose()`: the first pose before the start of a non-looping animation, wrapped around the loop's length in a loop (design §2); verify with unit tests for "A trailing tail" and "Lag in a loop", and that a layer without lag is unchanged
+- [x] 2.2 Add `playLength()` (last keyframe + largest lag for a non-looping animation, the keyframe length for a loop) and blend `stretch` in `blendPoses()`; verify with unit tests for both lengths and for a stretch halfway between 1 and 0.9
+- [x] 2.3 Add `back.out` and `back.inOut` to `EASES` and the lag checks to `validateAnimations()` (negative, not a number, a layer the figure doesn't have); verify with unit tests, including "Lag for an unknown layer"
 - [ ] 2.4 Use `playLength()` and `clampToRig()` in `src/scene/kalman/kalman-player.ts`: the tween, the scrub range and "finished" use the play length, and every sampled pose is clamped before it is drawn; verify with the e2e test "Lagging layers settle" (the dive only finishes once the tail is at rest) and the existing bow and scrub tests, with the scrub range read from the data
 - [ ] 2.5 Update `docs/architecture.md` (lag as a time shift, clamping, play length) and `docs/glossary.md` (anticipation, follow-through, overlap, overshoot, lag); verify they match the code
 

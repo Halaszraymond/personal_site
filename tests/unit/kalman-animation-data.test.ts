@@ -4,13 +4,22 @@
  */
 import { describe, expect, it } from 'vitest';
 import { validateAnimations } from '../../src/lib/kalman-animation';
-import type { Pose } from '../../src/lib/kalman-rig';
+import { validateRig, type Figure, type Pose, type Rig } from '../../src/lib/kalman-rig';
 import animations from '../../src/scene/kalman/animations.json';
 import poses from '../../src/scene/kalman/poses.json';
+import rigData from '../../src/scene/kalman/rig.json';
+
+/** A figure's rig from the repo (the images are checked in kalman-rig-data.test.ts). */
+function repoRig(figure: Figure): Rig {
+  const result = validateRig(rigData[figure], () => true);
+  if (!result.ok) throw new Error(result.errors.join('\n'));
+  return result.value;
+}
+const RIGS = { front: repoRig('front'), side: repoRig('side') };
 
 describe('the animations in the repo', () => {
   it('are valid against the repo’s poses and include all six', () => {
-    expect(validateAnimations(animations, poses as Pose[])).toEqual([]);
+    expect(validateAnimations(animations, poses as Pose[], RIGS)).toEqual([]);
   });
 
   it('use the front figure for idle, bow and head-follow, and the side for the rest', () => {
