@@ -3,13 +3,13 @@
 ## 1. Setup and the side images
 
 - [ ] 1.1 Add `gsap@3.15` as a dependency (approved by Raymond); verify `npm ls gsap` shows 3.15 and `npm run build` still passes
-- [ ] 1.2 Add the side-view prompts to `docs/kalman-layers.md` (design §6: the goofy side view in rest pose with a gap between the near flipper and the body, and its professional edit) and hand them to Raymond; verify the prompts name the files `side-goofy.png` and `side-professional.png`
-- [ ] 1.3 Check Raymond's two side images (same size, pixel-aligned, flipper gap, no text) and save them in `docs/images/kalman-design/`; verify with the alignment check (best shift 0, 0) and the outline per row
+- [ ] 1.2 Add the side-view prompts to `docs/kalman-layers.md` (design §6: the goofy side view in rest pose, its professional edit and the edit without the near flipper); verify the prompts name the files `side-goofy.png`, `side-professional.png` and `side-no-flipper.png`
+- [ ] 1.3 Check Raymond's three side images (same size, pixel-aligned, no text) and save them in `docs/images/kalman-design/`; verify with the alignment check (best shift 0, 0) against `side-goofy.png`
 
 ## 2. Two figures: rigs and poses
 
 - [ ] 2.1 Add the `Figure` type and a `figure` field to poses in `src/lib/kalman-rig.ts`; `validatePose()` checks a pose against its own figure's rig; verify with unit tests for a front pose, a side pose and a pose naming the other figure's layer
-- [ ] 2.2 Extend `scripts/cut-kalman-layers.ts` with the side settings and layer list (design §6), measured on Raymond's images, and write `rig.json` as `{ front, side }`; verify `npm run cut:kalman` writes both rigs, `check:kalman` passes, and the side layers line up at rest (screenshot)
+- [ ] 2.2 Add `fillEnclosed()` to `scripts/lib/kalman-cut.ts` with unit tests, and extend `scripts/cut-kalman-layers.ts` with the side settings and layer list (design §6: flipper from the difference with `side-no-flipper`, body from `side-no-flipper`), measured on Raymond's images, and write `rig.json` as `{ front, side }`; verify `npm run cut:kalman` writes both rigs, `check:kalman` passes, and the side layers line up at rest (screenshot)
 - [ ] 2.3 Load both rigs in `repo-rig.ts`, add `figure` to every pose in `poses.json` and the side poses rest, stroke up, stroke down and dive; update `tests/unit/kalman-rig-data.test.ts` for both layer sets; verify the tests pass
 - [ ] 2.4 Draw both figures in `KalmanFigure.astro` (`<g data-figure>` per figure, figure-scoped layer selectors) and pass the figure to `applyPose()`; verify the existing preview e2e tests still pass and the side figure shows in rest when switched to
 

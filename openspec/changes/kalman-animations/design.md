@@ -88,9 +88,9 @@ Both rigs share the 1600 × 1500 artboard and the same placement (scale 1.33, fe
 
 ### 6. The side figure
 
-- **Images:** Raymond makes `side-goofy.png` (the side view in rest pose, bill to the left, the near flipper hanging slightly away from the body with a gap of white, feet flat) and `side-professional.png` (an edit adding the tie and glasses), with prompts added to `docs/kalman-layers.md`.
+- **Images:** three, made by Raymond with Gemini (delivered): `side-goofy.png` (the side view in rest pose, bill to the left, feet flat), `side-professional.png` (an edit adding the tie, glasses and calm eye) and `side-no-flipper.png` (an edit with the near flipper removed and the body painted underneath). In a side view the flipper lies *on* the body, so there is no white gap to cut along; the flipper-less edit gives the body as it looks under the flipper instead. Prompts in `docs/kalman-layers.md`.
 - **Layers:** `body`, `head`, `flipper` (the near one), `footFront`, `footBack`, `tail`, `tie`, `glasses`. The far flipper is behind the body in a side view, so it is part of the body.
-- **Cutting:** the same library (`scripts/lib/kalman-cut.ts`): flood fill, the difference mask, the flipper cut at its gap per row, the neck fade. The numbers (cut lines, pivots) are measured on the images once they exist, with the same row-by-row outline as for the front.
+- **Cutting:** the same library (`scripts/lib/kalman-cut.ts`): flood fill, the difference masks and the neck fade. The **flipper** is where `side-goofy` differs from `side-no-flipper`; in its upper half the grey flipper lies on the grey back, so the colour difference is weak there, and the mask is the flipper's outline (the strong edge in the difference) with its inside filled (a new pure function, `fillEnclosed()`). The **body** comes from `side-no-flipper`, so a swinging flipper shows painted body underneath instead of a ghost of itself. The tie and glasses come from `side-professional`, as for the front. The numbers (cut lines, pivots) are measured on the images with the same row-by-row outline as for the front.
 - **Poses:** rest, stroke up and stroke down (the flipper at the top and bottom of a stroke, the body slightly tilted), and dive (the body tilted head-down, the flipper back). Swim loops between the stroke poses; dive and launch tilt and move the whole body.
 
 ### 7. The six animations
