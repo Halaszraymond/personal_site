@@ -2,7 +2,7 @@
   "name": "portfolio-site",
   "version": "0.0.0",
   "private": true,
-  "description": "halaszraymond.com v2: a portfolio dive with Keizer Kálmán, a low-poly emperor penguin.",
+  "description": "halaszraymond.com v2: a portfolio dive with Keizer Kálmán, an illustrated emperor penguin.",
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:playground": "node --env-file=.env.playground node_modules/astro/bin/astro.mjs build",
     "preview": "astro preview",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write . && eslint --fix .",
@@ -19,7 +20,10 @@
     "prepare": "simple-git-hooks",
     "e2e": "playwright test",
     "size": "node scripts/check-bundle-size.ts",
-    "check": "npm run lint && npm run typecheck && npm test && npm run build && npm run size && npm run e2e && npm run lighthouse",
+    "check:production": "node scripts/check-production-build.ts",
+    "cut:kalman": "node scripts/cut-kalman-layers.ts && prettier --write src/scene/kalman/rig.json src/scene/kalman/turntable.json",
+    "check:kalman": "npm run cut:kalman && git diff --exit-code -- src/assets/kalman src/scene/kalman",
+    "check": "npm run lint && npm run typecheck && npm test && npm run check:kalman && npm run build && npm run check:production && npm run build:playground && npm run size && npm run e2e && npm run lighthouse",
     "lighthouse": "node scripts/run-lighthouse.ts"
   },
   "dependencies": {
@@ -38,6 +42,7 @@
     "lint-staged": "^17.6.0",
     "prettier": "^3.9.10",
     "prettier-plugin-astro": "^1.1.2",
+    "sharp": "^0.35.5",
     "simple-git-hooks": "^2.14.0",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.0",

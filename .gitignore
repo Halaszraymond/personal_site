@@ -12,5 +12,6 @@ coverage/
 # Local environment and editor files
 .env
 .env.*
+!.env.playground
 .DS_Store
 npm-debug.log*

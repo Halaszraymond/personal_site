@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Decides for each visitor whether the site runs its full 3D experience or a static fallback, so that nobody ever gets a broken or empty page and all content stays readable as plain HTML.
+Decides for each visitor whether the site runs its full animated experience or a static fallback, so that nobody ever gets a broken or empty page and all content stays readable as plain HTML.
 
 ## Requirements
 

@@ -1,0 +1,124 @@
+---
+/**
+ * The dev-only Kálmán preview at /playground/.
+ *
+ * Not a file in src/pages/: astro.config.ts adds this page as a route only in the
+ * development server and in builds with PLAYGROUND=1, so production never contains it
+ * (spec: kalman-preview). English only while dev-only; not indexed; no language switcher.
+ *
+ * Layout: Kálmán on top and the controls below on phones; side by side on wide screens.
+ */
+import BaseLayout from '../components/BaseLayout.astro';
+import { PREVIEW_EN as TEXT } from '../i18n/preview';
+import { figureDescription, poseToJson } from '../lib/preview-pose';
+import KalmanFigure from '../scene/kalman/KalmanFigure.astro';
+import { poseNamed } from '../scene/kalman/repo-rig';
+import PreviewControls from './PreviewControls.astro';
+
+const rest = poseNamed('rest');
+---
+
+<BaseLayout locale="en" currentLocale={null} showLanguageSwitcher={false} title={TEXT.title}>
+  <div class="preview" data-kalman-preview>
+    <h1>{TEXT.heading}</h1>
+    <p>{TEXT.intro}</p>
+
+    <div class="layout">
+      <div class="stage">
+        <KalmanFigure label={figureDescription(rest, TEXT.moodGoofy)} pivotMarkers />
+      </div>
+
+      <div class="side">
+        <PreviewControls />
+
+        <section class="copy">
+          <button type="button" data-copy-pose>
+            {TEXT.copyPose}
+          </button>
+          <p class="status" role="status" data-copy-status></p>
+          <label for="pose-json">{TEXT.poseJsonLabel}</label>
+          <textarea id="pose-json" readonly rows="10" data-pose-json>{poseToJson(rest)}</textarea>
+        </section>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import './preview-client';
+</script>
+
+<style>
+  .preview {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 0 1rem 2rem;
+  }
+
+  .layout {
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .stage {
+    width: 100%;
+    max-width: 30rem;
+    margin: 0 auto;
+  }
+
+  /* Dragging sideways turns him; vertical swipes still scroll the page on a phone. */
+  .stage :global(.kalman-figure) {
+    touch-action: pan-y;
+    cursor: grab;
+  }
+
+  .side {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+  }
+
+  .copy {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .copy button {
+    justify-self: start;
+    font: inherit;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid #1f2a44;
+    border-radius: 999px;
+    background: #1f2a44;
+    color: #ffffff;
+    cursor: pointer;
+  }
+
+  .status {
+    min-height: 1.5em;
+    margin: 0;
+  }
+
+  textarea {
+    width: 100%;
+    box-sizing: border-box;
+    font:
+      0.875rem/1.4 ui-monospace,
+      monospace;
+  }
+
+  /* Wide screens: Kálmán on the left (staying in view while scrolling), controls on the right. */
+  @media (min-width: 900px) {
+    .layout {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: start;
+    }
+
+    .stage {
+      position: sticky;
+      top: 1rem;
+      max-width: 36rem;
+    }
+  }
+</style>

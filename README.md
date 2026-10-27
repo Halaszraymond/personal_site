@@ -2,7 +2,7 @@
 
 The new version of halaszraymond.com: an employer-facing portfolio with real wow factor, built around one original character, **a fishing emperor penguin, illustrated and animated in 2D**.
 
-> Status: Phase 0 (setup) is done; Phase 1 (Keizer Kálmán, in 2D) is being planned. This document is the source of truth. If a decision changes, update this file first.
+> Status: Phase 0 (setup) is done; Phase 1 (Keizer Kálmán, in 2D) is in progress: the rig and the dev-only preview are built, the illustrations and animations are next. This document is the source of truth. If a decision changes, update this file first.
 
 ---
 
@@ -21,12 +21,13 @@ The new version of halaszraymond.com: an employer-facing portfolio with real wow
 
 - **Name:** **Keizer Kálmán** (*Emperor Kálmán* in English), Kálmán for short. Where the name comes from and how it reads in each language: see §2.2.
 - **Species:** emperor penguin (*Aptenodytes forsteri*).
-- **Style:** **a 2D illustrated character** in a soft, painted style, following Raymond's design sheet ([`docs/images/kalman-design/`](docs/images/kalman-design/)), made with an AI image generator. He should read as a designed character, not as stock art. *(Changed on 2026-10-26: a 3D Kálmán built in code could not get close to the illustration; the attempt stays on the branch `change/kalman-playground` and in the making-of.)*
+- **Style:** **a 2D illustrated character** in a soft, painted style, following Raymond's **final design sheet** ([`docs/images/kalman-design/final-sheet.png`](docs/images/kalman-design/final-sheet.png), chosen on 2026-10-26; the earlier turnarounds in the same folder are history), made with an AI image generator. He should read as a designed character, not as stock art. *(Changed on 2026-10-26: a 3D Kálmán built in code could not get close to the illustration; the attempt stays on the branch `change/kalman-playground` and in the making-of.)*
 - **Built from layers:** Kálmán is a **cut-out** figure: separate illustrated parts (body, head, both flippers, feet, tail, and the tie and glasses), each with a transparent background, moved in code with GSAP. So one set of drawings gives all his poses and moods.
 - **Original character:** Kálmán must not resemble existing penguin characters or mascots.
-- **Features to keep through the stylisation:** dark navy head and back, cream belly, the **golden-orange ear patches** that fade towards the chest, and a slender bill with an orange/pink stripe on the lower mandible.
+- **Features to keep through the stylisation:** slate-grey head and back, a white belly, the **golden-yellow ear patches** with a pale-yellow wash on the upper chest, and a slender dark bill with an orange stripe on the lower mandible.
+- **Views and poses on the sheet:** front, ¾ front, side, ¾ back and back for both sides of his personality, plus two action poses (swimming, reading a map). The sheet itself is too small to cut from (each penguin is about 150–230 px tall), so every view and part is made again as its own large image, with the sheet as the reference.
 - **Design first, then the animation preview:** the look is decided on the design sheet (done). Then a **dev-only animation preview** at `/playground/` shows every pose and mood with play buttons, so Raymond can judge the motion. Later it becomes a **public `/playground`** (in all three languages), linked from the "this website" case study: "play with Kálmán yourself".
-- **Personality:** a dual personality. His **goofy** side is funny and playful; his **professional** side is polite and to the point. He switches between them depending on what the visitor does (see §2.5). The professional side gets two accessories, a **dark-red tie** and **round reading glasses**, as separate layers he puts on and takes off.
+- **Personality:** a dual personality. His **goofy** side is funny and playful; his **professional** side is polite and to the point. He switches between them depending on what the visitor does (see §2.5). The professional side gets two accessories, a **purple patterned tie** and **round black glasses**, as separate layers he puts on and takes off. The goofy side has **big round eyes** and an open, laughing bill.
 - **Animations:** standing on the ice (idle), diving, swimming (flipper strokes), chasing a fish, bowing when clicked, following the cursor with his head, and, as the finale, launching out of the water with a trail of air bubbles.
 
 ### 2.2 Name: Keizer Kálmán ✅
@@ -270,6 +271,9 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 
   **Rule from Phase 1 on:** every new feature ships in all three languages (placeholder text is fine) and with its fallback. Nothing gets "added later in polish".
 - [ ] **Phase 1: Keizer Kálmán (2D).** Final illustrations as cut-out layers, made from the design sheet → the rig (where each layer sits and pivots) → the animations (idle, dive, swim, bow, head-follow, launch) → the dev-only animation preview. Drop Three.js and the WebGL check.
+  - [x] The rig, the named poses and the dev-only preview with placeholder layers; the WebGL check dropped (change `kalman-rig`). The layer list with prompts is in [`docs/kalman-layers.md`](docs/kalman-layers.md).
+  - [x] The final illustrations (Raymond's Gemini images in the final design) cut into the rig by `npm run cut:kalman`, plus a turntable of eight angles and a spin slider in the preview.
+  - [ ] The animations, with GSAP.
 - [ ] **Phase 2: the dive.** All sections with depth gauge, colour gradient, fish school, and fish turning into charts. Placeholder text first.
 - [ ] **Phase 3: content.** Real texts in NL/HU/EN, the 3 case studies, the "more catch" cards and a CV download. **Then go live** (§6): content complete, CI green, fallback working.
 - [ ] **Phase 4: polish, on the live site.** Tuning and verifying, not building: performance, accessibility audit, mobile testing on real devices, SEO and Open Graph, and a review of the translations.

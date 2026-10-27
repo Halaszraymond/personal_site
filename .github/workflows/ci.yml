@@ -46,10 +46,25 @@ jobs:
       - name: Unit tests
         run: npm test
 
-      - name: Build
+      # Kálmán's layers and turntable views are generated from the images in
+      # docs/images/kalman-design/; cutting them again must change nothing (spec: kalman-rig,
+      # "Layers come from the design images", scenario "Cutting again").
+      - name: Check Kálmán's images are up to date
+        run: npm run check:kalman
+
+      # First the build that Cloudflare serves on production, proven free of the preview.
+      - name: Build (production)
         run: npm run build
 
-      - name: Bundle size
+      - name: Check the production build
+        run: npm run check:production
+
+      # Then the build with the dev-only preview, which the tests below run against.
+      # Its public pages are identical; it only adds /playground/.
+      - name: Build (with preview)
+        run: npm run build:playground
+
+      - name: Bundle size (per page)
         run: npm run size
 
       # Browsers are ~500 MB, so they are cached between runs. The cache key changes when

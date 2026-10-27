@@ -1,0 +1,99 @@
+{
+  "views": [
+    {
+      "name": "front",
+      "angle": 0,
+      "images": {
+        "goofy": {
+          "image": "front/view-front.png",
+          "size": [671.7, 1222.3],
+          "position": [464.8, 180]
+        },
+        "professional": {
+          "image": "front/view-front-pro.png",
+          "size": [671.7, 1222.3],
+          "position": [464.8, 180]
+        }
+      }
+    },
+    {
+      "name": "3q-front",
+      "angle": 45,
+      "images": {
+        "goofy": {
+          "image": "views/3q-front.png",
+          "size": [591.9, 1223.6],
+          "position": [486.7, 178.7]
+        },
+        "professional": {
+          "image": "views/3q-front-pro.png",
+          "size": [591.9, 1223.6],
+          "position": [486.7, 178.7]
+        }
+      }
+    },
+    {
+      "name": "side",
+      "angle": 90,
+      "images": {
+        "goofy": {
+          "image": "views/side.png",
+          "size": [553.3, 1223.6],
+          "position": [506.4, 178.7]
+        },
+        "professional": {
+          "image": "views/side-pro.png",
+          "size": [553.3, 1223.6],
+          "position": [506.4, 178.7]
+        }
+      }
+    },
+    {
+      "name": "3q-back",
+      "angle": 135,
+      "images": {
+        "goofy": {
+          "image": "views/3q-back.png",
+          "size": [601.2, 1202.3],
+          "position": [482.6, 200]
+        },
+        "professional": {
+          "image": "views/3q-back-pro.png",
+          "size": [602.5, 1203.7],
+          "position": [482.6, 198.6]
+        }
+      }
+    },
+    {
+      "name": "back",
+      "angle": 180,
+      "images": {
+        "goofy": {
+          "image": "views/back.png",
+          "size": [667.7, 1215.6],
+          "position": [467.3, 186.7]
+        },
+        "professional": {
+          "image": "views/back-pro.png",
+          "size": [669, 1215.6],
+          "position": [465.9, 186.7]
+        }
+      }
+    },
+    {
+      "name": "3q-back-mirrored",
+      "angle": 225,
+      "mirrorOf": "3q-back"
+    },
+    {
+      "name": "side-mirrored",
+      "angle": 270,
+      "mirrorOf": "side"
+    },
+    {
+      "name": "3q-front-mirrored",
+      "angle": 315,
+      "mirrorOf": "3q-front"
+    }
+  ]
+}
