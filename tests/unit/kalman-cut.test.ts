@@ -8,6 +8,7 @@ import {
   assertSameSize,
   bodyCentreX,
   cutPart,
+  darknessMap,
   differenceAlpha,
   figureAlpha,
   findBackground,
@@ -263,19 +264,43 @@ describe('polygonCoverage', () => {
   });
 });
 
+describe('darknessMap', () => {
+  it('is 1 for the dark feet, 0 for white feathers, and soft in between', () => {
+    // Plumage (70, 80, 90) is darker than 110, white is brighter than 160; the grey in the
+    // middle has a brightness of exactly 135, halfway.
+    const image: RawImage = {
+      width: 3,
+      height: 1,
+      channels: 3,
+      data: new Uint8Array([...DARK, 135, 135, 135, ...WHITE]),
+    };
+    const map = darknessMap(image);
+    expect([map[0], map[1], map[2]]).toEqual([1, 0.5, 0]);
+  });
+});
+
 describe('sideRegions', () => {
   const settings: SideCutSettings = {
     neck: { headFadeFrom: 4, headFadeTo: 8, bodyFrom: 3, bodySolid: 6 },
     bodyBottomRow: 30,
     tail: { fromRow: 26, minX: 30, bodyOverlap: 2 },
-    feet: { fromRow: 28, backMaxX: 12, backMaxRow: 31 },
+    feet: {
+      fromRow: 28,
+      solidRow: 30,
+      stub: { minX: 5, maxX: 15, fadeTo: 34 },
+      backMaxX: 12,
+      backMaxRow: 31,
+    },
     glasses: [10, 1, 20, 4],
     tie: [8, 6, 14, 18],
   };
   // A 40-wide image with a flipper covering column 25 from row 10 to 19.
   const flipper = new Float32Array(40 * 40);
   for (let y = 10; y < 20; y++) flipper[y * 40 + 25] = 1;
-  const regions = sideRegions(settings, flipper, 40);
+  // Everything dark (feet), except column 18: light feathers hanging over the feet.
+  const darkness = new Float32Array(40 * 40).fill(1);
+  for (let y = 0; y < 40; y++) darkness[y * 40 + 18] = 0;
+  const regions = sideRegions(settings, flipper, darkness, 40);
   const take = (part: string, x: number, y: number) => regions[part]?.(x, y);
 
   it('takes the flipper from its traced outline, and the body under it as well', () => {
@@ -292,9 +317,25 @@ describe('sideRegions', () => {
   });
 
   it('splits the feet into the back foot (left, upper) and the front foot', () => {
-    expect([take('footBack', 10, 29), take('footFront', 10, 29)]).toEqual([1, 0]);
+    expect([take('footBack', 10, 30), take('footFront', 10, 30)]).toEqual([1, 0]);
     expect([take('footBack', 10, 32), take('footFront', 10, 32)]).toEqual([0, 1]);
-    expect([take('footBack', 20, 29), take('footFront', 20, 29)]).toEqual([0, 1]);
+    expect([take('footBack', 20, 30), take('footFront', 20, 30)]).toEqual([0, 1]);
+  });
+
+  it('gives the feet only their dark pixels, fading in at the ankle', () => {
+    // The light feathers over the feet stay off the foot, so a turning foot takes none along.
+    expect(take('footFront', 18, 32)).toBe(0);
+    // Halfway between the ankle's first row (28) and its solid row (30): half.
+    expect(take('footFront', 20, 29)).toBe(0.5);
+    expect(take('footFront', 20, 27)).toBe(0);
+  });
+
+  it('keeps a fading strip under the ankles in the body, and nothing else below it', () => {
+    expect(take('body', 10, 29)).toBe(1);
+    // Below the body's bottom row (30): inside the strip, fading out towards row 34.
+    expect([take('body', 10, 30), take('body', 10, 32), take('body', 10, 34)]).toEqual([1, 0.5, 0]);
+    // Outside the strip nothing, so no ghost of a foot's outline stays behind.
+    expect(take('body', 20, 32)).toBe(0);
   });
 
   it('fades the head into the neck', () => {

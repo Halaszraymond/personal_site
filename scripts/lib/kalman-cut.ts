@@ -105,6 +105,22 @@ export function figureAlpha(image: RawImage, background: Uint8Array, softness = 
   return alpha;
 }
 
+/**
+ * How dark each pixel is: 1 at or below `dark` brightness, 0 at or above `light`, a straight
+ * line in between (brightness as the eye weighs it: green counts most, blue least). The side
+ * feet are dark grey and the belly feathers over them white, so this tells them apart, with
+ * a soft transition on the feathered edge instead of a hard line.
+ */
+export function darknessMap(image: RawImage, dark = 110, light = 160): AlphaMap {
+  const map = new Float32Array(image.width * image.height);
+  for (let i = 0; i < map.length; i++) {
+    const [r, g, b] = rgbAt(image, i);
+    const brightness = 0.299 * r + 0.587 * g + 0.114 * b;
+    map[i] = Math.min(1, Math.max(0, (light - brightness) / (light - dark)));
+  }
+  return map;
+}
+
 /** Stops when two images that must line up pixel for pixel don't have the same size. */
 export function assertSameSize(a: RawImage, b: RawImage, what: string): void {
   if (a.width !== b.width || a.height !== b.height) {
@@ -470,7 +486,7 @@ export interface SideCutSettings {
     readonly bodyFrom: number;
     readonly bodySolid: number;
   };
-  /** The body ends at this row; the feet start a little above it (they overlap). */
+  /** The body is whole down to this row; below it only a strip under the ankles (`feet.stub`). */
   readonly bodyBottomRow: number;
   /**
    * The tail: everything from this row down and this column to the right. The body keeps the
@@ -478,9 +494,17 @@ export interface SideCutSettings {
    * tail is drawn behind the body, so the overlap doesn't show).
    */
   readonly tail: { readonly fromRow: number; readonly minX: number; readonly bodyOverlap: number };
-  /** The feet: from this row down; the back foot is the part left of `backMaxX` above `backMaxRow`. */
+  /**
+   * The feet: only their dark pixels, fading in from `fromRow` to `solidRow` (a soft ankle, like
+   * the neck), so a turning foot shows no straight cut and takes no white feathers along. The
+   * back foot is the part left of `backMaxX` above `backMaxRow`. `stub` is the strip under the
+   * ankles that the body keeps below `bodyBottomRow` (the white feathers and the ankles),
+   * fading out towards `stub.fadeTo`: painted leg behind a turning foot instead of a hole.
+   */
   readonly feet: {
     readonly fromRow: number;
+    readonly solidRow: number;
+    readonly stub: { readonly minX: number; readonly maxX: number; readonly fadeTo: number };
     readonly backMaxX: number;
     readonly backMaxRow: number;
   };
@@ -491,16 +515,24 @@ export interface SideCutSettings {
 
 /**
  * The side figure's parts as regions. The flipper is not a box but its traced outline, passed
- * in as a coverage map (`polygonCoverage()`); `width` is the image width, to look it up.
+ * in as a coverage map (`polygonCoverage()`); `darkness` (`darknessMap()`) tells the feet from
+ * the feathers over them; `width` is the image width, to look both up.
  */
 export function sideRegions(
   settings: SideCutSettings,
   flipper: AlphaMap,
+  darkness: AlphaMap,
   width: number,
 ): Record<string, PartRegion> {
   const { neck, bodyBottomRow, tail, feet } = settings;
   const headFade = ramp(neck.headFadeFrom, neck.headFadeTo);
   const bodyFade = ramp(neck.bodyFrom, neck.bodySolid);
+  const ankleFade = ramp(feet.fromRow, feet.solidRow);
+  const stubFade = ramp(bodyBottomRow, feet.stub.fadeTo);
+  const inStub = (x: number) => x >= feet.stub.minX && x <= feet.stub.maxX;
+  const dark = (x: number, y: number) => darkness[y * width + x] ?? 0;
+  /** How much of a pixel belongs to a foot: its darkness, faded in at the ankle. */
+  const footShare = (x: number, y: number) => dark(x, y) * ankleFade(y);
   const inTail = (x: number, y: number) => y >= tail.fromRow && x >= tail.minX;
   const inBackFoot = (x: number, y: number) =>
     y >= feet.fromRow && x <= feet.backMaxX && y < feet.backMaxRow;
@@ -511,11 +543,15 @@ export function sideRegions(
   return {
     head: (_x, y) => 1 - headFade(y),
     // Cut from the image without the flipper, so the body under the flipper is painted.
-    body: (x, y) =>
-      y < neck.bodyFrom || y >= bodyBottomRow || inTail(x, y - tail.bodyOverlap) ? 0 : bodyFade(y),
+    body: (x, y) => {
+      if (y < neck.bodyFrom || inTail(x, y - tail.bodyOverlap)) return 0;
+      if (y < bodyBottomRow) return bodyFade(y);
+      return inStub(x) ? 1 - stubFade(y) : 0;
+    },
     flipper: (x, y) => flipper[y * width + x] ?? 0,
-    footBack: (x, y) => yes(inBackFoot(x, y)),
-    footFront: (x, y) => yes(y >= feet.fromRow && !inBackFoot(x, y) && !inTail(x, y)),
+    footBack: (x, y) => (inBackFoot(x, y) ? footShare(x, y) : 0),
+    footFront: (x, y) =>
+      y >= feet.fromRow && !inBackFoot(x, y) && !inTail(x, y) ? footShare(x, y) : 0,
     tail: (x, y) => yes(inTail(x, y)),
     glasses: (x, y) => yes(inside(settings.glasses, x, y)),
     tie: (x, y) => yes(inside(settings.tie, x, y)),

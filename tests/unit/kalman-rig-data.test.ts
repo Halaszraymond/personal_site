@@ -84,6 +84,21 @@ describe('the poses in the repo', () => {
     for (const name of REQUIRED_POSES[figure]) expect(names).toContain(name);
   });
 
+  it('turn both side feet by the same amount, so they move as one piece', () => {
+    // The side feet share one pivot; turned differently, the straight line between them in the
+    // drawing would show (kalman-animation-feel, task 1.4).
+    const rigs = repoRigs();
+    for (const data of poses.filter((p) => p.figure === 'side')) {
+      // Validated first, so the pose has its proper type (the raw JSON's type is too narrow).
+      const result = validateFigurePose(data, rigs);
+      if (!result.ok) throw new Error(result.errors.join(' '));
+      const { name, layers } = result.value;
+      const back = layers['footBack']?.rotate ?? 0;
+      const front = layers['footFront']?.rotate ?? 0;
+      expect({ pose: name, back }).toEqual({ pose: name, back: front });
+    }
+  });
+
   it('all belong to a figure and are valid for its rig', () => {
     const rigs = repoRigs();
     for (const pose of poses) {

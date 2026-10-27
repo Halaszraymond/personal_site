@@ -10,7 +10,8 @@
         "pivot": [246.1, 951],
         "parent": null,
         "order": 20,
-        "rotate": [-15, 15]
+        "rotate": [-15, 15],
+        "stretch": [0.85, 1.15]
       },
       {
         "name": "head",
@@ -20,7 +21,8 @@
         "pivot": [156.9, 243.4],
         "parent": "body",
         "order": 30,
-        "rotate": [-25, 25]
+        "rotate": [-25, 25],
+        "stretch": [0.92, 1.08]
       },
       {
         "name": "flipperLeft",
@@ -102,12 +104,13 @@
       {
         "name": "body",
         "image": "side/body.png",
-        "size": [481.5, 966.9],
+        "size": [481.5, 1010.8],
         "position": [550.1, 355.6],
         "pivot": [224.8, 498.8],
         "parent": null,
         "order": 20,
-        "rotate": [-100, 100]
+        "rotate": [-150, 100],
+        "stretch": [0.85, 1.15]
       },
       {
         "name": "head",
@@ -117,7 +120,8 @@
         "pivot": [296.6, 243.4],
         "parent": "body",
         "order": 30,
-        "rotate": [-30, 30]
+        "rotate": [-30, 30],
+        "stretch": [0.92, 1.08]
       },
       {
         "name": "flipper",
@@ -132,22 +136,22 @@
       {
         "name": "footBack",
         "image": "side/footBack.png",
-        "size": [107.7, 50.5],
-        "position": [607.3, 1322.5],
-        "pivot": [94.4, 4],
+        "size": [106.4, 67.8],
+        "position": [608.6, 1305.2],
+        "pivot": [146.3, 20],
         "parent": "body",
         "order": 12,
-        "rotate": [-10, 10]
+        "rotate": [-20, 20]
       },
       {
         "name": "footFront",
         "image": "side/footFront.png",
-        "size": [271.3, 89.1],
-        "position": [640.6, 1313.2],
-        "pivot": [160.9, 9.3],
+        "size": [270, 95.8],
+        "position": [641.9, 1305.2],
+        "pivot": [113.1, 20],
         "parent": "body",
         "order": 25,
-        "rotate": [-10, 10]
+        "rotate": [-20, 20]
       },
       {
         "name": "tail",

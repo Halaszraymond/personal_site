@@ -16,6 +16,7 @@ import sharp from 'sharp';
 import {
   assertSameSize,
   bodyCentreX,
+  darknessMap,
   cutPart,
   differenceAlpha,
   figureAlpha,
@@ -77,8 +78,25 @@ const PLACEMENT: Placement = { scale: 1.33, from: [CUT.centreX, 53], to: [800, 1
 
 /** Per layer: its file, its joint in the image (the pivot) and the rest of its rig entry. */
 const LAYERS = [
-  { name: 'body', file: 'body', pivot: [344, 900], parent: null, order: 20, rotate: [-15, 15] },
-  { name: 'head', file: 'head', pivot: [344, 236], parent: 'body', order: 30, rotate: [-25, 25] },
+  {
+    name: 'body',
+    file: 'body',
+    pivot: [344, 900],
+    parent: null,
+    order: 20,
+    rotate: [-15, 15],
+    // Squash and stretch (kalman-animation-feel design §6): around the feet, so he sinks.
+    stretch: [0.85, 1.15],
+  },
+  {
+    name: 'head',
+    file: 'head',
+    pivot: [344, 236],
+    parent: 'body',
+    order: 30,
+    rotate: [-25, 25],
+    stretch: [0.92, 1.08],
+  },
   {
     name: 'flipperLeft',
     file: 'flipper-left',
@@ -163,9 +181,16 @@ const SIDE = {
 /** Where the side figure's parts are, measured on side-goofy.png (outline per row, grid). */
 const SIDE_CUT: SideCutSettings = {
   neck: { headFadeFrom: 208, headFadeTo: 262, bodyFrom: 184, bodySolid: 214 },
-  bodyBottomRow: 912,
+  // Whole down to the ankles; below, a fading strip under them (kalman-animation-feel).
+  bodyBottomRow: 918,
   tail: { fromRow: 840, minX: 448, bodyOverlap: 25 },
-  feet: { fromRow: 905, backMaxX: 299, backMaxRow: 950 },
+  feet: {
+    fromRow: 898,
+    solidRow: 918,
+    stub: { minX: 295, maxX: 440, fadeTo: 945 },
+    backMaxX: 299,
+    backMaxRow: 950,
+  },
   glasses: [226, 66, 442, 162],
   tie: [178, 198, 477, 622],
 };
@@ -206,10 +231,20 @@ const SIDE_LAYERS = [
     pivot: [345, 560],
     parent: null,
     order: 20,
-    rotate: [-100, 100],
+    // Down to −150° so he can go into the water head first (kalman-animation-feel §6).
+    rotate: [-150, 100],
+    stretch: [0.85, 1.15],
     from: 'noFlipper',
   },
-  { name: 'head', pivot: [350, 236], parent: 'body', order: 30, rotate: [-30, 30], from: 'goofy' },
+  {
+    name: 'head',
+    pivot: [350, 236],
+    parent: 'body',
+    order: 30,
+    rotate: [-30, 30],
+    stretch: [0.92, 1.08],
+    from: 'goofy',
+  },
   {
     name: 'flipper',
     pivot: [405, 415],
@@ -218,20 +253,22 @@ const SIDE_LAYERS = [
     rotate: [-120, 60],
     from: 'goofy',
   },
+  // Both side feet share one pivot, so they turn as one piece when they turn together: the
+  // line between them in the drawing never shows (kalman-animation-feel).
   {
     name: 'footBack',
-    pivot: [290, 915],
+    pivot: [330, 914],
     parent: 'body',
     order: 12,
-    rotate: [-10, 10],
+    rotate: [-20, 20],
     from: 'goofy',
   },
   {
     name: 'footFront',
-    pivot: [365, 912],
+    pivot: [330, 914],
     parent: 'body',
     order: 25,
-    rotate: [-10, 10],
+    rotate: [-20, 20],
     from: 'goofy',
   },
   { name: 'tail', pivot: [452, 848], parent: 'body', order: 10, rotate: [-25, 25], from: 'goofy' },
@@ -317,6 +354,7 @@ for (const layer of LAYERS) {
     parent: layer.parent,
     order: layer.order,
     rotate: layer.rotate,
+    ...('stretch' in layer ? { stretch: layer.stretch } : {}),
     ...('accessory' in layer ? { accessory: true } : {}),
   });
   console.log(`${layer.name.padEnd(13)} ${part.box.width}×${part.box.height} px`);
@@ -341,6 +379,7 @@ const sideAlpha = {
 const sideRegionsByName = sideRegions(
   SIDE_CUT,
   polygonCoverage(SIDE_FLIPPER, side.goofy.width, side.goofy.height),
+  darknessMap(side.goofy),
   side.goofy.width,
 );
 const sidePlacement: Placement = {
@@ -365,6 +404,7 @@ for (const layer of SIDE_LAYERS) {
     parent: layer.parent,
     order: layer.order,
     rotate: layer.rotate,
+    ...('stretch' in layer ? { stretch: layer.stretch } : {}),
     ...('accessory' in layer ? { accessory: true } : {}),
   });
   console.log(`side ${layer.name.padEnd(9)} ${part.box.width}×${part.box.height} px`);

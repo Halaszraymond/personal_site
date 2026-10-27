@@ -61,7 +61,7 @@ The two `back` eases are allowed: they go slightly past the target and settle ba
 - **Alternative:** children follow only the moved attachment point and keep their shape: a second movement per layer, and the tie would no longer fit the squashed belly.
 
 ### 6. Stretch and rotation ranges in the rig, from the cut script
-`RigLayer` gets an optional `stretch: [min, max]` that must include 1; a layer without it may not stretch. The ranges are settings in `scripts/cut-kalman-layers.ts`, so `rig.json` stays fully generated. Starting ranges: the front and side **body** [0.85, 1.15], the **head** [0.92, 1.08]. The side **body** rotation becomes [−150, 100], so he can go into the water head down; the side **feet** become ±30° so they can trail.
+`RigLayer` gets an optional `stretch: [min, max]` that must include 1; a layer without it may not stretch. The ranges are settings in `scripts/cut-kalman-layers.ts`, so `rig.json` stays fully generated. Starting ranges: the front and side **body** [0.85, 1.15], the **head** [0.92, 1.08]. The side **body** rotation becomes [−150, 100], so he can go into the water head down. The side **feet** become ±20° so they can trail, and share **one pivot**, so they always turn together as one piece. *(Changed during apply, approved by Raymond: at ±30° and with two pivots the cut showed. The feet are now cut from their dark pixels only, with a soft ankle like the neck, and the body keeps a fading strip under the ankles, so a turning foot takes no white feathers along and leaves no hole.)*
 
 ### 7. The drawn bow is a whole drawn pose, cut like a turntable view
 Raymond's bowed images redraw the whole upper body (hunched shoulders, head sunk into the chest), while the lower half lines up exactly with `front-goofy.png`. So the bow uses them as a **whole drawing**, not as a new head layer. The cut script cuts them like a turntable view (figure out of the white background, plumage matched, feet on the front figure's ground line, body on its centre line) and writes `src/scene/kalman/drawn-poses.json` with a goofy and a professional image per drawn pose. `KalmanFigure.astro` draws them hidden, like the turntable views.
@@ -101,7 +101,7 @@ Each layer with a stretch range gets a stretch slider (step 0.01) below the rota
 - [The drawn bow's colours differ from the layers] → The cut script matches its plumage tone to the front view, as it does for the turntable.
 - [Stretching a child inside a squashed parent shears it slightly] → The ranges stay small (±15%); checked by eye and with the snapshots.
 - [Squash opens a seam at the neck or shoulders] → The head and flippers move with the body through the matrix chain, and the neck fade already hides the head's edge; the ranges can shrink if a seam shows.
-- [Wider side ranges (body −150°, feet ±30°) show a cut edge] → Checked at the ends of the range in the preview before the poses use them.
+- [Wider side ranges (body −150°, feet ±20°) show a cut edge] → Checked at the ends of the range before the poses use them; a data test keeps both side feet turning by the same amount.
 - [Lag makes a layer look detached] → Only its own rotation and stretch lag; where it hangs is still decided by its parent *now*.
 - [Clamping flattens an overshoot at the end of a range] → Only visible when a pose sits at the edge; such poses get a little room, or the ease becomes `power2.out`.
 - [The horizontal swim reads as lying still] → The surge, the drift and the trailing feet carry the motion; in Phase 2 the scene moving past him adds the speed.
