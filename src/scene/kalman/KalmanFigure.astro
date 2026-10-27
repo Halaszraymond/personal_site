@@ -3,8 +3,14 @@
  * Kálmán as a cut-out figure: one SVG, one image per rig layer (spec: kalman-rig).
  *
  * Drawn at build time, so Kálmán is in the HTML in the given pose (rest by default) and
- * shows without JavaScript. That is also what the static fallback will use (README §5.2).
+ * shows without JavaScript. That is also what the static fallback uses (README §5.2).
  * kalman-figure-client.ts can change the pose afterwards by rewriting the same attributes.
+ *
+ * Every image is built as WebP at the size it is shown at (builtImageWidth(), dive-scroll
+ * design §7), and only what a page needs is drawn: the turntable views and the drawn poses only
+ * when asked for (the dev preview), and the side and swimming figures can be deferred: their
+ * `<image>`s then carry the URL in `data-href`, and loadDeferredImages() (kalman-figure-client.ts)
+ * fills in `href` later, so they never hold up the first paint.
  *
  * Every layer is a `<g>` (a group) with a `transform` from resolvePose(), holding an `<image>`.
  * The groups are flat and sorted by drawing order, not nested by parent: in SVG a nested child
@@ -12,11 +18,14 @@
  * body (kalman-rig design §3).
  */
 import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import { builtImageWidth, WEBP_QUALITY } from '../../lib/kalman-images';
 import {
   resolvePose,
   spinMatrix,
   toSvgTransform,
   translate,
+  type Figure,
   type Mood,
 } from '../../lib/kalman-rig';
 import { viewImages, viewMatrix } from '../../lib/kalman-turntable';
@@ -43,9 +52,26 @@ interface Props {
    * while the figure has the `data-show-pivots` attribute (the SVG has no reliable `hidden`).
    */
   pivotMarkers?: boolean;
+  /** Also draw the turntable views (the preview's "Turn around"); off by default. */
+  turntable?: boolean;
+  /** Also draw the drawn poses, such as the bow; off by default. */
+  drawnPoses?: boolean;
+  /** The figures to draw; all three by default. The fallback stills only need the front. */
+  figures?: readonly Figure[];
+  /** Figures whose images wait for loadDeferredImages() instead of loading with the page. */
+  deferFigures?: readonly Figure[];
 }
 
-const { pose = 'rest', mood = 'goofy', label, pivotMarkers = false } = Astro.props;
+const {
+  pose = 'rest',
+  mood = 'goofy',
+  label,
+  pivotMarkers = false,
+  turntable = false,
+  drawnPoses: withDrawnPoses = false,
+  figures: shownFigures = FIGURES,
+  deferFigures = [],
+} = Astro.props;
 
 // Every image under src/assets/kalman/, keyed by its path. `eager: true` imports them all now
 // (at build time), like a dict comprehension over a folder; Astro then gives each one a
@@ -55,52 +81,74 @@ const images = import.meta.glob<{ default: ImageMetadata }>(
   { eager: true },
 );
 
-function imageFor(file: string): ImageMetadata {
+const [width, height] = REPO_RIG.artboard;
+
+/**
+ * The built URL of an image that is `sizeOnArtboard` units wide: a WebP copy at the width
+ * builtImageWidth() asks for. Astro makes each distinct copy once, however often it is asked.
+ */
+async function imageFor(file: string, sizeOnArtboard: number): Promise<string> {
   const found = images[`../../assets/kalman/${file}`];
   if (found === undefined) {
     throw new Error(`rig.json names the image "${file}", which is not in src/assets/kalman/.`);
   }
-  return found.default;
+  const source = found.default;
+  const built = await getImage({
+    src: source,
+    width: builtImageWidth(sizeOnArtboard, width, source.width),
+    format: 'webp',
+    quality: WEBP_QUALITY,
+  });
+  return built.src;
 }
 
-const [width, height] = REPO_RIG.artboard;
 // The turntable's views, one group per angle and mood, hidden until the preview turns him. A
 // mirrored view gets its source's image, flipped around the centre line.
-const views = REPO_TURNTABLE.flatMap((view) => {
-  const found = viewImages(REPO_TURNTABLE, view.name);
-  if (found === undefined) return [];
-  return Object.entries(found.images).map(([viewMood, placed]) => ({
-    name: view.name,
-    mood: viewMood,
-    size: placed.size,
-    transform: toSvgTransform(viewMatrix(found.mirrored ? -1 : 1, width / 2, placed.position)),
-    image: imageFor(placed.image),
-  }));
-});
+// `Promise.all` waits for every image at once, like `asyncio.gather` in Python.
+const views = await Promise.all(
+  (turntable ? REPO_TURNTABLE : []).flatMap((view) => {
+    const found = viewImages(REPO_TURNTABLE, view.name);
+    if (found === undefined) return [];
+    return Object.entries(found.images).map(async ([viewMood, placed]) => ({
+      name: view.name,
+      mood: viewMood,
+      size: placed.size,
+      transform: toSvgTransform(viewMatrix(found.mirrored ? -1 : 1, width / 2, placed.position)),
+      href: await imageFor(placed.image, placed.size[0]),
+    }));
+  }),
+);
 // The drawn poses (such as the bow), one group per pose and mood, hidden until an animation
 // cross-fades one in (kalman-animation-feel design §8).
-const drawnPoses = REPO_DRAWN_POSES.flatMap((drawn) =>
-  Object.entries(drawn.images).map(([drawnMood, placed]) => ({
-    name: drawn.name,
-    mood: drawnMood,
-    size: placed.size,
-    transform: toSvgTransform(translate(placed.position)),
-    image: imageFor(placed.image),
-  })),
+const drawnPoses = await Promise.all(
+  (withDrawnPoses ? REPO_DRAWN_POSES : []).flatMap((drawn) =>
+    Object.entries(drawn.images).map(async ([drawnMood, placed]) => ({
+      name: drawn.name,
+      mood: drawnMood,
+      size: placed.size,
+      transform: toSvgTransform(translate(placed.position)),
+      href: await imageFor(placed.image, placed.size[0]),
+    })),
+  ),
 );
 const chosenPose = poseNamed(pose);
-// Both figures (front and side), each in its rest pose except the front one, which shows the
+// The figures (front, side, swim), each in its rest pose except the front one, which shows the
 // chosen pose. Only the front shows at first; the preview and the player switch figures.
-const figures = FIGURES.map((figure) => {
-  const rig = REPO_RIGS[figure];
-  const figurePose = figure === 'front' ? chosenPose : poseNamed('rest', figure);
-  const layers = resolvePose(rig, figurePose, mood).map((resolved) => {
-    const rigLayer = rig.layers.find((layer) => layer.name === resolved.name);
-    if (rigLayer === undefined) throw new Error(`Unknown ${figure} layer ${resolved.name}`);
-    return { ...resolved, size: rigLayer.size, image: imageFor(rigLayer.image) };
-  });
-  return { figure, layers };
-});
+const figures = await Promise.all(
+  shownFigures.map(async (figure) => {
+    const rig = REPO_RIGS[figure];
+    const figurePose = figure === 'front' ? chosenPose : poseNamed('rest', figure);
+    const layers = await Promise.all(
+      resolvePose(rig, figurePose, mood).map(async (resolved) => {
+        const rigLayer = rig.layers.find((layer) => layer.name === resolved.name);
+        if (rigLayer === undefined) throw new Error(`Unknown ${figure} layer ${resolved.name}`);
+        const href = await imageFor(rigLayer.image, rigLayer.size[0]);
+        return { ...resolved, size: rigLayer.size, href };
+      }),
+    );
+    return { figure, layers, deferred: deferFigures.includes(figure) };
+  }),
+);
 ---
 
 <svg
@@ -119,7 +167,7 @@ const figures = FIGURES.map((figure) => {
     {
       /* The posable layers, one group per figure: the front shows while he faces front, the
          side while the side figure is chosen (kalman-animations design §2). */
-      figures.map(({ figure, layers }) => (
+      figures.map(({ figure, layers, deferred }) => (
         <g data-layers data-figure={figure} display={figure === 'front' ? 'inline' : 'none'}>
           {layers.map((layer) => (
             <g
@@ -127,38 +175,47 @@ const figures = FIGURES.map((figure) => {
               transform={toSvgTransform(layer.matrix)}
               visibility={layer.visible ? 'visible' : 'hidden'}
             >
-              <image href={layer.image.src} width={layer.size[0]} height={layer.size[1]} />
+              <image
+                href={deferred ? undefined : layer.href}
+                data-href={deferred ? layer.href : undefined}
+                width={layer.size[0]}
+                height={layer.size[1]}
+              />
             </g>
           ))}
         </g>
       ))
     }
     {/* The drawn poses: cross-faded in over the layers by the player, at a keyframe that names one. */}
-    <g data-drawn-poses display="none">
-      {drawnPoses.map((drawn) => (
-        <g
-          data-drawn-pose={drawn.name}
-          data-drawn-mood={drawn.mood}
-          transform={drawn.transform}
-          visibility="hidden"
-        >
-          <image href={drawn.image.src} width={drawn.size[0]} height={drawn.size[1]} />
-        </g>
-      ))}
-    </g>
+    {withDrawnPoses && (
+      <g data-drawn-poses display="none">
+        {drawnPoses.map((drawn) => (
+          <g
+            data-drawn-pose={drawn.name}
+            data-drawn-mood={drawn.mood}
+            transform={drawn.transform}
+            visibility="hidden"
+          >
+            <image href={drawn.href} width={drawn.size[0]} height={drawn.size[1]} />
+          </g>
+        ))}
+      </g>
+    )}
     {/* The turntable's drawn views: shown instead of the layers once he turns around. */}
-    <g data-turntable display="none">
-      {views.map((view) => (
-        <g
-          data-view={view.name}
-          data-view-mood={view.mood}
-          transform={view.transform}
-          visibility="hidden"
-        >
-          <image href={view.image.src} width={view.size[0]} height={view.size[1]} />
-        </g>
-      ))}
-    </g>
+    {turntable && (
+      <g data-turntable display="none">
+        {views.map((view) => (
+          <g
+            data-view={view.name}
+            data-view-mood={view.mood}
+            transform={view.transform}
+            visibility="hidden"
+          >
+            <image href={view.href} width={view.size[0]} height={view.size[1]} />
+          </g>
+        ))}
+      </g>
+    )}
     {pivotMarkers &&
       figures.map(({ figure, layers }) => (
         <g class="pivots" data-pivots data-figure={figure}>

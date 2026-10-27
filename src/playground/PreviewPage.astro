@@ -25,7 +25,12 @@ const rest = poseNamed('rest');
 
     <div class="layout">
       <div class="stage">
-        <KalmanFigure label={figureDescription(rest, TEXT.moodGoofy)} pivotMarkers />
+        <KalmanFigure
+          label={figureDescription(rest, TEXT.moodGoofy)}
+          pivotMarkers
+          turntable
+          drawnPoses
+        />
       </div>
 
       <div class="side">

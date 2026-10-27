@@ -1,0 +1,210 @@
+---
+/**
+ * The depth gauge: a scale fixed to the side of the dive that shows the current depth and lists
+ * the sections at their depths (spec: dive, "The depth gauge"; dive-scroll design §1).
+ *
+ * It is also the navigation: every entry is a plain `<a href="#work">`, so it works without
+ * JavaScript; the dive script (src/scene/scroll/dive-client.ts) turns a click into an express
+ * dive and keeps the depth, the marker and `aria-current` up to date while scrolling.
+ * The entries' places on the scale come from /dive.css (src/lib/dive-css.ts).
+ */
+import type { Locale } from '../i18n/locales';
+import { UI } from '../i18n/ui';
+import { SECTIONS, type Section } from '../lib/dive';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const text = UI[locale].dive;
+
+/** The depth range a section covers, as the gauge writes it: "100–250 m", "↑ 0 m" for Contact. */
+function rangeOf(section: Section): string {
+  if (section.id === 'contact') return '↑ 0 m';
+  if (section.depth === section.endDepth) return `${section.depth} m`;
+  return `${section.depth}–${section.endDepth} m`;
+}
+---
+
+<nav class="depth-gauge" aria-label={text.gaugeLabel} data-depth-gauge>
+  <p class="readout">
+    <span class="readout-label">{text.depthLabel}</span>
+    <span class="readout-value">
+      <span data-depth-value>0</span>&nbsp;m
+    </span>
+  </p>
+  <div class="scale">
+    <span class="track" aria-hidden="true"></span>
+    <span class="marker" aria-hidden="true" data-gauge-marker></span>
+    <ol>
+      {SECTIONS.map((section) => (
+        <li data-gauge-entry={section.id}>
+          <a href={`#${section.id}`} data-express-dive={section.id}>
+            <span class="name">{text.sections[section.id].name}</span>
+            <span class="short" aria-hidden="true">
+              {text.sections[section.id].short}
+            </span>
+            <span class="range">{rangeOf(section)}</span>
+          </a>
+        </li>
+      ))}
+    </ol>
+  </div>
+</nav>
+
+<style>
+  .depth-gauge {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    box-sizing: border-box;
+    width: var(--gauge-width);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.75rem 0.5rem 1.5rem 0.25rem;
+    font-size: 0.6875rem;
+    line-height: 1.2;
+    /* In the still dive the gauge crosses every section's colour, so it brings its own water. */
+    background: var(--panel-water);
+    color: var(--panel-text);
+    --gauge-accent: var(--panel-accent);
+  }
+
+  /* In full mode the gauge floats on the live water, in the live text colours. */
+  :global(html[data-render-mode='full']) .depth-gauge {
+    background: transparent;
+    color: var(--text);
+    --gauge-accent: var(--accent);
+  }
+
+  .readout {
+    margin: 0;
+    display: grid;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .readout-value {
+    font-size: 1rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .scale {
+    position: relative;
+    flex: 1;
+    /* The entries hang off a line on the left; their labels sit to its right. Room above and
+       below, because the first and last labels are centred on the ends of the line. */
+    margin: 1.25rem 0 1rem 0.5rem;
+  }
+
+  .track {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: currentColor;
+    opacity: 0.5;
+  }
+
+  .marker {
+    position: absolute;
+    left: -5px;
+    top: calc(var(--gauge-depth, 0) * 100%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--gauge-accent);
+    transform: translateY(-50%);
+  }
+
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--at, 0) * 100%);
+    transform: translateY(-50%);
+  }
+
+  a {
+    display: grid;
+    min-height: 1.5rem;
+    align-content: center;
+    padding-left: 0.6rem;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  a:hover .name,
+  a:hover .short {
+    text-decoration: underline;
+  }
+
+  a:focus-visible {
+    outline: 2px solid var(--gauge-accent);
+    outline-offset: 1px;
+  }
+
+  a[aria-current] {
+    color: var(--gauge-accent);
+    font-weight: 700;
+  }
+
+  /* No opacity on text: it would blend the colour and break the contrast that dive.ts guarantees. */
+  .range {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* On a phone: short labels (the full name stays for screen readers). */
+  .name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .range {
+    display: none;
+  }
+
+  @media (min-width: 900px) {
+    .depth-gauge {
+      font-size: 0.8125rem;
+      padding: 1rem 1rem 2rem 0.5rem;
+    }
+
+    .name {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      clip-path: none;
+    }
+
+    .short {
+      display: none;
+    }
+
+    .range {
+      display: block;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .marker {
+      transition: top 0.15s linear;
+    }
+  }
+</style>

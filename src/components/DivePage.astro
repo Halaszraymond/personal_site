@@ -1,0 +1,278 @@
+---
+/**
+ * The dive: the home page's sections from The ice down to The catch and back up to Contact,
+ * the depth gauge, and Kálmán (spec: dive; dive-scroll design §1, §6).
+ *
+ * Everything readable is plain HTML in both modes. What differs:
+ * - **Full mode:** the page is long, the water colour follows the depth (set on `<html>` by
+ *   src/scene/scroll/dive-client.ts), and Kálmán dives along on a sticky stage beside the text
+ *   (a band at the top on a phone).
+ * - **Still dive (fallback):** each section has its own water colour (from /dive.css, made at
+ *   build time) and a still Kálmán in a fitting pose, drawn from the front figure only.
+ * The sections, depths and poses come from src/lib/dive.ts; the texts from src/i18n/ui.ts.
+ */
+import type { Locale } from '../i18n/locales';
+import { UI } from '../i18n/ui';
+import { localeHomePath } from '../lib/alternates';
+import { SECTIONS, STILL_POSES } from '../lib/dive';
+import KalmanFigure from '../scene/kalman/KalmanFigure.astro';
+import BaseLayout from './BaseLayout.astro';
+import DepthGauge from './DepthGauge.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const text = UI[locale].dive;
+---
+
+<BaseLayout
+  locale={locale}
+  currentLocale={locale}
+  canonicalPath={localeHomePath(locale)}
+  layout="dive"
+>
+  <link slot="head" rel="stylesheet" href="/dive.css" />
+
+  {/* Full mode's stage: all three figures; the side and swimming ones load after the page. */}
+  <div slot="scene" class="stage" data-dive-stage>
+    <KalmanFigure deferFigures={['side', 'swim']} />
+  </div>
+
+  <slot name="before-content" />
+
+  <div class="dive" data-dive>
+    {SECTIONS.map((section) => {
+      // `Heading` is a variable holding a tag name: the first section is the page's <h1>.
+      const Heading = section.id === 'ice' ? 'h1' : 'h2';
+      return (
+        <>
+          {/* The ascent: a stretch of water between The catch and Contact (full mode only). */}
+          {section.id === 'contact' && <div class="ascent" data-ascent aria-hidden="true" />}
+          <section
+            id={section.id}
+            class="dive-section"
+            data-section={section.id}
+            data-depth={section.depth}
+            aria-labelledby={`${section.id}-heading`}
+          >
+            <div class="section-body">
+              <div class="still" data-still>
+                <KalmanFigure pose={STILL_POSES[section.id]} figures={['front']} />
+              </div>
+              {/* tabindex -1: focusable by script (the express dive), not by Tab. */}
+              <Heading id={`${section.id}-heading`} tabindex="-1">
+                {text.sections[section.id].heading}
+              </Heading>
+              <p>{text.sections[section.id].text}</p>
+            </div>
+          </section>
+        </>
+      );
+    })}
+  </div>
+
+  <DepthGauge locale={locale} />
+</BaseLayout>
+
+<script>
+  import '../scene/scroll/dive-client';
+</script>
+
+<style is:global>
+  /*
+   * The dive's layout. Global, because it arranges BaseLayout's <body>, header and scene slot.
+   * Sizes are starting points, to be tuned in the browser (design, open questions).
+   */
+  body[data-layout='dive'] {
+    /* Room on the right for the fixed depth gauge, so it never covers the text. */
+    --gauge-width: 4.75rem;
+    /* The stage's band at the top of a phone screen. `svh`: the small viewport height, which
+       doesn't change when a phone's address bar slides away, so the band doesn't jump. */
+    --stage-band: 30svh;
+
+    max-width: none;
+    margin: 0;
+    padding: 0 var(--gauge-width) 0 0;
+    background: var(--water);
+    color: var(--text);
+  }
+
+  body[data-layout='dive'] > header {
+    padding: 1rem;
+  }
+
+  body[data-layout='dive'] a {
+    color: inherit;
+  }
+
+  .dive-section {
+    box-sizing: border-box;
+    padding: 2.5rem 1rem 3rem;
+    /* The still dive: each section in the water of its own depth. */
+    background: var(--section-water);
+    color: var(--section-text);
+  }
+
+  .section-body {
+    max-width: 36rem;
+  }
+
+  .dive-section :is(h1, h2) {
+    margin-top: 0;
+    line-height: 1.15;
+  }
+
+  .dive-section :is(h1, h2):focus-visible {
+    outline: 2px solid var(--section-accent);
+    outline-offset: 4px;
+  }
+
+  .still {
+    width: 9rem;
+    max-width: 50%;
+  }
+
+  .ascent {
+    display: none;
+  }
+
+  /* The stage only exists in full mode (RenderModeSwitch hides the slot in the fallback). */
+  .stage {
+    width: 100%;
+    max-width: 30rem;
+    height: 100%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+  }
+
+  /* Kálmán fits the stage both ways: on a phone the band is wider than it is tall. The SVG's
+     viewBox keeps his proportions and centres him. `svg.` outweighs the figure's own
+     `height: auto`, which would otherwise let him spill out of the band over the header. */
+  .stage svg.kalman-figure {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Decorative only: clicks and taps go through to whatever is underneath. */
+  .stage {
+    pointer-events: none;
+  }
+
+  /* ---- Full mode: one long dive in live water, Kálmán on a sticky stage. ---- */
+
+  html[data-render-mode='full'] .still {
+    display: none;
+  }
+
+  html[data-render-mode='full'] .dive-section {
+    background: transparent;
+    color: inherit;
+  }
+
+  html[data-render-mode='full'] .dive-section :is(h1, h2):focus-visible {
+    outline-color: var(--accent);
+  }
+
+  /* Long sections give the dive its length; The catch is the deepest stretch (164 m). */
+  html[data-render-mode='full'] [data-section='ice'] {
+    min-height: 100svh;
+  }
+
+  html[data-render-mode='full'] :is([data-section='about'], [data-section='work']) {
+    min-height: 140svh;
+  }
+
+  html[data-render-mode='full'] [data-section='education'] {
+    min-height: 140svh;
+  }
+
+  html[data-render-mode='full'] [data-section='catch'] {
+    min-height: 170svh;
+  }
+
+  html[data-render-mode='full'] .ascent {
+    display: block;
+    height: 100svh;
+  }
+
+  html[data-render-mode='full'] [data-section='contact'] {
+    min-height: 100svh;
+  }
+
+  /* Phone: the stage is a band at the top, sharing the grid cell with the text so it can stay
+     stuck over it (a sticky element only sticks inside its own grid cell). */
+  html[data-render-mode='full'] body[data-layout='dive'] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'header' 'main';
+  }
+
+  html[data-render-mode='full'] body[data-layout='dive'] > header {
+    grid-area: header;
+  }
+
+  html[data-render-mode='full'] body[data-layout='dive'] > main {
+    grid-area: main;
+  }
+
+  html[data-render-mode='full'] body[data-layout='dive'] > .scene-slot {
+    grid-area: main;
+    align-self: start;
+    position: sticky;
+    z-index: 1;
+    top: 0;
+    height: var(--stage-band);
+    background: var(--water);
+  }
+
+  /* Everything in <main> (the language hint too) starts below the band. */
+  html[data-render-mode='full'] body[data-layout='dive'] > main {
+    padding-top: var(--stage-band);
+  }
+
+  /* An express dive or a link lands a heading below the band, not under it. */
+  html[data-render-mode='full'] .dive-section {
+    scroll-margin-top: var(--stage-band);
+  }
+
+  @media (min-width: 900px) {
+    body[data-layout='dive'] {
+      --gauge-width: 11rem;
+    }
+
+    .dive-section {
+      padding: 4rem 2rem 5rem;
+    }
+
+    .still {
+      float: right;
+      margin: 0 0 1rem 1.5rem;
+      width: 11rem;
+    }
+
+    /* Desktop: the text on the left, Kálmán's stage on the right, stuck to the viewport. */
+    html[data-render-mode='full'] body[data-layout='dive'] {
+      grid-template-columns: minmax(0, 40rem) minmax(0, 1fr);
+      grid-template-areas:
+        'header header'
+        'main stage';
+    }
+
+    html[data-render-mode='full'] body[data-layout='dive'] > .scene-slot {
+      grid-area: stage;
+      height: 100svh;
+      background: transparent;
+    }
+
+    html[data-render-mode='full'] body[data-layout='dive'] > main {
+      padding-top: 0;
+    }
+
+    html[data-render-mode='full'] .dive-section {
+      scroll-margin-top: 0;
+    }
+  }
+</style>

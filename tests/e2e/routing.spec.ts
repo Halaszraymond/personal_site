@@ -16,7 +16,9 @@ for (const locale of LOCALES) {
 
     expect(response?.status()).toBe(200);
     await expect(page.locator('html')).toHaveAttribute('lang', locale);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(UI[locale].testString);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      UI[locale].dive.sections.ice.heading,
+    );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
       'href',
       `${SITE}/${locale}/`,
@@ -58,7 +60,9 @@ test.describe('the root for a Dutch browser', () => {
     // No redirect: the final URL is still the root.
     expect(new URL(page.url()).pathname).toBe('/');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(UI.en.testString);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      UI.en.dive.sections.ice.heading,
+    );
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${SITE}/en/`);
   });
 });

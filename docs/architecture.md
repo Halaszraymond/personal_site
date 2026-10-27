@@ -68,13 +68,13 @@ flowchart TD
     C -- yes --> D["RenderModeSwitch collects 2 signals:<br/>reduced motion · Save-Data"]
     D --> E{"chooseRenderMode()<br/>src/lib/render-mode.ts"}
     E -- any check fails --> F
-    E -- all checks pass --> G["data-render-mode = full<br/>scene slot shown, empty until Phase 2"]
+    E -- all checks pass --> G["data-render-mode = full<br/>scene slot shown: the dive on the home pages"]
 ```
 
 - **The decision** is a pure function, `chooseRenderMode()` in `src/lib/render-mode.ts`, unit-tested for all 4 combinations of the two signals.
 - **The browser glue** is `src/components/RenderModeSwitch.astro`: it reads `prefers-reduced-motion` and `navigator.connection.saveData` (Chromium only; missing means "no"), and writes the result to `data-render-mode` on `<html>`.
 - **No WebGL check.** The site is 2D (images, SVG and canvas 2D), so a browser without WebGL can run the full mode. That check was removed in Phase 1.
-- **The scene slot** is an empty `<div aria-hidden="true">`: decorative only, hidden in fallback mode. All text and links live in the HTML around it, identical in both modes. The e2e tests compare the two.
+- **The scene slot** is a `<div aria-hidden="true">`: decorative only, hidden in fallback mode. A page fills it through BaseLayout's `scene` slot: the home pages put Kálmán's stage there, other pages leave it empty. All text and links live in the HTML around it, identical in both modes. The e2e tests compare the two.
 - **Still to come:** step 3 of README §5.2 (measuring frame time once the animated scene runs) and the "lite mode" switch in the footer.
 
 ## Kálmán: rig, poses and figure
@@ -97,8 +97,16 @@ flowchart LR
 - **`resolvePose()`** turns rig + pose + mood into one SVG transform matrix per layer: stretch around the pivot, turn around it, then move. A child gets its own movement plus its parent's *movement from rest*, stretch included, so the glasses follow the head, everything follows the body, and when the body squashes the head stays on the neck. The tie and the glasses are `accessory` layers: hidden in the goofy mood.
 - **Flat, not nested.** The SVG has one `<g>` per layer, sorted by `order`. Nested groups would let the browser combine the transforms, but in SVG a child is always drawn in front of its parent, and the far flipper must be able to sit behind the body.
 - **Validation.** `validateRig()` and `validatePose()` list every problem at once: unknown parents, loops, a shared drawing order, missing images, rotations outside a layer's range. `src/scene/kalman/repo-rig.ts` validates the repo's files when they are loaded (so the build fails on a bad edit), and `tests/unit/kalman-rig-data.test.ts` checks them in CI.
-- **Images.** `KalmanFigure.astro` looks every layer's image up in `src/assets/kalman/` with `import.meta.glob`, so Astro gives it a hashed file name; a missing file fails the build. They are cut from Raymond's design images by a script (see below), into `src/assets/kalman/front/`.
-- **Without JavaScript** the figure is already in the HTML, in the rest pose. The fallback stills later are this same component with another pose.
+- **Images.** `KalmanFigure.astro` looks every layer's image up in `src/assets/kalman/` with `import.meta.glob`; a missing file fails the build. The sources are PNGs cut from Raymond's design images by a script (see below). The build never ships them: every image is built through Astro's `getImage()` as **WebP** (quality 85) at twice its width on a 480 px stage (`builtImageWidth()`, `src/lib/kalman-images.ts`), so the front figure is about 90 KB instead of 1.6 MB.
+- **Only what a page needs.** The turntable views and the drawn poses are only drawn when asked for (`turntable`, `drawnPoses`; the dev preview turns both on). `figures` picks the figures to draw (the fallback stills only draw the front), and `deferFigures` puts a figure's image URLs in `data-href` instead of `href`: they load only when `loadDeferredImages()` (`kalman-figure-client.ts`) fills them in. The dive defers the side and swimming figures until after the page has loaded.
+
+  | Page | Images it loads |
+  |---|---|
+  | Home pages, fallback | the front figure (stills and stage share the same files) |
+  | Home pages, full mode | the front figure; side and swimming figures after `load` |
+  | Dev preview | everything: three figures, turntable views, drawn poses |
+
+- **Without JavaScript** the figure is already in the HTML, in the rest pose. The fallback stills are this same component with another pose.
 - **Spinning:** all layers sit in one `<g data-spin>` group, which `spinMatrix()` turns around `figureCentre()` (the middle of the figure at rest). It is a view setting, not part of a pose.
 
 ### Where the layers come from
@@ -154,6 +162,26 @@ flowchart LR
 - **Scrubbing** pauses the tween and sets its progress; **a hidden tab** pauses it (`visibilitychange`) and continues it when visible again.
 - **Head-follow** turns the front figure's head towards the pointer: `headTurn()` gives the angle from how far the pointer is to the side, and `gsap.quickTo` glides the head there. The **eyes** look along: the pupils are their own layers (goofy, and professional behind the glasses), and `eyeShift()` gives how far they shift towards the pointer, sideways and up or down, within the rig's `shift` limit. They glide twice as fast as the head, so the eyes look first and the head follows.
 - **Reduced motion:** nothing starts by itself; an animation only plays when it is explicitly started.
+
+## The dive (home pages)
+
+The home pages are the dive (README §2.3): `HomePage.astro` renders `DivePage.astro`, which holds the six sections (The ice, Who I am, Work, Education, The catch, Contact), the depth gauge (`DepthGauge.astro`) and Kálmán's stage.
+
+```mermaid
+flowchart LR
+    S["scroll (passive)<br/>at most once per frame"] --> P["probePosition()<br/>depthAt() · zoneAt()"]
+    P --> G["gauge: depth, marker,<br/>aria-current"]
+    P --> W["coloursAt(depth)<br/>--water, --text, --accent on html<br/>(full mode)"]
+    P --> K["diveState(previous, zone, direction)<br/>dive-scene.ts → player.play()"]
+```
+
+- **One source.** `src/lib/dive.ts` holds the sections (ids, depths, order), the depth mapping, the water colours and Kálmán's states. The page, the gauge and the scripts all read it.
+- **Depth.** The dive script measures where each section starts (on load and whenever the body resizes) and turns them into anchors with `diveAnchors()`: each section start at its depth, plus the bottom of The catch at 564 m and the start of Contact back at 0 m (the ascent). `depthAt()` interpolates between them at the probe, the middle of the viewport (`probePosition()`, which slides to the page's end over the last half screen so Contact is always reached).
+- **Colours.** `waterAt()` blends between colour stops in OKLab (`src/lib/colour.ts`); `textFor()` and `accentFor()` pick text and accent colours that reach 4.5:1 at every metre (unit-tested per metre). In full mode the script sets them as custom properties on `<html>` (through `style.setProperty`, which the CSP allows). The still dive's colours per section and the gauge's positions can't be inline styles (the CSP blocks them), so `src/pages/dive.css.ts` writes them at build time as `/dive.css` from `src/lib/dive-css.ts`.
+- **Kálmán.** In full mode, after the page's `load` (or at the first scroll), `dive-client.ts` imports `dive-scene.ts`, which loads GSAP, the player and the deferred figures. The scroll never scrubs his animations: `diveState()` turns zone and direction into a state (on the ice, diving, swimming, launching, ashore), and an animation only starts when the state changes; a one-shot hands over when it finishes (`afterOneShot()`). The stage's figure says its state in `data-dive-state`.
+- **Express dive.** The gauge's entries are plain `#section` links. With JavaScript, a click scrolls there: a 0.8 s GSAP tween of the window's scroll in full mode (Kálmán swims at double speed, and lands in the state of where he arrives), instantly otherwise. Focus moves to the section's heading and the hash is pushed without a second jump.
+- **Layout.** Full mode: on a phone the stage is a sticky band (30 % of the small viewport height) sharing the grid cell with `<main>`, which starts below it; on desktop it is a sticky column beside the text. The gauge is fixed on the right, and the body keeps room for it, so it never covers text. The still dive: sections of natural height, each in its own water colour with a still Kálmán (front figure only), and the gauge on its own deep-blue panel.
+- **Files.** `src/components/DivePage.astro`, `DepthGauge.astro`; `src/scene/scroll/dive-client.ts` (both modes: gauge, colours, express dive) and `dive-scene.ts` (full mode only: Kálmán).
 
 ## The dev-only Kálmán preview
 

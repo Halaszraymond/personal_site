@@ -1,12 +1,10 @@
 ---
 /**
  * The home page in one language. Used by `/nl/`, `/hu/`, `/en/` and by `/` (English).
- * Phase 0 content: one test string per language.
+ * The page is the dive (DivePage.astro); `/` adds the language hint before it.
  */
 import type { Locale } from '../i18n/locales';
-import { UI } from '../i18n/ui';
-import { localeHomePath } from '../lib/alternates';
-import BaseLayout from './BaseLayout.astro';
+import DivePage from './DivePage.astro';
 
 interface Props {
   locale: Locale;
@@ -15,7 +13,6 @@ interface Props {
 const { locale } = Astro.props;
 ---
 
-<BaseLayout locale={locale} currentLocale={locale} canonicalPath={localeHomePath(locale)}>
-  <slot name="before-content" />
-  <h1>{UI[locale].testString}</h1>
-</BaseLayout>
+<DivePage locale={locale}>
+  <slot name="before-content" slot="before-content" />
+</DivePage>

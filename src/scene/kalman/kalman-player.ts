@@ -47,8 +47,11 @@ const PUPIL_LAYERS = ['pupils', 'pupilsProfessional'] as const;
 
 /** What the player can do; created once per figure with `createPlayer()`. */
 export interface Player {
-  /** Plays an animation from the start; stops the one that was playing. */
-  play(name: string): void;
+  /**
+   * Plays an animation from the start; stops the one that was playing. `speed` above 1 plays it
+   * faster (the dive's express dive plays at double speed).
+   */
+  play(name: string, speed?: number): void;
   /** Stops whatever plays and puts the current figure at rest. */
   stop(): void;
   /** Holds the current (or the named) animation still at `progress` (0 = start, 1 = end). */
@@ -265,7 +268,7 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   });
 
   return {
-    play(name) {
+    play(name, speed = 1) {
       const animation = animationNamed(name);
       stop();
       playing = animation;
@@ -275,6 +278,8 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
         return;
       }
       tween = tweenFor(animation, false);
+      // timeScale is GSAP's speed: 2 runs the clock twice as fast, so the same keyframes play in half the time.
+      tween.timeScale(speed);
       draw(animation, 0);
     },
     stop,

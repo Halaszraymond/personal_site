@@ -36,7 +36,7 @@ The probe is the middle of the viewport. Each section start carries its depth (`
 `waterAt(depth)` blends between colour stops (ice blue at 0 m, sunlit blue at 100 m, twilight blue at 250 m, deep blue at 400 m, ink black at 564 m), in a perceptual space (OKLab) so the gradient doesn't go muddy. `textFor(background)` picks the light or the dark text colour, whichever has the higher contrast; a unit test samples every metre and asserts at least 4.5:1, and the golden-orange accent (gauge, links) is checked the same way. The ascent uses the same function, so it lightens back to the ice naturally. In full mode the script sets the colours as CSS custom properties on `<html>`; in the fallback each section gets the colours of its own middle depth at build time, so the page is still a gradient of steps.
 
 ### 4. Kálmán's state from depth and direction
-`diveState(previous, depth, zone, direction)` is a small state machine:
+`diveState(previous, zone, direction)` is a small state machine (the zone already says what the depth would):
 - `onIce` (idle) while in The ice at 0 m;
 - leaving The ice downwards → `diving` (play `dive` once), then `swimming` (loop `swim`);
 - entering the ascent → `launching` (play `launch` once, with its belly landing), then `ashore` (idle) at Contact;

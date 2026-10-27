@@ -48,6 +48,19 @@ export function applyPose(figure: SVGSVGElement, rig: Rig, pose: Pose, mood: Moo
 }
 
 /**
+ * Loads a figure's deferred images now: every `<image>` that KalmanFigure.astro gave its URL in
+ * `data-href` (the side and swimming figures on the dive) gets it as `href`, which starts the
+ * download. Safe to call more than once.
+ */
+export function loadDeferredImages(figure: SVGSVGElement): void {
+  for (const image of figure.querySelectorAll<SVGImageElement>('image[data-href]')) {
+    const href = image.dataset['href'];
+    if (href !== undefined) image.setAttribute('href', href);
+    delete image.dataset['href'];
+  }
+}
+
+/**
  * Shows one figure (front or side) and hides the other. The turntable belongs to the front
  * figure, so it only takes over while the front figure is chosen (see applyTurn).
  */
