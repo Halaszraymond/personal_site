@@ -32,12 +32,12 @@
 ## 5. The new poses and animations, tuned with Raymond
 
 - [x] 5.1 Add the poses and keyframes of design §10 to `poses.json` and `animations.json` (bow with `drawn: "bow"`; dive with lean, crouch, hop and face-first entry; horizontal swim with surge, drift and glance; launch with wind-up, rise, flight, landing, wobble and recovery; idle unchanged); verify the data tests pass, plus unit tests against the repo data for every scenario of "The bow is a deep, polite bow", "The dive moves like a dive", "The swim moves like a stroke" and "The launch is professional, the landing goofy"
-- [ ] 5.2 Tune the bow with Raymond in the preview (depth, the moment of the cross-fade, the hold, the settle); verify Raymond approves the bow and the tests of 5.1 still pass
-- [ ] 5.3 Tune the dive with Raymond (lean, crouch, hop, flailing flippers, face-first entry, trailing); verify Raymond approves the dive and the tests of 5.1 still pass
-- [ ] 5.4 Tune the swim with Raymond (horizontal glide, surge, drift, the glance at a fish, loop without a jump); verify Raymond approves the swim and the tests of 5.1 still pass
-- [ ] 5.5 Tune the launch with Raymond (wind-up, rocket rise, flight, landing, wobble, recovery); verify Raymond approves the launch and the tests of 5.1 still pass
+- [x] 5.2 Tune the bow with Raymond in the preview (depth, the moment of the cross-fade, the hold, the settle); verify Raymond approves the bow and the tests of 5.1 still pass
+- [x] 5.3 Tune the dive with Raymond (lean, crouch, hop, flailing flippers, face-first entry, trailing); verify Raymond approves the dive and the tests of 5.1 still pass
+- [x] 5.4 Tune the swim with Raymond (horizontal glide, surge, drift, the glance at a fish, loop without a jump); verify Raymond approves the swim and the tests of 5.1 still pass
+- [x] 5.5 Tune the launch with Raymond (wind-up, rocket rise, flight, landing, wobble, recovery); verify Raymond approves the launch and the tests of 5.1 still pass
 - [x] 5.6 Update the snapshots of key moments (bow halfway through the cross-fade and at the drawn bow, the dive's crouch and entry, the swim at the end of the down stroke, the launch rising, landing and wobbling) and make the baselines with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
-- [ ] 5.7 Log the chosen values in `PLANNING_LOG.md` and record the session in `docs/making-of.md` (what made it look static, the references in words, the animation principles, before/after screenshots of Kálmán only); verify the files are updated
+- [x] 5.7 Log the chosen values in `PLANNING_LOG.md` and record the session in `docs/making-of.md` (what made it look static, the references in words, the animation principles, before/after screenshots of Kálmán only); verify the files are updated
 
 ## 6. Eyes that follow the pointer
 
@@ -52,21 +52,21 @@
 
 - [x] 7.1 Add `plant` to `LayerPose` and to `resolvePose()` (a planted layer mixed between following its parent and staying at rest, design §12), blended in `blendPoses()` and validated as 0–1; verify with unit tests for "Crouching on planted feet" and "Feet that leave the ground", and that a foot's own rotation still applies
 - [x] 7.2 Use planted feet in the dive's crouch and push-off, the launch's wind-up and stand-up, and the bow; verify with the scenario tests of 5.1 (updated) and film strips
-- [ ] 7.3 Make the bow fold smoothly (shorter head on the way down, `fade` 0.5 s, earlier and overlapping cross-fade, `sine.inOut`); verify with the updated "On the way down" test and a film strip, and Raymond approves the bow
-- [ ] 7.4 Let the body turn along during head-follow (a fraction of the head's angle, slower) and reduce the head's own turn; verify with unit tests for the body's share and an e2e test that the body leans with the pointer, and Raymond approves
-- [ ] 7.5 Replace the launch's landing with the belly landing, slide and stand-up on planted feet; verify with the scenario tests "Landing on his belly" and "Standing up", a film strip, and Raymond approves
+- [x] 7.3 Make the bow fold smoothly (shorter head on the way down, `fade` 0.5 s, earlier and overlapping cross-fade, `sine.inOut`); verify with the updated "On the way down" test and a film strip, and Raymond approves the bow
+- [x] 7.4 Let the body turn along during head-follow (a fraction of the head's angle, slower) and reduce the head's own turn; verify with unit tests for the body's share and an e2e test that the body leans with the pointer, and Raymond approves
+- [x] 7.5 Replace the launch's landing with the belly landing, slide and stand-up on planted feet; verify with the scenario tests "Landing on his belly" and "Standing up", a film strip, and Raymond approves
 
 ## 8. The drawn swim figure
 
 - [x] 8.1 Add prompts 11–13 (swimming, goofy; its professional edit; without the near flipper) to `docs/kalman-layers.md`; verify the prompts name `swim-goofy.png`, `swim-professional.png` and `swim-no-flipper.png`
 - [x] 8.2 Check Raymond's three swim images (same size, lined up, white background) and save them; verify with the alignment check and a side-by-side
 - [x] 8.3 Add the `swim` figure (`Figure`, `FIGURES`, rigs, poses, the figure switch and the player) and cut its rig in `scripts/cut-kalman-layers.ts` (body from the edit without the flipper, flipper along a traced outline, tie and glasses); verify `cut:kalman`, `check:kalman`, the data test for its four layers, and "A stroking flipper" in a screenshot
-- [ ] 8.4 Move the swim animation to the swimming figure with its own poses (body pitch, flipper strokes with lag, a glance by tipping the body); verify with the updated swim scenario tests, the e2e test "Showing the swimming figure", and Raymond approves the swim
+- [x] 8.4 Move the swim animation to the swimming figure with its own poses (body pitch, flipper strokes with lag, a glance by tipping the body); verify with the updated swim scenario tests, the e2e test "Showing the swimming figure", and Raymond approves the swim
 
 ## 9. Wrap-up
 
 - [x] 9.1 Measure the preview's JavaScript with `npm run size`; verify it is still within the 50 KB budget and public pages are unchanged
-- [ ] 9.2 Run `npm run check` (with no dev server on port 4321) and let CI pass on the branch; verify everything is green and Raymond has judged all animations
+- [x] 9.2 Run `npm run check` (with no dev server on port 4321) and let CI pass on the branch; verify everything is green and Raymond has judged all animations
 
 ## Workflow follow-up
 

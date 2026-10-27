@@ -219,3 +219,17 @@ Raymond gave the feeling of each animation (a polite butler's bow; a dive that i
 - **Tip the body, and the bill tips along.** Lying horizontally, his bill pointed at the floor. Turning the head back up to 70° makes him swim bill first.
 - **Film strips before the preview.** Rendering a row of frames of each animation (with the same maths the player uses) showed these problems before anyone had to watch them.
 
+### Second and third round: Raymond's eye
+
+Raymond tried each round in the preview, and every round found what still frames had hidden.
+
+- **Eyes that follow.** "Only the head moves": the pupils became their own layers, cut from two more Gemini edits without pupils, with a shift limit so they stay in the eye. They look first, then the head, then the body (overlap again).
+- **Knees.** Penguins stand on bent knees hidden inside the body. A pose can plant the feet: they move with the body but never go into the ground, and stay level when he leans. The first version kept the feet where they stood at rest, and they came loose as soon as he leaned.
+- **A drawn swimming figure.** Tipping the side figure to swim bent its neck awkwardly; Raymond drew Kálmán as a torpedo, and that became a third figure with its own flipper.
+- **A belly landing** after the launch, as in the nature stills: land, slide, push up, wobble, stand.
+- **Smooth curves instead of pieces.** "Woody": every piece between two poses eased to a stop, so he paused at each pose mid-movement. Now every value follows one monotone curve through all its poses and only slows where a movement turns around.
+- **Strict tests find real bugs.** Tightening a test I had loosened showed his belly sank 40 units into the ice at the landing.
+- **Linux isn't Windows.** In CI, "Swimming" stuck out 6 px on a 360 px phone because Linux fonts are a little wider; the figure options now wrap.
+
+Raymond approved the result. The agreement that he must be able to explain every line was dropped along the way: the highest quality and user experience come first.
+
