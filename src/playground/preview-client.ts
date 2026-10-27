@@ -10,8 +10,8 @@
  *   loop plays while nothing else does and the front figure is chosen, unless the switch is off;
  *   with reduced motion it starts off, so nothing moves until a play button is pressed.
  */
-import { duration, type Animation } from '../lib/kalman-animation';
-import type { Figure, Mood, Pose } from '../lib/kalman-rig';
+import { playLength, type Animation } from '../lib/kalman-animation';
+import { FIGURES, isFigure, type Figure, type Mood, type Pose } from '../lib/kalman-rig';
 import { normaliseAngle, turntableFrame } from '../lib/kalman-turntable';
 import {
   animationDescription,
@@ -78,6 +78,10 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
   const sliders = () => [
     ...(sliderGroup(chosen)?.querySelectorAll<HTMLInputElement>('[data-rotation]') ?? []),
   ];
+  const stretchGroup = (which: Figure) => one<HTMLElement>(`[data-figure-stretches="${which}"]`);
+  const stretchSliders = () => [
+    ...(stretchGroup(chosen)?.querySelectorAll<HTMLInputElement>('[data-stretch]') ?? []),
+  ];
 
   /** The sliders' values as layer name → degrees, like a dict comprehension in Python. */
   function rotations(): Record<string, number> {
@@ -86,11 +90,31 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
     );
   }
 
-  /** Sets every slider of the chosen figure (and its shown value) to a pose's rotations. */
+  /** The stretch sliders' values as layer name → stretch (1 = rest). */
+  function stretches(): Record<string, number> {
+    return Object.fromEntries(
+      stretchSliders().map((slider) => [slider.dataset['stretch'] ?? '', Number(slider.value)]),
+    );
+  }
+
+  /** Sets every slider of the chosen figure (and its shown value) to a pose's rotations and stretches. */
   function setSliders(pose: Pose): void {
     for (const slider of sliders()) {
       slider.value = String(pose.layers[slider.dataset['rotation'] ?? '']?.rotate ?? 0);
       showValue(slider);
+    }
+    for (const slider of stretchSliders()) {
+      slider.value = String(pose.layers[slider.dataset['stretch'] ?? '']?.stretch ?? 1);
+      showStretch(slider);
+    }
+  }
+
+  function showStretch(slider: HTMLInputElement): void {
+    const output = stretchGroup(chosen)?.querySelector(
+      `[data-stretch-value="${slider.dataset['stretch'] ?? ''}"]`,
+    );
+    if (output !== null && output !== undefined) {
+      output.textContent = Number(slider.value).toFixed(2);
     }
   }
 
@@ -121,7 +145,7 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
 
   /** Works out the pose from the controls and draws everything that depends on it. */
   function render(): void {
-    current = poseFromControls(base, rotations());
+    current = poseFromControls(base, rotations(), stretches());
     applyFigure(figure, chosen);
     applyPose(figure, REPO_RIGS[chosen], current, mood());
     const turn = Number(turnSlider?.value ?? 0);
@@ -143,10 +167,11 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
   /** Shows one figure's pose buttons and sliders, and starts it at rest. */
   function chooseFigure(which: Figure): void {
     chosen = which;
-    for (const other of ['front', 'side'] as const) {
+    for (const other of FIGURES) {
       const hide = other !== which;
       poseGroup(other)?.toggleAttribute('hidden', hide);
       sliderGroup(other)?.toggleAttribute('hidden', hide);
+      stretchGroup(other)?.toggleAttribute('hidden', hide);
     }
     // The turntable belongs to the front figure: back to the front view, and only usable there.
     if (turnSlider !== null) {
@@ -162,11 +187,11 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
 
   for (const choice of figureChoices) {
     choice.addEventListener('change', () => {
-      if (choice.checked) chooseFigure(choice.value === 'side' ? 'side' : 'front');
+      if (choice.checked) chooseFigure(isFigure(choice.value) ? choice.value : 'front');
     });
   }
 
-  for (const group of ['front', 'side'] as const) {
+  for (const group of FIGURES) {
     for (const button of poseGroup(group)?.querySelectorAll<HTMLButtonElement>(
       '[data-pose-button]',
     ) ?? []) {
@@ -182,6 +207,14 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
       // `input` fires on every step while dragging or pressing an arrow key, not only at the end.
       slider.addEventListener('input', () => {
         showValue(slider);
+        pose();
+      });
+    }
+    for (const slider of stretchGroup(group)?.querySelectorAll<HTMLInputElement>(
+      '[data-stretch]',
+    ) ?? []) {
+      slider.addEventListener('input', () => {
+        showStretch(slider);
         pose();
       });
     }
@@ -244,10 +277,10 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
     }
   }
 
-  /** Points the scrub slider at an animation: its range is that animation's length. */
+  /** Points the scrub slider at an animation: its range is that animation's play length. */
   function scrubTo(animation: Animation, time: number): void {
     if (scrubSlider === null) return;
-    scrubSlider.max = String(duration(animation));
+    scrubSlider.max = String(playLength(animation));
     scrubSlider.dataset['animation'] = animation.name;
     scrubSlider.value = time.toFixed(2);
     if (scrubValue !== null) scrubValue.textContent = `${time.toFixed(2)} s`;
@@ -291,7 +324,7 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
     const name = scrubSlider.dataset['animation'] ?? REPO_ANIMATIONS[0]?.name;
     const animation = REPO_ANIMATIONS.find((a) => a.name === name);
     if (animation === undefined) return;
-    const length = duration(animation);
+    const length = playLength(animation);
     // Holding a moment pauses the animation there (spec: "Scrubbing through an animation").
     player.scrub(length === 0 ? 0 : Number(scrubSlider.value) / length, animation.name);
     markPlaying(animation);

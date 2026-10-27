@@ -82,6 +82,16 @@ export function rotateAround(degrees: number, [px, py]: Pair): Matrix {
   return compose(translate([px, py]), rotate(degrees), translate([-px, -py]));
 }
 
+/**
+ * Stretches around `pivot`: `stretch` times as tall and `1 / stretch` times as wide, so the
+ * area stays the same (squash and stretch: a squashed ball gets wider). 1 changes nothing,
+ * below 1 squashes, above 1 stretches.
+ */
+export function stretchAround(stretch: number, [px, py]: Pair): Matrix {
+  const scale: Matrix = { a: 1 / stretch, b: 0, c: 0, d: stretch, e: 0, f: 0 };
+  return compose(translate([px, py]), scale, translate([-px, -py]));
+}
+
 /** Where a point ends up after the transform. */
 export function applyToPoint(m: Matrix, [x, y]: Pair): Pair {
   return [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f];
@@ -122,8 +132,20 @@ export interface RigLayer {
   readonly order: number;
   /** The allowed rotation from rest, `[min, max]` in degrees. It must include 0 (the rest pose). */
   readonly rotate: Pair;
+  /**
+   * The allowed stretch, `[min, max]`; it must include 1 (rest). Without it the layer may not
+   * stretch at all.
+   */
+  readonly stretch?: Pair;
+  /**
+   * How far the layer's offset may go from rest, `[x, y]` each way (a pupil stays in its eye).
+   * Without it the offset is free.
+   */
+  readonly shift?: Pair;
   /** True for the professional accessories (tie, glasses): only shown in the professional mood. */
   readonly accessory?: boolean;
+  /** Only shown in this mood (the goofy pupils, which would peek out behind the calm eyes). */
+  readonly mood?: Mood;
 }
 
 /** The whole rig: the artboard and its layers. */
@@ -133,19 +155,38 @@ export interface Rig {
   readonly layers: readonly RigLayer[];
 }
 
-/** How one layer differs from rest in a pose. Both fields are optional; missing means 0. */
+/** How one layer differs from rest in a pose. All fields are optional; missing means rest. */
 export interface LayerPose {
   /** Rotation around the layer's pivot, in degrees, clockwise. */
   readonly rotate?: number;
   /** Shift from the rest position, `[dx, dy]` in artboard units. */
   readonly offset?: Pair;
+  /** Squash (below 1) or stretch (above 1) around the pivot; missing means 1. */
+  readonly stretch?: number;
+  /**
+   * How firmly the layer stays on the ground, from 0 (moves with its parent, the default) to 1:
+   * it still moves with its parent, but stays level (its parent's turn is taken out) and never
+   * lower than where it stands at rest. For the feet:
+   * penguins stand on bent knees hidden in the body, so when he crouches or leans the body
+   * sinks and the feet stay on the ground under it, still attached; when he jumps they come
+   * along. In between, the feet are pushed back up that part of the way.
+   */
+  readonly plant?: number;
 }
 
-/** Kálmán's two posable figures: seen from the front, and seen from the side (for swimming). */
-export type Figure = 'front' | 'side';
+/**
+ * Kálmán's posable figures: seen from the front, seen from the side (diving, launching), and
+ * drawn horizontally for swimming (kalman-animation-feel design §13).
+ */
+export type Figure = 'front' | 'side' | 'swim';
 
-/** Both figures, in a fixed order (the front first). */
-export const FIGURES: readonly Figure[] = ['front', 'side'];
+/** All figures, in a fixed order (the front first). */
+export const FIGURES: readonly Figure[] = ['front', 'side', 'swim'];
+
+/** True for one of the figure names, like `value in FIGURES` in Python. */
+export function isFigure(value: unknown): value is Figure {
+  return (FIGURES as readonly unknown[]).includes(value);
+}
 
 /** A named still pose. Layers it doesn't mention stay at rest. */
 export interface Pose {
@@ -181,7 +222,8 @@ export interface ResolvedLayer {
  * order (back to front). Expects a rig that passed `validateRig()`.
  *
  * Per layer, two matrices:
- * - **local**: turn around the own pivot, then move to the rest position plus the offset;
+ * - **local**: stretch around the own pivot, turn around it, then move to the rest position
+ *   plus the offset (stretching first, so the stretch turns with the layer);
  * - **world**: the local matrix, then whatever the parent did. "What the parent did" is the
  *   parent's *movement from rest* (its world matrix with its rest position taken out), because
  *   positions are absolute: a child must move as far as its parent moved, not be placed again.
@@ -198,9 +240,35 @@ export function resolvePose(rig: Rig, pose: Pose, mood: Mood): ResolvedLayer[] {
     const local = compose(
       translate([layer.position[0] + dx, layer.position[1] + dy]),
       rotateAround(own.rotate ?? 0, layer.pivot),
+      stretchAround(own.stretch ?? 1, layer.pivot),
     );
+    // A child takes the parent's whole movement, its stretch included: it stays attached.
     const parent = layer.parent === null ? undefined : byName.get(layer.parent);
-    return parent === undefined ? local : multiply(movementOf(parent), local);
+    if (parent === undefined) return local;
+    const parentMovement = movementOf(parent);
+    const plant = Math.min(1, Math.max(0, own.plant ?? 0));
+    if (plant === 0) return multiply(parentMovement, local);
+    // A planted layer (a foot) follows its parent but stays flat and out of the ground. Flat:
+    // the parent's turn is taken out again (`plant` of it), so only its own rotation is left;
+    // the extra turn is around its pivot, in its own coordinates, so it stays attached there.
+    const parentTurn = (Math.atan2(parentMovement.b, parentMovement.a) * 180) / Math.PI;
+    const following = multiply(
+      multiply(parentMovement, local),
+      rotateAround(-parentTurn * plant, layer.pivot),
+    );
+    // Out of the ground: if its lowest point would be below where it is at rest, it is pushed
+    // back up (`plant` of the way).
+    const [w, h] = layer.size;
+    const corners: Pair[] = [
+      [0, 0],
+      [w, 0],
+      [0, h],
+      [w, h],
+    ];
+    const lowest = Math.max(...corners.map((corner) => applyToPoint(following, corner)[1]));
+    const ground = layer.position[1] + h;
+    const below = lowest - ground;
+    return below > 0 ? multiply(translate([0, -below * plant]), following) : following;
   }
 
   function movementOf(layer: RigLayer): Matrix {
@@ -221,7 +289,9 @@ export function resolvePose(rig: Rig, pose: Pose, mood: Mood): ResolvedLayer[] {
       return {
         name: layer.name,
         matrix,
-        visible: layer.accessory !== true || mood === 'professional',
+        visible:
+          (layer.accessory !== true || mood === 'professional') &&
+          (layer.mood === undefined || layer.mood === mood),
         pivotOnArtboard: applyToPoint(matrix, layer.pivot),
       };
     });
@@ -264,7 +334,10 @@ const LAYER_FIELDS = new Set([
   'parent',
   'order',
   'rotate',
+  'stretch',
+  'shift',
   'accessory',
+  'mood',
 ]);
 
 /** Checks one layer's fields and types; returns the problems, empty when it is fine. */
@@ -284,6 +357,20 @@ function layerShapeErrors(value: unknown, index: number): string[] {
   }
   for (const key of ['size', 'position', 'pivot', 'rotate']) {
     if (!isPair(value[key])) errors.push(`${label} needs "${key}" as two numbers.`);
+  }
+  if (value['stretch'] !== undefined && !isPair(value['stretch'])) {
+    errors.push(`${label} needs "stretch" as two numbers, or none.`);
+  }
+  const shift = value['shift'];
+  if (shift !== undefined && (!isPair(shift) || shift[0] < 0 || shift[1] < 0)) {
+    errors.push(`${label} needs "shift" as two numbers of 0 or more, or none.`);
+  }
+  if (
+    value['mood'] !== undefined &&
+    value['mood'] !== 'goofy' &&
+    value['mood'] !== 'professional'
+  ) {
+    errors.push(`${label} needs "mood" as "goofy" or "professional", or none.`);
   }
   const size = value['size'];
   if (isPair(size) && (size[0] <= 0 || size[1] <= 0)) {
@@ -366,6 +453,18 @@ function rigRelationErrors(
         `Layer "${layer.name}" has a rotation range [${min}, ${max}] without 0, its rest position.`,
       );
     }
+    if (layer.stretch !== undefined) {
+      const [low, high] = layer.stretch;
+      if (low <= 0 || low >= high) {
+        errors.push(
+          `Layer "${layer.name}" has an empty, inverted or non-positive stretch range [${low}, ${high}].`,
+        );
+      } else if (low > 1 || high < 1) {
+        errors.push(
+          `Layer "${layer.name}" has a stretch range [${low}, ${high}] without 1, its rest size.`,
+        );
+      }
+    }
   }
   return errors;
 }
@@ -427,7 +526,7 @@ export function validatePose(data: unknown, rig: Rig): Validation<Pose> {
       continue;
     }
     for (const key of Object.keys(value)) {
-      if (key !== 'rotate' && key !== 'offset') {
+      if (key !== 'rotate' && key !== 'offset' && key !== 'stretch' && key !== 'plant') {
         errors.push(`${label}, layer "${layerName}" has an unknown field "${key}".`);
       }
     }
@@ -442,12 +541,81 @@ export function validatePose(data: unknown, rig: Rig): Validation<Pose> {
         );
       }
     }
-    if (value['offset'] !== undefined && !isPair(value['offset'])) {
+    const offset = value['offset'];
+    if (offset !== undefined && !isPair(offset)) {
       errors.push(`${label}, layer "${layerName}": "offset" must be two numbers.`);
+    } else if (offset !== undefined && layer.shift !== undefined) {
+      const [sx, sy] = layer.shift;
+      if (Math.abs(offset[0]) > sx || Math.abs(offset[1]) > sy) {
+        errors.push(
+          `${label} shifts "${layerName}" by [${offset[0]}, ${offset[1]}], beyond its allowed shift [${sx}, ${sy}].`,
+        );
+      }
+    }
+    errors.push(...stretchErrors(label, layer, value['stretch']));
+    const plant = value['plant'];
+    if (plant !== undefined && (!isFiniteNumber(plant) || plant < 0 || plant > 1)) {
+      errors.push(`${label}, layer "${layerName}": "plant" must be a number from 0 to 1.`);
     }
   }
   if (errors.length > 0) return { ok: false, errors };
   return { ok: true, value: data as unknown as Pose };
+}
+
+/** Problems with one layer's stretch in a pose: not a number, not allowed, or out of range. */
+function stretchErrors(label: string, layer: RigLayer, stretch: unknown): string[] {
+  if (stretch === undefined) return [];
+  if (!isFiniteNumber(stretch))
+    return [`${label}, layer "${layer.name}": "stretch" must be a number.`];
+  if (layer.stretch === undefined) {
+    return [`${label} stretches "${layer.name}", which has no stretch range in the rig.`];
+  }
+  const [min, max] = layer.stretch;
+  if (stretch < min || stretch > max) {
+    return [
+      `${label} stretches "${layer.name}" to ${stretch}, outside its range [${min}, ${max}].`,
+    ];
+  }
+  return [];
+}
+
+// ---------------------------------------------------------------------------------------
+// Keeping a pose inside the rig's limits
+// ---------------------------------------------------------------------------------------
+
+/** `value` limited to `[min, max]`, like `numpy.clip` for one number. */
+function clamp(value: number, [min, max]: Pair): number {
+  return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * The pose with every rotation and stretch pulled back inside its layer's range (design §4).
+ * An overshooting easing may ask for a little more than a layer allows; this keeps the drawn
+ * figure within the rig. Offsets only have a limit on layers with a `shift` (the pupils); the
+ * others stay as they are, and layers the rig doesn't have are left alone.
+ */
+export function clampToRig(pose: Pose, rig: Rig): Pose {
+  const byName = new Map(rig.layers.map((layer) => [layer.name, layer]));
+  const layers: Record<string, LayerPose> = {};
+  for (const [name, own] of Object.entries(pose.layers)) {
+    const layer = byName.get(name);
+    if (layer === undefined) {
+      layers[name] = own;
+      continue;
+    }
+    const clamped: { rotate?: number; offset?: Pair; stretch?: number; plant?: number } = {
+      ...own,
+    };
+    if (own.plant !== undefined) clamped.plant = clamp(own.plant, [0, 1]);
+    if (own.rotate !== undefined) clamped.rotate = clamp(own.rotate, layer.rotate);
+    if (own.stretch !== undefined) clamped.stretch = clamp(own.stretch, layer.stretch ?? [1, 1]);
+    if (own.offset !== undefined && layer.shift !== undefined) {
+      const [sx, sy] = layer.shift;
+      clamped.offset = [clamp(own.offset[0], [-sx, sx]), clamp(own.offset[1], [-sy, sy])];
+    }
+    layers[name] = clamped;
+  }
+  return { ...pose, layers };
 }
 
 // ---------------------------------------------------------------------------------------
@@ -479,7 +647,7 @@ export function spinMatrix(rig: Rig, degrees: number): Matrix {
 // Two figures: front and side
 // ---------------------------------------------------------------------------------------
 
-/** One rig per figure, like a Python dict {"front": rig, "side": rig}. */
+/** One rig per figure, like a Python dict {"front": rig, "side": rig, "swim": rig}. */
 export type Rigs = Readonly<Record<Figure, Rig>>;
 
 /** The figure a pose belongs to (front when the pose doesn't say). */
@@ -493,11 +661,11 @@ export function figureOf(pose: Pose): Figure {
  */
 export function validateFigurePose(data: unknown, rigs: Rigs): Validation<Pose> {
   const figure = (data as { figure?: unknown } | null)?.figure ?? 'front';
-  if (figure !== 'front' && figure !== 'side') {
+  if (!isFigure(figure)) {
     const name = (data as { name?: unknown } | null)?.name;
     return {
       ok: false,
-      errors: [`Pose "${String(name ?? '?')}" needs "figure" as "front" or "side".`],
+      errors: [`Pose "${String(name ?? '?')}" needs "figure" as one of ${FIGURES.join(', ')}.`],
     };
   }
   return validatePose(data, rigs[figure]);

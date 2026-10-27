@@ -6,8 +6,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   assertSameSize,
+  blendImages,
   bodyCentreX,
   cutPart,
+  darknessMap,
   differenceAlpha,
   figureAlpha,
   findBackground,
@@ -20,7 +22,9 @@ import {
   polygonCoverage,
   plumageTone,
   ramp,
+  restrictAlpha,
   sideRegions,
+  swimRegions,
   type FrontCutSettings,
   type SideCutSettings,
   type RawImage,
@@ -263,19 +267,43 @@ describe('polygonCoverage', () => {
   });
 });
 
+describe('darknessMap', () => {
+  it('is 1 for the dark feet, 0 for white feathers, and soft in between', () => {
+    // Plumage (70, 80, 90) is darker than 110, white is brighter than 160; the grey in the
+    // middle has a brightness of exactly 135, halfway.
+    const image: RawImage = {
+      width: 3,
+      height: 1,
+      channels: 3,
+      data: new Uint8Array([...DARK, 135, 135, 135, ...WHITE]),
+    };
+    const map = darknessMap(image);
+    expect([map[0], map[1], map[2]]).toEqual([1, 0.5, 0]);
+  });
+});
+
 describe('sideRegions', () => {
   const settings: SideCutSettings = {
     neck: { headFadeFrom: 4, headFadeTo: 8, bodyFrom: 3, bodySolid: 6 },
     bodyBottomRow: 30,
     tail: { fromRow: 26, minX: 30, bodyOverlap: 2 },
-    feet: { fromRow: 28, backMaxX: 12, backMaxRow: 31 },
+    feet: {
+      fromRow: 28,
+      solidRow: 30,
+      stub: { minX: 5, maxX: 15, fadeTo: 34 },
+      backMaxX: 12,
+      backMaxRow: 31,
+    },
     glasses: [10, 1, 20, 4],
     tie: [8, 6, 14, 18],
   };
   // A 40-wide image with a flipper covering column 25 from row 10 to 19.
   const flipper = new Float32Array(40 * 40);
   for (let y = 10; y < 20; y++) flipper[y * 40 + 25] = 1;
-  const regions = sideRegions(settings, flipper, 40);
+  // Everything dark (feet), except column 18: light feathers hanging over the feet.
+  const darkness = new Float32Array(40 * 40).fill(1);
+  for (let y = 0; y < 40; y++) darkness[y * 40 + 18] = 0;
+  const regions = sideRegions(settings, flipper, darkness, 40);
   const take = (part: string, x: number, y: number) => regions[part]?.(x, y);
 
   it('takes the flipper from its traced outline, and the body under it as well', () => {
@@ -292,12 +320,77 @@ describe('sideRegions', () => {
   });
 
   it('splits the feet into the back foot (left, upper) and the front foot', () => {
-    expect([take('footBack', 10, 29), take('footFront', 10, 29)]).toEqual([1, 0]);
+    expect([take('footBack', 10, 30), take('footFront', 10, 30)]).toEqual([1, 0]);
     expect([take('footBack', 10, 32), take('footFront', 10, 32)]).toEqual([0, 1]);
-    expect([take('footBack', 20, 29), take('footFront', 20, 29)]).toEqual([0, 1]);
+    expect([take('footBack', 20, 30), take('footFront', 20, 30)]).toEqual([0, 1]);
+  });
+
+  it('gives the feet only their dark pixels, fading in at the ankle', () => {
+    // The light feathers over the feet stay off the foot, so a turning foot takes none along.
+    expect(take('footFront', 18, 32)).toBe(0);
+    // Halfway between the ankle's first row (28) and its solid row (30): half.
+    expect(take('footFront', 20, 29)).toBe(0.5);
+    expect(take('footFront', 20, 27)).toBe(0);
+  });
+
+  it('keeps a fading strip under the ankles in the body, and nothing else below it', () => {
+    expect(take('body', 10, 29)).toBe(1);
+    // Below the body's bottom row (30): inside the strip, fading out towards row 34.
+    expect([take('body', 10, 30), take('body', 10, 32), take('body', 10, 34)]).toEqual([1, 0.5, 0]);
+    // Outside the strip nothing, so no ghost of a foot's outline stays behind.
+    expect(take('body', 20, 32)).toBe(0);
   });
 
   it('fades the head into the neck', () => {
     expect([take('head', 5, 3), take('head', 5, 6), take('head', 5, 9)]).toEqual([1, 0.5, 0]);
+  });
+});
+
+describe('restrictAlpha and blendImages (the eyes without pupils)', () => {
+  it('keeps the alpha inside the bounds only', () => {
+    // A 4 × 2 alpha map, all 1; the bounds keep columns 1–2 of row 0.
+    const kept = restrictAlpha(new Float32Array(8).fill(1), 4, [1, 0, 2, 1]);
+    expect([...kept]).toEqual([0, 1, 1, 0, 0, 0, 0, 0]);
+  });
+
+  it('mixes the second image in where the alpha says so, and leaves the rest as it was', () => {
+    const base: RawImage = {
+      width: 2,
+      height: 1,
+      channels: 3,
+      data: new Uint8Array([0, 0, 0, 100, 100, 100]),
+    };
+    const other: RawImage = {
+      width: 2,
+      height: 1,
+      channels: 3,
+      data: new Uint8Array([200, 200, 200, 255, 255, 255]),
+    };
+    const mixed = blendImages(base, other, new Float32Array([0.5, 0]));
+    expect([...mixed.data]).toEqual([100, 100, 100, 100, 100, 100]);
+  });
+});
+
+describe('swimRegions', () => {
+  // A 40-wide image with a flipper covering column 25 from row 10 to 19.
+  const flipper = new Float32Array(40 * 40);
+  for (let y = 10; y < 20; y++) flipper[y * 40 + 25] = 1;
+  const regions = swimRegions(
+    { glasses: [2, 2, 10, 6], tie: [8, 2, 20, 30], tieFromX: 12, tieLowerFromY: 10 },
+    flipper,
+    40,
+  );
+  const take = (part: string, x: number, y: number) => regions[part]?.(x, y);
+
+  it('takes the flipper from its outline, and the body under it as well (spec: "A stroking flipper")', () => {
+    expect([take('flipper', 25, 15), take('flipper', 24, 15), take('body', 25, 15)]).toEqual([
+      1, 0, 1,
+    ]);
+  });
+
+  it('keeps the glasses and the tie apart where their bounds overlap', () => {
+    expect([take('glasses', 9, 4), take('tie', 9, 4)]).toEqual([1, 0]);
+    // Right of `tieFromX` and below `tieLowerFromY` the tie; left of it, high up, nothing.
+    expect([take('tie', 14, 4), take('tie', 9, 20), take('tie', 9, 8)]).toEqual([1, 1, 0]);
   });
 });

@@ -1,8 +1,8 @@
 ---
 /**
  * The preview's controls, built at build time from the repo's data, so there is always exactly
- * one play button per animation, one pose button per named pose and one slider per layer, for
- * each figure (spec: kalman-preview).
+ * one play button per animation, one pose button per named pose, one rotation slider per layer
+ * and one stretch slider per layer that may stretch, for each figure (spec: kalman-preview).
  *
  * All plain HTML: buttons, radio buttons, checkboxes shown as switches and range sliders.
  * Keyboard support, labels and screen-reader output come from the browser. The side figure's
@@ -10,7 +10,7 @@
  * preview-client.ts connects everything to the figure and the player.
  */
 import { layerLabel, PREVIEW_EN as TEXT } from '../i18n/preview';
-import { duration } from '../lib/kalman-animation';
+import { playLength } from '../lib/kalman-animation';
 import { FIGURES } from '../lib/kalman-rig';
 import { canTurn } from '../lib/kalman-turntable';
 import { posesFor, REPO_ANIMATIONS, REPO_RIGS, REPO_TURNTABLE } from '../scene/kalman/repo-rig';
@@ -18,7 +18,7 @@ import { posesFor, REPO_ANIMATIONS, REPO_RIGS, REPO_TURNTABLE } from '../scene/k
 const showTurnControl = canTurn(REPO_TURNTABLE);
 // The scrub slider starts on the first animation (idle); the script changes it per animation.
 const firstAnimation = REPO_ANIMATIONS[0];
-const firstDuration = firstAnimation === undefined ? 1 : duration(firstAnimation);
+const firstDuration = firstAnimation === undefined ? 1 : playLength(firstAnimation);
 ---
 
 <div class="controls">
@@ -133,7 +133,8 @@ const firstDuration = firstAnimation === undefined ? 1 : duration(firstAnimation
       FIGURES.map((figure) => (
         <div data-figure-sliders={figure} hidden={figure !== 'front'}>
           {REPO_RIGS[figure].layers.map((layer) => {
-            const id = figure === 'front' ? `rotate-${layer.name}` : `rotate-side-${layer.name}`;
+            const id =
+              figure === 'front' ? `rotate-${layer.name}` : `rotate-${figure}-${layer.name}`;
             return (
               <div class="slider">
                 <label for={id}>{layerLabel(layer.name, figure)}</label>
@@ -151,6 +152,41 @@ const firstDuration = firstAnimation === undefined ? 1 : duration(firstAnimation
                 </output>
               </div>
             );
+          })}
+        </div>
+      ))
+    }
+  </fieldset>
+
+  <fieldset>
+    <legend>{TEXT.stretchesLegend}</legend>
+    {
+      /* Only the layers the rig lets stretch (bodies and heads), limited to their range. */
+      FIGURES.map((figure) => (
+        <div data-figure-stretches={figure} hidden={figure !== 'front'}>
+          {REPO_RIGS[figure].layers.flatMap((layer) => {
+            if (layer.stretch === undefined) return [];
+            const id =
+              figure === 'front' ? `stretch-${layer.name}` : `stretch-${figure}-${layer.name}`;
+            return [
+              <div class="slider">
+                <label for={id}>
+                  {layerLabel(layer.name, figure)} {TEXT.stretch}
+                </label>
+                <input
+                  type="range"
+                  id={id}
+                  data-stretch={layer.name}
+                  min={layer.stretch[0]}
+                  max={layer.stretch[1]}
+                  step="0.01"
+                  value="1"
+                />
+                <output for={id} data-stretch-value={layer.name}>
+                  1.00
+                </output>
+              </div>,
+            ];
           })}
         </div>
       ))
@@ -190,7 +226,9 @@ const firstDuration = firstAnimation === undefined ? 1 : duration(firstAnimation
 
   .choices {
     display: flex;
-    gap: 1.5rem;
+    /* Three figures don't fit on one line on a small phone: let them wrap. */
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
   }
 
   button {

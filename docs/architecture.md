@@ -79,12 +79,12 @@ flowchart TD
 
 ## Kálmán: rig, poses and figure
 
-Kálmán is a **cut-out figure**: flat images (layers) moved like a paper puppet, in two **figures**: the front (nine layers) and the side (eight layers, for diving and swimming). Where they sit and how they move is data, not code; the maths is pure functions; the browser only applies the result.
+Kálmán is a **cut-out figure**: flat images (layers) moved like a paper puppet, in three **figures**: the front (eleven layers, including the pupils), the side (eight layers, for diving and launching) and the swimming figure (four layers: Kálmán drawn horizontally in one piece, with his flipper, tie and glasses). Where they sit and how they move is data, not code; the maths is pure functions; the browser only applies the result.
 
 ```mermaid
 flowchart LR
-    A["rig.json<br/>layers: image, size, position,<br/>pivot, parent, order, rotate"] --> C
-    B["poses.json<br/>per layer: rotate, offset"] --> C
+    A["rig.json<br/>layers: image, size, position,<br/>pivot, parent, order, rotate, stretch"] --> C
+    B["poses.json<br/>per layer: rotate, offset, stretch"] --> C
     C["resolvePose(rig, pose, mood)<br/>src/lib/kalman-rig.ts"] --> D["one matrix per layer,<br/>sorted by drawing order"]
     D --> E["KalmanFigure.astro<br/>SVG in the HTML (build time)"]
     D --> F["applyPose()<br/>kalman-figure-client.ts (browser)"]
@@ -93,8 +93,8 @@ flowchart LR
 
 - **Two figures.** `rig.json` holds a rig per figure (`{ "front": …, "side": … }`), on the same artboard and placement, so switching doesn't make him jump; every pose says its `figure`. The SVG has a `<g data-layers data-figure>` per figure, and `applyFigure()` shows one of them.
 - **The rig** (`src/scene/kalman/rig.json`) places every layer on a 1600 × 1500 **artboard**. Positions are absolute artboard coordinates, so they can be read off the design sheet; pivots are in the image's own coordinates. `docs/kalman-layers.md` explains every field.
-- **Poses** (`src/scene/kalman/poses.json`) only store differences from rest: rotation around the pivot and an offset. Layers a pose doesn't mention stay at rest.
-- **`resolvePose()`** turns rig + pose + mood into one SVG transform matrix per layer. A child gets its own movement plus its parent's *movement from rest*, so the glasses follow the head and everything follows the body. The tie and the glasses are `accessory` layers: hidden in the goofy mood.
+- **Poses** (`src/scene/kalman/poses.json`) only store differences from rest: rotation around the pivot, an offset, and a **stretch** (squash and stretch: 0.9 is 10% shorter and correspondingly wider, so the area stays the same). Layers a pose doesn't mention stay at rest. The rig limits each layer's rotation (`rotate`) and, for the layers that may stretch (bodies and heads), its stretch (`stretch`); `clampToRig()` keeps a pose inside those limits.
+- **`resolvePose()`** turns rig + pose + mood into one SVG transform matrix per layer: stretch around the pivot, turn around it, then move. A child gets its own movement plus its parent's *movement from rest*, stretch included, so the glasses follow the head, everything follows the body, and when the body squashes the head stays on the neck. The tie and the glasses are `accessory` layers: hidden in the goofy mood.
 - **Flat, not nested.** The SVG has one `<g>` per layer, sorted by `order`. Nested groups would let the browser combine the transforms, but in SVG a child is always drawn in front of its parent, and the far flipper must be able to sit behind the body.
 - **Validation.** `validateRig()` and `validatePose()` list every problem at once: unknown parents, loops, a shared drawing order, missing images, rotations outside a layer's range. `src/scene/kalman/repo-rig.ts` validates the repo's files when they are loaded (so the build fails on a bad edit), and `tests/unit/kalman-rig-data.test.ts` checks them in CI.
 - **Images.** `KalmanFigure.astro` looks every layer's image up in `src/assets/kalman/` with `import.meta.glob`, so Astro gives it a hashed file name; a missing file fails the build. They are cut from Raymond's design images by a script (see below), into `src/assets/kalman/front/`.
@@ -136,16 +136,23 @@ The six animations (idle, bow, head-follow, dive, swim, launch) are keyframes of
 
 ```mermaid
 flowchart LR
-    A["animations.json<br/>keyframes: at, pose, ease"] --> S
+    A["animations.json<br/>keyframes: at, pose, ease<br/>lag per layer"] --> S
     P[poses.json] --> S
-    G["GSAP tween<br/>moves a clock 0 → length"] -->|time, every frame| S
-    S["samplePose(animation, poses, time, ease)<br/>src/lib/kalman-animation.ts"] --> D["applyFigure() + applyPose()<br/>kalman-figure-client.ts"]
+    G["GSAP tween<br/>moves a clock 0 → play length"] -->|time, every frame| S
+    S["samplePose(animation, poses, time, ease)<br/>src/lib/kalman-animation.ts"] --> C["clampToRig()<br/>src/lib/kalman-rig.ts"]
+    C --> D["applyFigure() + applyPose()<br/>kalman-figure-client.ts"]
 ```
 
 - **GSAP is only the clock.** `kalman-player.ts` makes one tween of a plain `time` value per animation; on every frame `samplePose()` blends the two keyframes around that time (through GSAP's easing curve, `gsap.parseEase`) and `applyPose()` draws it. So the poses and timing are data, and the maths is tested without GSAP.
+- **Lag is a time shift.** An animation may give layers a `lag` in seconds: such a layer takes its values from the pose `lag` seconds earlier, so the head leads and the tail and feet trail behind and settle later (follow-through and overlap). In a loop that earlier moment wraps around into the previous round. It is still a pure function of time, so a scrubbed moment looks exactly like a played one; a spring would depend on the previous frames.
+- **Play length.** A non-looping animation plays until its slowest layer has caught up: the last keyframe plus the largest lag (`playLength()`). The tween, the scrub slider and "finished" all use it. A loop keeps its keyframe length.
+- **Smooth curves.** An animation with `smooth: true` doesn't ease piece by piece (which stops at every keyframe and looks wooden) but follows one monotone cubic curve per value through all keyframes (Fritsch–Carlson): it keeps moving through a keyframe and only slows where a value turns around or holds, without swinging past it. All animations except idle use it.
+- **Planted feet (knees).** Penguins stand on bent knees hidden in the body. A layer in a pose can be planted (`plant`, 0–1): it still moves with its parent, but keeps level (the parent's turn is taken out) and is pushed back up when it would go below where it stands at rest. So he crouches and leans over feet that stay on the ground, and they come along when he jumps.
+- **Drawn poses.** Some poses can't be made by turning flat layers: from the front a bow tips the head towards the viewer, so we see the top of his head. For those Raymond made a whole drawing (an edit of the front view), cut by `npm run cut:kalman` into `src/scene/kalman/drawn-poses.json`, one image per mood, placed exactly like the front figure. A keyframe can name one (`"drawn": "bow"`); `drawnFrame()` gives its opacity as a pure function of time (fully shown over the keyframes that name it, fading in and out over `fade`, 0.2 s by default), and the player fades the drawing in and the layers out: a cross-fade, as on the turntable.
+- **Overshoot, clamped.** The `back` easings go slightly past the target and settle back. Every sampled pose goes through `clampToRig()` before it is drawn, so no layer turns or stretches past its range.
 - **One at a time.** Starting an animation stops the previous one; a non-looping one ends with him at rest. The figure carries `data-animation` and `data-time`, which the preview and the tests read.
 - **Scrubbing** pauses the tween and sets its progress; **a hidden tab** pauses it (`visibilitychange`) and continues it when visible again.
-- **Head-follow** turns the front figure's head towards the pointer: `headTurn()` gives the angle from how far the pointer is to the side, and `gsap.quickTo` glides the head there.
+- **Head-follow** turns the front figure's head towards the pointer: `headTurn()` gives the angle from how far the pointer is to the side, and `gsap.quickTo` glides the head there. The **eyes** look along: the pupils are their own layers (goofy, and professional behind the glasses), and `eyeShift()` gives how far they shift towards the pointer, sideways and up or down, within the rig's `shift` limit. They glide twice as fast as the head, so the eyes look first and the head follows.
 - **Reduced motion:** nothing starts by itself; an animation only plays when it is explicitly started.
 
 ## The dev-only Kálmán preview

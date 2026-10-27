@@ -13,6 +13,7 @@
  * tolerance. They change on purpose when the real illustrations replace the placeholders;
  * then the baselines are made again with the workflow.
  */
+import animations from '../../src/scene/kalman/animations.json' with { type: 'json' };
 import { expect, test } from './fixtures';
 
 const isCI = process.env['CI'] !== undefined;
@@ -70,17 +71,34 @@ for (const { name, button, professional } of POSES) {
   });
 }
 
+/** The moment of `animation`'s keyframe with `pose` (the n-th one), from animations.json. */
+function keyframe(animation: string, pose: string, nth = 0): number {
+  const frames = animations.find((a) => a.name === animation)?.keyframes ?? [];
+  const at = frames.filter((k) => k.pose === pose)[nth]?.at;
+  if (at === undefined) throw new Error(`${animation} has no keyframe ${nth} with ${pose}`);
+  return at;
+}
+
+/** Halfway through the cross-fade into the bow's drawn pose: its fade before the deepest moment. */
+const bowFade = animations.find((a) => a.name === 'bow')?.fade ?? 0.2;
+
 /**
  * Key moments of the animations (README §5.4, visual layer 4), held still with the scrub slider
- * so the screenshot is the same every run: the animation and the moment in seconds.
+ * so the screenshot is the same every run: the animation and the moment in seconds. The moments
+ * come from the keyframes, so they stay right while Raymond tunes the timing.
  */
 const MOMENTS = [
-  { name: 'kalman-bow-deepest', animation: 'bow', at: '0.9' },
-  { name: 'kalman-dive-halfway', animation: 'dive', at: '1.2' },
-  { name: 'kalman-swim-stroke-up', animation: 'swim', at: '0.4' },
-  // Pointing up, just before he shoots up out of the frame.
-  { name: 'kalman-launch-up', animation: 'launch', at: '0.4' },
-];
+  { name: 'kalman-bow-cross-fade', animation: 'bow', at: keyframe('bow', 'bow') - bowFade / 2 },
+  { name: 'kalman-bow-drawn', animation: 'bow', at: keyframe('bow', 'bow') + 0.2 },
+  { name: 'kalman-dive-crouch', animation: 'dive', at: keyframe('dive', 'crouch') },
+  { name: 'kalman-dive-entry', animation: 'dive', at: keyframe('dive', 'dive') },
+  { name: 'kalman-swim-down-stroke', animation: 'swim', at: keyframe('swim', 'strokeDown', 1) },
+  { name: 'kalman-launch-rise', animation: 'launch', at: keyframe('launch', 'launchRise') },
+  { name: 'kalman-launch-landing', animation: 'launch', at: keyframe('launch', 'landing') },
+  { name: 'kalman-launch-wobble', animation: 'launch', at: keyframe('launch', 'landingWobble') },
+  // Rounded to the slider's step, as a plain number: the browser turns "0.60" into "0.6", and
+  // Playwright refuses a value the slider doesn't keep exactly.
+].map((moment) => ({ ...moment, at: String(Math.round(moment.at * 100) / 100) }));
 
 for (const { name, animation, at } of MOMENTS) {
   test(`${name} looks the same as the baseline`, async ({ page }) => {

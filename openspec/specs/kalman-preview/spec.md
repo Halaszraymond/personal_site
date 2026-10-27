@@ -72,7 +72,7 @@ The preview SHALL offer a switch that marks each layer's pivot point on the figu
 - **THEN** a marker is shown at the pivot point of every visible layer, and the markers move with their layers
 
 ### Requirement: Copy pose
-The preview SHALL offer a "Copy pose" control that copies the current slider values to the clipboard as pose JSON that passes pose validation. The same JSON SHALL also be visible as selectable text, so it can be copied by hand when the clipboard is unavailable.
+The preview SHALL offer a "Copy pose" control that copies the current slider values (rotations and stretches) to the clipboard as pose JSON that passes pose validation. The same JSON SHALL also be visible as selectable text, so it can be copied by hand when the clipboard is unavailable.
 
 #### Scenario: Copy
 - **WHEN** Raymond activates "Copy pose"
@@ -81,6 +81,10 @@ The preview SHALL offer a "Copy pose" control that copies the current slider val
 #### Scenario: No clipboard access
 - **WHEN** the browser refuses clipboard access
 - **THEN** the preview says so, the JSON stays visible as selectable text, and no error is logged
+
+#### Scenario: Stretch in the copied pose
+- **WHEN** Raymond squashes the body with its stretch slider and activates "Copy pose"
+- **THEN** the copied pose holds the body's stretch, and leaves out the stretch of layers that are at 1
 
 ### Requirement: Spin slider
 The preview SHALL offer a labelled slider from −180 to 180 degrees that spins the whole figure as one piece, showing the current value. Spinning SHALL NOT change the pose or the pose JSON.
@@ -127,11 +131,15 @@ The preview SHALL be usable at a 360 px wide viewport without horizontal scrolli
 - **THEN** nothing moves until Raymond presses a play button
 
 ### Requirement: A front/side switch
-The preview SHALL offer a switch between the front and the side figure for posing. The turn-around control SHALL apply to the front figure.
+The preview SHALL offer a switch between the front, the side and the swimming figure for posing. The turn-around control SHALL apply to the front figure.
 
 #### Scenario: Showing the side figure
 - **WHEN** Raymond switches to the side figure
 - **THEN** the side figure is shown in its rest pose
+
+#### Scenario: Showing the swimming figure
+- **WHEN** Raymond switches to the swimming figure
+- **THEN** the swimming figure is shown in its rest pose, with its own pose buttons and sliders
 
 ### Requirement: A play button per animation
 The preview SHALL offer one button per animation in the repo. Activating it SHALL play that animation on the figure it uses, mark it as playing, and show the figure's description with the animation's name. When a non-looping animation ends, its button SHALL no longer be marked as playing.
@@ -148,11 +156,15 @@ The preview SHALL offer a switch that loops the idle animation while no other an
 - **THEN** Kálmán sways gently on his own until another animation is played or the switch is turned off
 
 ### Requirement: Head-follow on the stage
-While the head-follow animation is chosen, Kálmán's head SHALL turn towards the pointer as it moves over the stage, and return to rest when the pointer leaves.
+While the head-follow animation is chosen, Kálmán's head SHALL turn towards the pointer as it moves over the stage and his eyes SHALL look at it, in both moods; both return to rest when the pointer leaves.
 
 #### Scenario: Pointer to the right
 - **WHEN** head-follow is chosen and the pointer moves to the right edge of the stage
-- **THEN** Kálmán's head turns to the right
+- **THEN** Kálmán's head turns to the right and his pupils move to the right
+
+#### Scenario: Eyes in the professional mood
+- **WHEN** head-follow is chosen in the professional mood and the pointer moves to the right edge of the stage
+- **THEN** the professional pupils behind the glasses move to the right
 
 ### Requirement: Scrubbing through an animation
 The preview SHALL offer a slider that shows and sets the position in the current animation, from its start to its end, so a moment can be held still and looked at. Moving the slider SHALL pause the animation at that moment.
@@ -160,3 +172,14 @@ The preview SHALL offer a slider that shows and sets the position in the current
 #### Scenario: Holding a moment
 - **WHEN** Raymond moves the slider to the middle of the dive animation
 - **THEN** the animation pauses and Kálmán is shown at that moment of the dive
+
+### Requirement: A stretch slider per stretchable layer
+The preview SHALL offer a labelled stretch slider for each layer of the shown figure that has a stretch range, limited to that range and showing the current value; layers without a stretch range SHALL get none. Moving a slider SHALL squash or stretch that layer immediately, and selecting a named pose SHALL set every stretch slider to that pose's values.
+
+#### Scenario: Squashing with the keyboard
+- **WHEN** Raymond focuses the body's stretch slider and presses an arrow key
+- **THEN** the body squashes or stretches by one step and the shown value updates
+
+#### Scenario: Stretch slider limits
+- **WHEN** the preview is loaded
+- **THEN** every stretch slider's minimum and maximum equal its layer's stretch range, and only layers with a stretch range have one

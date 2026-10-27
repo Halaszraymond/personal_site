@@ -192,7 +192,7 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
 
 ### 5.4 Coding requirements
 
-**Principle:** top quality, while written so that Raymond (strong in Python/R/SQL, new to TypeScript) can read every line and explain it in a job interview. Employers will read this repo too.
+**Principle:** the highest quality and the best user experience come first. The code stays clear and well commented, because employers will read this repo too, but it no longer has to be simple enough for Raymond to explain every line (dropped on 2026-10-27, see PLANNING_LOG).
 
 **Why TypeScript for the site and not Python in the browser:** Python in the browser (PyScript/Pyodide) first loads a Python runtime of several MB. That kills the first impression and the Lighthouse score, and the animation tooling for it is thin. Server frameworks like Streamlit or Reflex need a running server and aren't made for this kind of animated experience. So this repo is TypeScript only. Python and R show in their own projects, where they are strongest: r-Frica Predicts (R) and the Pi server (Python), linked from the case studies.
 
@@ -274,6 +274,7 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
   - [x] The rig, the named poses and the dev-only preview with placeholder layers; the WebGL check dropped (change `kalman-rig`). The layer list with prompts is in [`docs/kalman-layers.md`](docs/kalman-layers.md).
   - [x] The final illustrations (Raymond's Gemini images in the final design) cut into the rig by `npm run cut:kalman`, plus a turntable of eight angles and a spin slider in the preview.
   - [x] The animations (idle, bow, head-follow, dive, swim, launch), with GSAP, on a front and a side figure (change `kalman-animations`).
+  - [x] Follow-up after Raymond's review: more natural animations, with follow-through, overshoot and squash and stretch, a deeper bow, a natural dive, a swim with a real stroke and a launch with a landing (change `kalman-animation-feel`).
 - [ ] **Phase 2: the dive.** All sections with depth gauge, colour gradient, fish school, and fish turning into charts. Placeholder text first.
 - [ ] **Phase 3: content.** Real texts in NL/HU/EN, the 3 case studies, the "more catch" cards and a CV download. **Then go live** (§6): content complete, CI green, fallback working.
 - [ ] **Phase 4: polish, on the live site.** Tuning and verifying, not building: performance, accessibility audit, mobile testing on real devices, SEO and Open Graph, and a review of the translations.

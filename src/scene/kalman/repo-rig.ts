@@ -19,8 +19,10 @@ import {
   type Rigs,
 } from '../../lib/kalman-rig';
 import { validateAnimations, type Animation } from '../../lib/kalman-animation';
+import { drawnPoseErrors, type DrawnPose } from '../../lib/kalman-drawn-poses';
 import { turntableErrors, type TurntableEntry } from '../../lib/kalman-turntable';
 import animationData from './animations.json';
+import drawnPoseData from './drawn-poses.json';
 import poseData from './poses.json';
 import rigData from './rig.json';
 import turntableData from './turntable.json';
@@ -37,7 +39,11 @@ function loadRig(figure: Figure): Rig {
 }
 
 /** The repo's rigs, one per figure. */
-export const REPO_RIGS: Rigs = { front: loadRig('front'), side: loadRig('side') };
+export const REPO_RIGS: Rigs = {
+  front: loadRig('front'),
+  side: loadRig('side'),
+  swim: loadRig('swim'),
+};
 
 /** The front figure's rig: the one the turntable, the spin and most poses use. */
 export const REPO_RIG: Rig = REPO_RIGS.front;
@@ -83,11 +89,21 @@ function loadTurntable(): TurntableEntry[] {
   return turntableData.views as unknown as TurntableEntry[];
 }
 
+/** The drawn poses from drawn-poses.json (whole drawings, such as the bow). */
+export const REPO_DRAWN_POSES: readonly DrawnPose[] = loadDrawnPoses();
+
+function loadDrawnPoses(): DrawnPose[] {
+  const errors = drawnPoseErrors(drawnPoseData);
+  if (errors.length > 0) fail('src/scene/kalman/drawn-poses.json', errors);
+  // Checked above; JSON reads the pairs as `number[]`, hence the step through `unknown`.
+  return drawnPoseData.poses as unknown as DrawnPose[];
+}
+
 /** The animations from animations.json, checked against the repo's poses. */
 export const REPO_ANIMATIONS: readonly Animation[] = loadAnimations();
 
 function loadAnimations(): Animation[] {
-  const errors = validateAnimations(animationData, REPO_POSES);
+  const errors = validateAnimations(animationData, REPO_POSES, REPO_RIGS, REPO_DRAWN_POSES);
   if (errors.length > 0) fail('src/scene/kalman/animations.json', errors);
   // Checked above (names, figures, keyframes and eases), so the JSON may be treated as typed.
   return animationData as unknown as Animation[];

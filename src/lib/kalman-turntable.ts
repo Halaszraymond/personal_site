@@ -119,7 +119,7 @@ export function viewImages(
 const isPair = (value: unknown): value is Pair =>
   Array.isArray(value) && value.length === 2 && value.every((v) => Number.isFinite(v));
 
-function isPlacedImage(value: unknown): value is PlacedImage {
+export function isPlacedImage(value: unknown): value is PlacedImage {
   if (typeof value !== 'object' || value === null) return false;
   const { image, size, position } = value as Record<string, unknown>;
   return typeof image === 'string' && image !== '' && isPair(size) && isPair(position);

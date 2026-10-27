@@ -12,9 +12,22 @@
  * body (kalman-rig design §3).
  */
 import type { ImageMetadata } from 'astro';
-import { resolvePose, spinMatrix, toSvgTransform, type Mood } from '../../lib/kalman-rig';
+import {
+  resolvePose,
+  spinMatrix,
+  toSvgTransform,
+  translate,
+  type Mood,
+} from '../../lib/kalman-rig';
 import { viewImages, viewMatrix } from '../../lib/kalman-turntable';
-import { FIGURES, poseNamed, REPO_RIG, REPO_RIGS, REPO_TURNTABLE } from './repo-rig';
+import {
+  FIGURES,
+  poseNamed,
+  REPO_DRAWN_POSES,
+  REPO_RIG,
+  REPO_RIGS,
+  REPO_TURNTABLE,
+} from './repo-rig';
 
 interface Props {
   /** Name of a pose from poses.json; defaults to rest. */
@@ -64,6 +77,17 @@ const views = REPO_TURNTABLE.flatMap((view) => {
     image: imageFor(placed.image),
   }));
 });
+// The drawn poses (such as the bow), one group per pose and mood, hidden until an animation
+// cross-fades one in (kalman-animation-feel design §8).
+const drawnPoses = REPO_DRAWN_POSES.flatMap((drawn) =>
+  Object.entries(drawn.images).map(([drawnMood, placed]) => ({
+    name: drawn.name,
+    mood: drawnMood,
+    size: placed.size,
+    transform: toSvgTransform(translate(placed.position)),
+    image: imageFor(placed.image),
+  })),
+);
 const chosenPose = poseNamed(pose);
 // Both figures (front and side), each in its rest pose except the front one, which shows the
 // chosen pose. Only the front shows at first; the preview and the player switch figures.
@@ -109,6 +133,19 @@ const figures = FIGURES.map((figure) => {
         </g>
       ))
     }
+    {/* The drawn poses: cross-faded in over the layers by the player, at a keyframe that names one. */}
+    <g data-drawn-poses display="none">
+      {drawnPoses.map((drawn) => (
+        <g
+          data-drawn-pose={drawn.name}
+          data-drawn-mood={drawn.mood}
+          transform={drawn.transform}
+          visibility="hidden"
+        >
+          <image href={drawn.image.src} width={drawn.size[0]} height={drawn.size[1]} />
+        </g>
+      ))}
+    </g>
     {/* The turntable's drawn views: shown instead of the layers once he turns around. */}
     <g data-turntable display="none">
       {views.map((view) => (
@@ -157,8 +194,9 @@ const figures = FIGURES.map((figure) => {
   }
 
   /* Only the chosen figure's pivots show (CSS beats the SVG `display` attribute, so this is CSS). */
-  .kalman-figure[data-figure='front'] .pivots[data-figure='side'],
-  .kalman-figure[data-figure='side'] .pivots[data-figure='front'] {
+  .kalman-figure:not([data-figure='front']) .pivots[data-figure='front'],
+  .kalman-figure:not([data-figure='side']) .pivots[data-figure='side'],
+  .kalman-figure:not([data-figure='swim']) .pivots[data-figure='swim'] {
     display: none;
   }
 

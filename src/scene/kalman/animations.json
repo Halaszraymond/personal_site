@@ -35,23 +35,38 @@
       {
         "at": 0,
         "pose": "rest",
-        "ease": "power2.inOut"
+        "ease": "sine.out"
       },
       {
-        "at": 0.6,
+        "at": 0.35,
+        "pose": "bowStart",
+        "ease": "sine.inOut"
+      },
+      {
+        "at": 1.1,
         "pose": "bow",
-        "ease": "none"
+        "ease": "none",
+        "drawn": "bow"
       },
       {
-        "at": 1.2,
+        "at": 1.7,
         "pose": "bow",
-        "ease": "power2.inOut"
+        "ease": "back.out",
+        "drawn": "bow"
       },
       {
-        "at": 1.8,
+        "at": 2.5,
         "pose": "rest"
       }
-    ]
+    ],
+    "fade": 0.4,
+    "lag": {
+      "head": 0.05,
+      "flipperLeft": 0.08,
+      "flipperRight": 0.08,
+      "tie": 0.06
+    },
+    "smooth": true
   },
   {
     "name": "head-follow",
@@ -75,55 +90,92 @@
       {
         "at": 0,
         "pose": "rest",
-        "ease": "power1.out"
+        "ease": "sine.inOut"
       },
       {
         "at": 0.35,
-        "pose": "crouch",
-        "ease": "power2.in"
+        "pose": "diveLean",
+        "ease": "power1.inOut"
       },
       {
-        "at": 0.9,
-        "pose": "dive",
+        "at": 0.6,
+        "pose": "crouch",
         "ease": "power2.out"
       },
       {
-        "at": 1.5,
-        "pose": "diveDeep",
+        "at": 0.85,
+        "pose": "diveHop",
+        "ease": "power2.in"
+      },
+      {
+        "at": 1.4,
+        "pose": "dive",
         "ease": "none"
       },
       {
-        "at": 1.9,
-        "pose": "diveDeep",
+        "at": 1.6,
+        "pose": "dive",
         "ease": "power2.inOut"
       },
       {
-        "at": 2.6,
+        "at": 2.2,
         "pose": "rest"
       }
-    ]
+    ],
+    "lag": {
+      "tail": 0.16,
+      "footBack": 0.1,
+      "footFront": 0.1,
+      "flipper": 0.06,
+      "head": 0.07
+    },
+    "smooth": true
   },
   {
     "name": "swim",
     "label": "Swim",
-    "figure": "side",
+    "figure": "swim",
     "loop": true,
     "keyframes": [
       {
         "at": 0,
         "pose": "strokeDown",
-        "ease": "sine.inOut"
+        "ease": "power2.out"
       },
       {
-        "at": 0.4,
+        "at": 0.6,
         "pose": "strokeUp",
         "ease": "sine.inOut"
       },
       {
-        "at": 0.8,
+        "at": 1.2,
+        "pose": "strokeDown",
+        "ease": "power2.out"
+      },
+      {
+        "at": 1.8,
+        "pose": "strokeUp",
+        "ease": "sine.inOut"
+      },
+      {
+        "at": 2.4,
+        "pose": "strokeDown",
+        "ease": "power2.out"
+      },
+      {
+        "at": 3,
+        "pose": "swimGlance",
+        "ease": "sine.inOut"
+      },
+      {
+        "at": 3.6,
         "pose": "strokeDown"
       }
-    ]
+    ],
+    "lag": {
+      "flipper": 0.06
+    },
+    "smooth": true
   },
   {
     "name": "launch",
@@ -133,28 +185,61 @@
     "keyframes": [
       {
         "at": 0,
-        "pose": "strokeDown",
-        "ease": "power2.in"
+        "pose": "rest",
+        "ease": "sine.in"
       },
       {
-        "at": 0.4,
-        "pose": "pointUp",
+        "at": 0.3,
+        "pose": "launchWindUp",
         "ease": "power3.out"
       },
       {
-        "at": 1.0,
-        "pose": "launchHigh",
-        "ease": "none"
+        "at": 0.7,
+        "pose": "launchRise",
+        "ease": "power2.out"
       },
       {
-        "at": 1.3,
-        "pose": "launchHigh",
+        "at": 1.1,
+        "pose": "launchFly",
+        "ease": "power2.in"
+      },
+      {
+        "at": 1.45,
+        "pose": "landing",
+        "ease": "power2.out"
+      },
+      {
+        "at": 1.75,
+        "pose": "landingSlide",
         "ease": "power2.inOut"
       },
       {
-        "at": 2.0,
+        "at": 2.2,
+        "pose": "pushUp",
+        "ease": "power2.inOut"
+      },
+      {
+        "at": 2.55,
+        "pose": "landingWobble",
+        "ease": "sine.inOut"
+      },
+      {
+        "at": 2.9,
+        "pose": "landingRecover",
+        "ease": "back.out"
+      },
+      {
+        "at": 3.4,
         "pose": "rest"
       }
-    ]
+    ],
+    "lag": {
+      "tail": 0.16,
+      "footBack": 0.1,
+      "footFront": 0.1,
+      "flipper": 0.08,
+      "head": 0.07
+    },
+    "smooth": true
   }
 ]

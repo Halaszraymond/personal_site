@@ -2,7 +2,7 @@
  * Plays Kálmán's animations on a drawn figure (spec: kalman-animation; design §4–§5).
  *
  * GSAP is only the clock here: one tween moves a plain `time` value from 0 to the animation's
- * length, and on every frame `samplePose()` (src/lib/kalman-animation.ts) works out the pose at
+ * play length (its keyframes plus the largest lag, `playLength()`), and on every frame `samplePose()` (src/lib/kalman-animation.ts) works out the pose at
  * that time from the keyframes in animations.json, and `applyPose()` draws it. GSAP also gives
  * the easing curves (`gsap.parseEase`) and the smooth pointer following (`gsap.quickTo`).
  *
@@ -11,21 +11,24 @@
  */
 import { gsap } from 'gsap';
 import {
-  duration,
-  headTurn,
+  drawnFrame,
+  eyeShift,
+  followAngles,
+  playLength,
   samplePose,
   type Animation,
   type EaseOf,
 } from '../../lib/kalman-animation';
 import {
   applyToPoint,
+  clampToRig,
   resolvePose,
   type Figure,
   type Mood,
   type Pair,
   type Pose,
 } from '../../lib/kalman-rig';
-import { applyFigure, applyPose } from './kalman-figure-client';
+import { applyDrawn, applyFigure, applyPose } from './kalman-figure-client';
 import { poseNamed, posesFor, REPO_ANIMATIONS, REPO_RIGS } from './repo-rig';
 
 /** GSAP's own curves for the easing names in animations.json. */
@@ -35,6 +38,12 @@ const easeOf: EaseOf = (name) => gsap.parseEase(name);
 const HEAD_REACH = 500;
 /** How long the head takes to catch up with the pointer, in seconds: smooth, not jittery. */
 const HEAD_LAG = 0.3;
+/** The eyes are quicker than the head: they look first, and the head follows (overlap). */
+const EYES_LAG = 0.15;
+/** The body is slower than the head: it turns along last. */
+const BODY_LAG = 0.5;
+/** The layers that hold the pupils (goofy and professional); each moves only if the rig has it. */
+const PUPIL_LAYERS = ['pupils', 'pupilsProfessional'] as const;
 
 /** What the player can do; created once per figure with `createPlayer()`. */
 export interface Player {
@@ -67,9 +76,15 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
 
   /** Draws `animation` at `time` seconds, and writes the state on the figure. */
   function draw(animation: Animation, time: number): void {
-    const pose = samplePose(animation, posesByName(animation.figure), time, easeOf);
+    const rig = REPO_RIGS[animation.figure];
+    // Clamped, because an overshooting easing may ask a layer for a little more than its range.
+    const pose = clampToRig(
+      samplePose(animation, posesByName(animation.figure), time, easeOf),
+      rig,
+    );
     applyFigure(figure, animation.figure);
-    applyPose(figure, REPO_RIGS[animation.figure], pose, moodOf());
+    applyPose(figure, rig, pose, moodOf());
+    applyDrawn(figure, animation.figure, drawnFrame(animation, time), moodOf());
     figure.dataset['animation'] = animation.name;
     figure.dataset['time'] = time.toFixed(2);
     for (const listener of frameListeners) listener(animation, time);
@@ -82,6 +97,7 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
     stopFollowing();
     if (playing !== undefined) {
       applyPose(figure, REPO_RIGS[playing.figure], poseNamed('rest', playing.figure), moodOf());
+      applyDrawn(figure, playing.figure, undefined, moodOf());
     }
     playing = undefined;
     delete figure.dataset['animation'];
@@ -91,7 +107,7 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   /** A paused or playing tween of the clock over `animation`, drawing every frame. */
   function tweenFor(animation: Animation, paused: boolean): gsap.core.Tween {
     clock.time = 0;
-    const length = duration(animation);
+    const length = playLength(animation);
     return gsap.to(clock, {
       time: length,
       duration: length,
@@ -117,23 +133,42 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   // -------------------------------------------------------------------------------------
 
   const head = { rotate: 0 };
+  // The body's share of the turn, which it glides towards more slowly than the head.
+  const body = { rotate: 0 };
+  // The pupils' offset, which they glide towards (like `head.rotate`).
+  const eyes = { x: 0, y: 0 };
   const frontRig = REPO_RIGS.front;
   const headLayer = frontRig.layers.find((layer) => layer.name === 'head');
-  const headPivot: Pair = resolvePose(frontRig, poseNamed('rest'), 'goofy').find(
-    (l) => l.name === 'head',
-  )?.pivotOnArtboard ?? [0, 0];
-  const drawHead = () =>
-    applyPose(
-      figure,
-      frontRig,
-      {
-        name: 'head-follow',
-        label: 'Head-follow',
-        figure: 'front',
-        layers: { head: { rotate: head.rotate } },
-      },
-      moodOf(),
+  const atRest = resolvePose(frontRig, poseNamed('rest'), 'goofy');
+  const headPivot: Pair = atRest.find((l) => l.name === 'head')?.pivotOnArtboard ?? [0, 0];
+  const pupilLayers = frontRig.layers.filter((layer) =>
+    (PUPIL_LAYERS as readonly string[]).includes(layer.name),
+  );
+  // Where the eyes are, and how far a pupil may shift: from the first pupil layer the rig has.
+  const firstPupil = pupilLayers[0];
+  const eyesAt: Pair =
+    atRest.find((l) => l.name === firstPupil?.name)?.pivotOnArtboard ?? headPivot;
+  const eyesShift: Pair = firstPupil?.shift ?? [0, 0];
+  const drawHead = () => {
+    const pupils = Object.fromEntries(
+      pupilLayers.map((layer) => [layer.name, { offset: [eyes.x, eyes.y] as Pair }]),
     );
+    const pose: Pose = {
+      name: 'head-follow',
+      label: 'Head-follow',
+      figure: 'front',
+      layers: {
+        body: { rotate: body.rotate },
+        head: { rotate: head.rotate },
+        // On the ground: the body leans over feet that stay where they are.
+        footLeft: { plant: 1 },
+        footRight: { plant: 1 },
+        ...pupils,
+      },
+    };
+    // Clamped, so neither pupil layer goes past its own limit.
+    applyPose(figure, frontRig, clampToRig(pose, frontRig), moodOf());
+  };
   // `quickTo` makes one reusable tween: calling it with a new value glides there in HEAD_LAG s.
   const turnHeadTo = gsap.quickTo(head, 'rotate', {
     duration: HEAD_LAG,
@@ -157,12 +192,39 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
     return applyToPoint(m, [event.clientX, event.clientY]);
   }
 
+  const turnBodyTo = gsap.quickTo(body, 'rotate', {
+    duration: BODY_LAG,
+    ease: 'power2.out',
+    onUpdate: drawHead,
+  });
+  // The eyes glide like the head, but faster, and both directions at once.
+  const moveEyesX = gsap.quickTo(eyes, 'x', {
+    duration: EYES_LAG,
+    ease: 'power2.out',
+    onUpdate: drawHead,
+  });
+  const moveEyesY = gsap.quickTo(eyes, 'y', {
+    duration: EYES_LAG,
+    ease: 'power2.out',
+    onUpdate: drawHead,
+  });
+
   const onPointerMove = (event: PointerEvent) => {
     const point = pointerOnArtboard(event);
     if (point === undefined || headLayer === undefined) return;
-    turnHeadTo(headTurn(point, headPivot, headLayer.rotate, HEAD_REACH));
+    const angles = followAngles(point, headPivot, headLayer.rotate, HEAD_REACH);
+    turnHeadTo(angles.head);
+    turnBodyTo(angles.body);
+    const [x, y] = eyeShift(point, eyesAt, eyesShift, HEAD_REACH);
+    moveEyesX(x);
+    moveEyesY(y);
   };
-  const onPointerLeave = () => turnHeadTo(0);
+  const onPointerLeave = () => {
+    turnHeadTo(0);
+    turnBodyTo(0);
+    moveEyesX(0);
+    moveEyesY(0);
+  };
   let following = false;
 
   function startFollowing(): void {
@@ -178,7 +240,12 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
     figure.removeEventListener('pointermove', onPointerMove);
     figure.removeEventListener('pointerleave', onPointerLeave);
     gsap.killTweensOf(head);
+    gsap.killTweensOf(body);
+    gsap.killTweensOf(eyes);
     head.rotate = 0;
+    body.rotate = 0;
+    eyes.x = 0;
+    eyes.y = 0;
   }
 
   // -------------------------------------------------------------------------------------

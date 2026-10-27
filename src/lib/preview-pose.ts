@@ -2,8 +2,8 @@
  * The pose the Kálmán preview shows, worked out from its controls (spec: kalman-preview).
  *
  * The preview starts from a named pose (the last pose button pressed) and lets the sliders
- * override each layer's rotation. Offsets aren't on sliders, so they stay as the named pose
- * has them. Once a slider differs from the named pose, the result is no longer that pose but
+ * override each layer's rotation and, for layers that may stretch, its stretch. Offsets aren't
+ * on sliders, so they stay as the named pose has them. Once a slider differs from the named pose, the result is no longer that pose but
  * a "custom" one, which is what "Copy pose" exports. Pure, so it is unit-tested.
  */
 import { figureOf, type LayerPose, type Pair, type Pose } from './kalman-rig';
@@ -13,22 +13,37 @@ export const CUSTOM_POSE = { name: 'custom', label: 'Custom' } as const;
 
 /**
  * The named pose `base` with every layer's rotation taken from `rotations` (layer name →
- * degrees). Layers at 0° without an offset are left out, so the JSON stays as short as the
- * poses in poses.json.
+ * degrees) and its stretch from `stretches` (layer name → stretch, 1 = rest). Layers at rest
+ * (0°, no offset, stretch 1) are left out, and so are the fields at rest, so the JSON stays as
+ * short as the poses in poses.json.
  */
-export function poseFromControls(base: Pose, rotations: Readonly<Record<string, number>>): Pose {
-  const names = new Set([...Object.keys(base.layers), ...Object.keys(rotations)]);
+export function poseFromControls(
+  base: Pose,
+  rotations: Readonly<Record<string, number>>,
+  stretches: Readonly<Record<string, number>> = {},
+): Pose {
+  const names = new Set([
+    ...Object.keys(base.layers),
+    ...Object.keys(rotations),
+    ...Object.keys(stretches),
+  ]);
   const layers: Record<string, LayerPose> = {};
   let changed = false;
   for (const name of names) {
     const offset = base.layers[name]?.offset;
+    // Like the offset, a planted foot isn't on a slider; it stays as the named pose has it.
+    const plant = base.layers[name]?.plant;
     const rotate = rotations[name] ?? base.layers[name]?.rotate ?? 0;
+    const stretch = stretches[name] ?? base.layers[name]?.stretch ?? 1;
     if (rotate !== (base.layers[name]?.rotate ?? 0)) changed = true;
+    if (stretch !== (base.layers[name]?.stretch ?? 1)) changed = true;
     // Build the layer entry with only the fields that matter, in a fixed order.
-    const entry: { rotate?: number; offset?: Pair } = {};
+    const entry: { rotate?: number; offset?: Pair; stretch?: number; plant?: number } = {};
     if (rotate !== 0) entry.rotate = rotate;
     if (offset !== undefined) entry.offset = offset;
-    if (entry.rotate !== undefined || entry.offset !== undefined) layers[name] = entry;
+    if (stretch !== 1) entry.stretch = stretch;
+    if (plant !== undefined) entry.plant = plant;
+    if (Object.keys(entry).length > 0) layers[name] = entry;
   }
   // The figure comes along, so a copied side pose is pasted into poses.json as a side pose.
   const figure = figureOf(base);

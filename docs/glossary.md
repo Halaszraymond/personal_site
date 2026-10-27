@@ -98,6 +98,8 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 
 **Pose**: a still position of the figure, stored as "turn this layer so many degrees, shift that one so far" relative to rest. Layers a pose doesn't mention stay at rest.
 
+**Squash and stretch**: an animation principle: a figure gets shorter and wider when it lands or crouches (squash) and taller and thinner when it jumps or dives (stretch), but keeps its volume, like a rubber ball. Here a layer's `stretch` does that: 0.9 is 10% shorter and 1 / 0.9 wider.
+
 **Transform matrix**: six numbers that move, turn and scale points in one step; SVG writes it as `matrix(a b c d e f)`. Combining two transforms is multiplying their matrices, like `A @ B` in NumPy, and the order matters: turning then moving is not the same as moving then turning.
 
 **Drawing order (z-order)**: which layer is drawn on top of which. Later-drawn layers cover earlier ones. Here it is set per layer (`order`), separately from parent and child, so a flipper that hangs from the body can still be drawn behind it.
@@ -105,6 +107,8 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 **Turntable**: turning a figure around to see it from every side, like a cake on a turning plate. Here it switches between drawn views (front, ¾, side, ¾ back, back) instead of rotating a 3D model.
 
 **Crossfade**: fading one image in while another is still showing, so a switch doesn't jump. On the turntable the next view fades in on top of the current one.
+
+**Drawn pose**: a whole drawing of Kálmán in one pose, used where turning layers can't make it (the bow from the front). An animation cross-fades it in over the layers at a keyframe and back out afterwards.
 
 **Mirroring**: flipping an image left to right. The side seen from the left is the side seen from the right, flipped, so four drawn views give eight angles.
 
@@ -124,10 +128,24 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 
 **Timeline / tween**: GSAP's words. A *tween* changes a value from A to B over time (here: the animation's clock, from 0 to its length); a *timeline* strings tweens together. Here GSAP only runs the clock; the poses come from the keyframes.
 
+**Anticipation**: a small movement the other way before the main one, so the eye sees it coming: a crouch before a jump, a little rise before a bow.
+
+**Follow-through and overlap**: parts of a figure don't start and stop together. The body moves first; the tail, feet and flippers follow a moment later and settle after the body has stopped. Without it, a figure moves like one piece of cardboard.
+
+**Lag**: how we make follow-through here: a layer shows the pose the animation had a fraction of a second earlier. A tail with a lag of 0.12 s is always 0.12 s behind the body.
+
+**Overshoot**: going slightly past the target and settling back, like a nod that goes a bit too far. GSAP's `back` easings do this.
+
 **Scrubbing**: moving through an animation by hand, like dragging the playhead of a video. The preview's scrub slider holds the animation still at a chosen moment.
 
 **Loop**: an animation that starts again when it ends (idle, swim), until something else starts.
 
-**Head-follow**: the head turning towards the pointer. The further to the side the pointer is, the further the head turns, up to the end of its range; `gsap.quickTo` makes it glide there instead of jumping.
+**Head-follow**: the head turning towards the pointer. The further to the side the pointer is, the further the head turns, up to the end of its range; `gsap.quickTo` makes it glide there instead of jumping. The pupils look along, a little faster than the head.
 
-**Figure (front, side)**: Kálmán is posable from two angles, each with its own rig of layers. Idle, bow and head-follow use the front figure; dive, swim and launch the side one.
+**Shift limit**: how far a layer may move from rest each way (`shift` in the rig). The pupils have one, so they never slide out of the eye.
+
+**Figure (front, side, swim)**: Kálmán is posable as three figures, each with its own rig of layers: from the front (idle, bow, head-follow), from the side (dive, launch), and drawn horizontally for swimming.
+
+**Planted (feet)**: a foot that stays on the ground while the body above it sinks or leans, as a penguin's hidden knees bend; it still moves with the body, so it never comes loose.
+
+**Smooth curve (spline)**: one flowing line through all the keyframes instead of separate pieces. It only slows down where a movement turns around, so he doesn't pause at every keyframe.

@@ -13,7 +13,7 @@ export const PREVIEW_EN = {
   intro:
     'Dev-only page: play Kálmán’s animations, and try his poses and moods from the front and from the side.',
   figureLegend: 'Figure',
-  figures: { front: 'Front', side: 'Side' },
+  figures: { front: 'Front', side: 'Side', swim: 'Swimming' },
   animationsLegend: 'Animations',
   /** The play button's text: "Play bow". */
   play: 'Play',
@@ -24,6 +24,9 @@ export const PREVIEW_EN = {
   professional: 'Professional (tie and glasses)',
   showPivots: 'Show pivots',
   rotationsLegend: 'Rotation per layer (degrees)',
+  stretchesLegend: 'Squash and stretch per layer (1 = rest)',
+  /** A stretch slider's label: "Body stretch", "Side: body stretch". */
+  stretch: 'stretch',
   viewLegend: 'View',
   spin: 'Spin whole figure',
   turn: 'Turn around',
@@ -56,6 +59,8 @@ export const PREVIEW_EN = {
     tail: 'Tail',
     tie: 'Tie',
     glasses: 'Glasses',
+    pupils: 'Pupils',
+    pupilsProfessional: 'Pupils (professional)',
   },
   /**
    * The side figure's sliders get their own labels ("Side: head"), so no two sliders on the page
@@ -71,11 +76,23 @@ export const PREVIEW_EN = {
     tie: 'Side: tie',
     glasses: 'Side: glasses',
   },
+  /** The swimming figure's sliders, labelled like the side ones. */
+  swimLayers: {
+    body: 'Swimming: body',
+    flipper: 'Swimming: flipper',
+    tie: 'Swimming: tie',
+    glasses: 'Swimming: glasses',
+  },
 } as const;
 
 /** A layer's label for the sliders; the layer's own name if it has none (a new layer). */
 export function layerLabel(name: string, figure: Figure = 'front'): string {
-  const labels = figure === 'front' ? PREVIEW_EN.layers : PREVIEW_EN.sideLayers;
+  const byFigure = {
+    front: PREVIEW_EN.layers,
+    side: PREVIEW_EN.sideLayers,
+    swim: PREVIEW_EN.swimLayers,
+  };
+  const labels = byFigure[figure];
   // `Object.entries` gives [key, value] pairs, like `dict.items()` in Python.
   const found = Object.entries(labels).find(([key]) => key === name);
   return found === undefined ? name : found[1];

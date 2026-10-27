@@ -8,6 +8,8 @@
  * slider, instead of guessing from pixels or waiting for time to pass.
  */
 import type { Page } from '@playwright/test';
+import animations from '../../src/scene/kalman/animations.json' with { type: 'json' };
+import poses from '../../src/scene/kalman/poses.json' with { type: 'json' };
 import { expect, test } from './fixtures';
 
 const figure = (page: Page) => page.locator('[data-kalman-figure]');
@@ -65,12 +67,12 @@ test('playing the bow marks it, and he ends at rest', async ({ page }) => {
   expect(await frontHead(page).getAttribute('transform')).toBe(restHead);
 });
 
-test('starting swim stops the idle loop and shows the side figure', async ({ page }) => {
+test('starting swim stops the idle loop and shows the swimming figure', async ({ page }) => {
   await expect(figure(page)).toHaveAttribute('data-animation', 'idle');
   await page.getByRole('button', { name: 'Play swim' }).click();
 
   await expect(figure(page)).toHaveAttribute('data-animation', 'swim');
-  await expect(figure(page)).toHaveAttribute('data-figure', 'side');
+  await expect(figure(page)).toHaveAttribute('data-figure', 'swim');
   await expect(page.getByRole('button', { name: 'Play idle' })).toHaveAttribute(
     'aria-pressed',
     'false',
@@ -91,6 +93,26 @@ test('the scrub slider holds a moment still and draws it', async ({ page }) => {
   await expect(body).not.toHaveAttribute('transform', /^matrix\(1 0 0 1 /);
 });
 
+test('lagging layers settle: the dive only ends once its tail is at rest', async ({ page }) => {
+  await page.getByRole('switch', { name: /Idle when nothing else plays/ }).uncheck();
+  const tail = page.locator('[data-layers][data-figure="side"] [data-layer="tail"]');
+  const restTail = await tail.getAttribute('transform');
+  const lastKeyframe = animations.find((a) => a.name === 'dive')?.keyframes.at(-1)?.at ?? 0;
+  await page.getByRole('button', { name: 'Play dive' }).click();
+
+  // The slider runs to the play length: past the last keyframe, by the tail's lag.
+  const end = Number(await scrub(page).getAttribute('max'));
+  expect(end).toBeGreaterThan(lastKeyframe);
+  // At the last keyframe the body is at rest, but the tail is still catching up...
+  await scrub(page).fill(String(lastKeyframe));
+  await expect(figure(page)).toHaveAttribute('data-time', lastKeyframe.toFixed(2));
+  expect(await tail.getAttribute('transform')).not.toBe(restTail);
+  // ...and only at the end of the play length is it at rest too.
+  await scrub(page).fill(String(end));
+  await expect(figure(page)).toHaveAttribute('data-time', end.toFixed(2));
+  expect(await tail.getAttribute('transform')).toBe(restTail);
+});
+
 test('head-follow turns the head towards the pointer', async ({ page }) => {
   const restHead = await frontHead(page).getAttribute('transform');
   await page.getByRole('button', { name: 'Play head-follow' }).click();
@@ -105,22 +127,83 @@ test('head-follow turns the head towards the pointer', async ({ page }) => {
   await expect(frontHead(page)).not.toHaveAttribute('transform', restHead ?? '', { timeout: 2000 });
 });
 
+test('head-follow lets the body lean along, so the head is not turning alone', async ({ page }) => {
+  const body = page.locator('[data-layers][data-figure="front"] [data-layer="body"]');
+  const restBody = await body.getAttribute('transform');
+  await lookRight(page);
+  await expect(body).not.toHaveAttribute('transform', restBody ?? '', { timeout: 2000 });
+});
+
+/** The x of a pupil layer's position, read from its SVG matrix (the `e` of `matrix(a b c d e f)`). */
+async function pupilX(page: Page, layer: string): Promise<number> {
+  const transform = await page
+    .locator(`[data-layers][data-figure="front"] [data-layer="${layer}"]`)
+    .getAttribute('transform');
+  return Number(transform?.match(/matrix\(([^)]+)\)/)?.[1]?.split(' ')[4]);
+}
+
+/** Starts head-follow and moves the pointer to the right edge of the stage. */
+async function lookRight(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Play head-follow' }).click();
+  await figure(page).scrollIntoViewIfNeeded();
+  const box = await figure(page).boundingBox();
+  if (box === null) throw new Error('The figure has no box.');
+  await page.mouse.move(box.x + box.width - 5, box.y + box.height * 0.15, { steps: 5 });
+}
+
+test('head-follow moves the pupils towards the pointer as well', async ({ page }) => {
+  const rest = await pupilX(page, 'pupils');
+  await lookRight(page);
+  // The head turns too, so the pupils' position changes for both reasons; to the right is more x.
+  await expect.poll(() => pupilX(page, 'pupils')).toBeGreaterThan(rest);
+});
+
+test('in the professional mood the pupils behind the glasses follow the pointer', async ({
+  page,
+}) => {
+  await page.getByRole('switch', { name: /Professional/ }).check();
+  const rest = await pupilX(page, 'pupilsProfessional');
+  await lookRight(page);
+  await expect.poll(() => pupilX(page, 'pupilsProfessional')).toBeGreaterThan(rest);
+  // The goofy pupils stay hidden in this mood.
+  await expect(
+    page.locator('[data-layers][data-figure="front"] [data-layer="pupils"]'),
+  ).toHaveAttribute('visibility', 'hidden');
+});
+
 test('the front/side switch shows the side figure with its own poses and sliders', async ({
   page,
 }) => {
   await page.getByLabel('Side', { exact: true }).check();
 
   await expect(figure(page)).toHaveAttribute('data-figure', 'side');
-  await expect(page.getByRole('button', { name: 'Stroke up' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Crouch' })).toBeVisible();
   await expect(page.getByLabel('Side: flipper')).toBeVisible();
   await expect(page.getByLabel('Left flipper')).toBeHidden();
 
   // A side pose from its button, and its JSON says it is a side pose.
-  await page.getByRole('button', { name: 'Stroke up' }).click();
-  await expect(page.getByLabel('Side: flipper')).toHaveValue('50');
+  await page.getByRole('button', { name: 'Crouch' }).click();
+  const crouch = poses.find((p) => p.figure === 'side' && p.name === 'crouch');
+  const flipper = (crouch?.layers as Record<string, { rotate?: number }> | undefined)?.['flipper'];
+  await expect(page.getByLabel('Side: flipper')).toHaveValue(String(flipper?.rotate ?? 0));
   expect(JSON.parse(await page.getByLabel(/Pose JSON/).inputValue())).toMatchObject({
-    name: 'strokeUp',
+    name: 'crouch',
     figure: 'side',
+  });
+});
+
+test('the figure switch shows the swimming figure with its own poses and sliders', async ({
+  page,
+}) => {
+  await page.getByLabel('Swimming', { exact: true }).check();
+
+  await expect(figure(page)).toHaveAttribute('data-figure', 'swim');
+  await expect(page.getByLabel('Swimming: flipper')).toBeVisible();
+  await expect(page.getByLabel('Side: flipper')).toBeHidden();
+  await page.getByRole('button', { name: 'Stroke down' }).click();
+  expect(JSON.parse(await page.getByLabel(/Pose JSON/).inputValue())).toMatchObject({
+    name: 'strokeDown',
+    figure: 'swim',
   });
 });
 

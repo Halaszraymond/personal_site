@@ -7,6 +7,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   applyToPoint,
+  clampToRig,
   compose,
   figureCentre,
   IDENTITY,
@@ -16,6 +17,7 @@ import {
   rotate,
   rotateAround,
   spinMatrix,
+  stretchAround,
   toSvgTransform,
   translate,
   validatePose,
@@ -388,7 +390,7 @@ describe('poses per figure', () => {
       layer({ name: 'flipper', order: 30, rotate: [-90, 90] }),
     ],
   };
-  const RIGS = { front: RIG, side: SIDE };
+  const RIGS = { front: RIG, side: SIDE, swim: SIDE };
 
   it('checks a front pose against the front rig, also when it doesn’t say its figure', () => {
     const data = { name: 'nod', label: 'Nod', layers: { head: { rotate: 10 } } };
@@ -417,6 +419,296 @@ describe('poses per figure', () => {
   it('rejects an unknown figure', () => {
     expect(
       errorsOf(validateFigurePose({ name: 'x', label: 'X', figure: 'top', layers: {} }, RIGS)),
-    ).toEqual(['Pose "x" needs "figure" as "front" or "side".']);
+    ).toEqual(['Pose "x" needs "figure" as one of front, side, swim.']);
+  });
+});
+
+// ---------------------------------------------------------------------------------------
+// Squash and stretch (spec: "A layer can squash and stretch", "Children follow their
+// parent's stretch"; design §1, §5)
+// ---------------------------------------------------------------------------------------
+
+/** The rig with a stretch range on the body and the head. */
+const STRETCHY: Rig = {
+  ...RIG,
+  layers: RIG.layers.map((l) =>
+    l.name === 'body' || l.name === 'head' ? { ...l, stretch: [0.8, 1.2] as Pair } : l,
+  ),
+};
+
+describe('stretching a layer', () => {
+  it('stretchAround keeps the pivot and keeps the area', () => {
+    const squash = stretchAround(0.9, [100, 300]);
+    expectPointClose(applyToPoint(squash, [100, 300]), [100, 300]);
+    // 0.9 times as tall and 1 / 0.9 times as wide: the area stays the same.
+    expect(squash.d * squash.a).toBeCloseTo(1, 12);
+  });
+
+  it('squashes the body 10% shorter and correspondingly wider, with its pivot in place', () => {
+    const body = resolved(STRETCHY, pose({ body: { stretch: 0.9 } }), 'body');
+    // The body's top-left and bottom-right corners, from its own image to the artboard.
+    const [left, top] = applyToPoint(body.matrix, [0, 0]);
+    const [right, bottom] = applyToPoint(body.matrix, [200, 300]);
+    expect(bottom - top).toBeCloseTo(300 * 0.9, 9);
+    expect(right - left).toBeCloseTo(200 / 0.9, 9);
+    expectPointClose(body.pivotOnArtboard, [200, 500]);
+  });
+
+  it('changes nothing without a stretch, or with a stretch of 1', () => {
+    for (const layers of [{}, { body: { stretch: 1 } }]) {
+      expect(resolved(STRETCHY, pose(layers), 'body').matrix).toEqual(
+        resolved(STRETCHY, REST_POSE, 'body').matrix,
+      );
+    }
+  });
+
+  it('stretches along the layer’s own upright direction, so the stretch turns with it', () => {
+    // Turned 90° clockwise, the body's top points right; a stretch of 0.5 halves that length.
+    const body = resolved(STRETCHY, pose({ body: { rotate: 90, stretch: 0.5 } }), 'body');
+    expectPointClose(applyToPoint(body.matrix, [100, 0]), [200 + 150, 500]);
+  });
+
+  it('keeps a child attached: the head moves down with the top of a squashed body', () => {
+    // The head's pivot (the neck) sits on the top of the body, 300 above the body's pivot.
+    const head = resolved(STRETCHY, pose({ body: { stretch: 0.9 } }), 'head');
+    expectPointClose(head.pivotOnArtboard, [200, 500 - 300 * 0.9]);
+  });
+});
+
+describe('validating stretch', () => {
+  it('accepts a rig with stretch ranges, and a pose within them', () => {
+    expect(validateRig(rigWith({ body: { stretch: [0.8, 1.2] } }), allImagesExist).ok).toBe(true);
+    expect(
+      validatePose(
+        { name: 'squash', label: 'Squash', layers: { body: { stretch: 0.85 } } },
+        STRETCHY,
+      ).ok,
+    ).toBe(true);
+  });
+
+  it('rejects a stretch range that is empty, inverted, not positive or without 1', () => {
+    const errorsFor = (stretch: Pair) =>
+      errorsOf(validateRig(rigWith({ body: { stretch } }), allImagesExist));
+    expect(errorsFor([1.1, 1.1])).toContain(
+      'Layer "body" has an empty, inverted or non-positive stretch range [1.1, 1.1].',
+    );
+    expect(errorsFor([1.2, 0.8])).toContain(
+      'Layer "body" has an empty, inverted or non-positive stretch range [1.2, 0.8].',
+    );
+    expect(errorsFor([0, 1.2])).toContain(
+      'Layer "body" has an empty, inverted or non-positive stretch range [0, 1.2].',
+    );
+    expect(errorsFor([1.1, 1.3])).toContain(
+      'Layer "body" has a stretch range [1.1, 1.3] without 1, its rest size.',
+    );
+  });
+
+  it('rejects a stretch range that is not two numbers', () => {
+    const data = rigWith({ body: { stretch: 1.2 as unknown as Pair } });
+    expect(errorsOf(validateRig(data, allImagesExist))).toContain(
+      'Layer "body" needs "stretch" as two numbers, or none.',
+    );
+  });
+
+  it('rejects a stretch outside the range, naming the pose, the layer and the range', () => {
+    expect(
+      errorsOf(
+        validatePose({ name: 'x', label: 'X', layers: { body: { stretch: 0.5 } } }, STRETCHY),
+      ),
+    ).toEqual(['Pose "x" stretches "body" to 0.5, outside its range [0.8, 1.2].']);
+  });
+
+  it('rejects a stretch for a layer without a stretch range', () => {
+    expect(
+      errorsOf(
+        validatePose({ name: 'x', label: 'X', layers: { flipper: { stretch: 1.1 } } }, STRETCHY),
+      ),
+    ).toEqual(['Pose "x" stretches "flipper", which has no stretch range in the rig.']);
+  });
+
+  it('rejects a stretch that is not a finite number', () => {
+    expect(
+      errorsOf(
+        validatePose({ name: 'x', label: 'X', layers: { body: { stretch: Infinity } } }, STRETCHY),
+      ),
+    ).toEqual(['Pose "x", layer "body": "stretch" must be a number.']);
+  });
+});
+
+describe('clampToRig', () => {
+  it('leaves values inside the range, and at its ends, as they are', () => {
+    const inside = pose({ head: { rotate: 45 }, body: { stretch: 0.8 }, flipper: { rotate: 10 } });
+    expect(clampToRig(inside, STRETCHY)).toEqual(inside);
+  });
+
+  it('pulls rotations and stretches beyond either end back to that end', () => {
+    const beyond = pose({
+      head: { rotate: 50, stretch: 1.3 },
+      flipper: { rotate: -40 },
+      body: { stretch: 0.7 },
+    });
+    expect(clampToRig(beyond, STRETCHY).layers).toEqual({
+      head: { rotate: 45, stretch: 1.2 },
+      flipper: { rotate: -30 },
+      body: { stretch: 0.8 },
+    });
+  });
+
+  it('keeps offsets, and holds a layer without a stretch range at 1', () => {
+    const shifted = pose({ flipper: { offset: [500, -500], stretch: 1.4 } });
+    expect(clampToRig(shifted, STRETCHY).layers).toEqual({
+      flipper: { offset: [500, -500], stretch: 1 },
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------------------
+// Pupils: a limited shift and a mood of their own (spec: "A layer's shift can be limited",
+// "The professional accessories can be shown or hidden"; kalman-animation-feel design §11)
+// ---------------------------------------------------------------------------------------
+
+/** The tiny rig with goofy and professional pupils on the head. */
+const EYED: Rig = {
+  ...RIG,
+  layers: [
+    ...RIG.layers,
+    layer({ name: 'pupils', parent: 'head', order: 35, shift: [6, 4], mood: 'goofy' }),
+    layer({
+      name: 'pupilsProfessional',
+      parent: 'head',
+      order: 45,
+      shift: [5, 3],
+      accessory: true,
+    }),
+  ],
+};
+
+describe('pupils', () => {
+  it('accepts a rig with a shift and a mood, and a pose within the shift', () => {
+    const data = { artboard: EYED.artboard, layers: EYED.layers };
+    expect(validateRig(data, allImagesExist).ok).toBe(true);
+    const look = { name: 'look', label: 'Look', layers: { pupils: { offset: [-6, 4] } } };
+    expect(validatePose(look, EYED).ok).toBe(true);
+  });
+
+  it('rejects a shift beyond the allowed shift (spec: "Pupil at the edge")', () => {
+    const far = { name: 'far', label: 'Far', layers: { pupils: { offset: [7, 0] } } };
+    expect(errorsOf(validatePose(far, EYED))).toEqual([
+      'Pose "far" shifts "pupils" by [7, 0], beyond its allowed shift [6, 4].',
+    ]);
+  });
+
+  it('rejects a negative shift range and an unknown mood', () => {
+    const data = {
+      artboard: RIG.artboard,
+      layers: [
+        ...RIG.layers,
+        { ...layer({ name: 'pupils', parent: 'head', order: 35 }), shift: [-1, 2], mood: 'sleepy' },
+      ],
+    };
+    expect(errorsOf(validateRig(data, allImagesExist))).toEqual([
+      'Layer "pupils" needs "shift" as two numbers of 0 or more, or none.',
+      'Layer "pupils" needs "mood" as "goofy" or "professional", or none.',
+    ]);
+  });
+
+  it('clamps an offset to the shift, and leaves offsets of other layers free', () => {
+    const wild = pose({ pupils: { offset: [20, -9] }, head: { offset: [300, 0] } });
+    expect(clampToRig(wild, EYED).layers).toEqual({
+      pupils: { offset: [6, -4] },
+      head: { offset: [300, 0] },
+    });
+  });
+
+  it('shows each pair of pupils only in its own mood (scenarios "Professional mood", "Goofy mood")', () => {
+    expect(resolved(EYED, REST_POSE, 'pupils', 'goofy').visible).toBe(true);
+    expect(resolved(EYED, REST_POSE, 'pupilsProfessional', 'goofy').visible).toBe(false);
+    expect(resolved(EYED, REST_POSE, 'pupils', 'professional').visible).toBe(false);
+    expect(resolved(EYED, REST_POSE, 'pupilsProfessional', 'professional').visible).toBe(true);
+  });
+
+  it('turns the pupils with the head, as its children', () => {
+    const tilted = pose({ head: { rotate: 20 } });
+    const head = resolved(EYED, tilted, 'head');
+    const pupils = resolved(EYED, tilted, 'pupils');
+    expect(Math.atan2(pupils.matrix.b, pupils.matrix.a)).toBeCloseTo(
+      Math.atan2(head.matrix.b, head.matrix.a),
+      9,
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------------------
+// Planted feet: the knees (spec: "Feet can stay on the ground"; design §12)
+// ---------------------------------------------------------------------------------------
+
+/** The tiny rig with a foot hanging from the body, at its bottom. */
+const FOOTED: Rig = {
+  ...RIG,
+  layers: [
+    ...RIG.layers.map((l) => (l.name === 'body' ? { ...l, stretch: [0.8, 1.2] as Pair } : l)),
+    layer({ name: 'foot', position: [180, 490], size: [40, 20], pivot: [20, 0], order: 25 }),
+  ],
+};
+
+describe('planted feet', () => {
+  const groundOf = (name: string, p: Pose) => {
+    const foot = resolved(FOOTED, p, name);
+    // The foot's lowest corner: 40 × 20 image, so its bottom edge.
+    return Math.max(applyToPoint(foot.matrix, [0, 20])[1], applyToPoint(foot.matrix, [40, 20])[1]);
+  };
+
+  it('keeps a planted foot on the ground while the body sinks and squashes (spec: "Crouching on planted feet")', () => {
+    const crouch = pose({ body: { offset: [0, 30], stretch: 0.85 }, foot: { plant: 1 } });
+    // On the ground, in the same spot (it squashes a little with the body, as children do).
+    expect(groundOf('foot', crouch)).toBeCloseTo(510, 9);
+    expect(resolved(FOOTED, crouch, 'foot').pivotOnArtboard[0]).toBeCloseTo(200, 9);
+    const bodyTop = applyToPoint(resolved(FOOTED, crouch, 'body').matrix, [100, 0])[1];
+    expect(bodyTop).toBeGreaterThan(200);
+  });
+
+  it('keeps a planted foot attached when the body leans: it moves along, but not into the ground', () => {
+    const lean = pose({ body: { rotate: -20, offset: [0, 30] }, foot: { plant: 1 } });
+    expect(groundOf('foot', lean)).toBeCloseTo(510, 9);
+    // Sideways it goes where the body takes it, so it never comes loose.
+    const following = resolved(FOOTED, pose({ body: { rotate: -20, offset: [0, 30] } }), 'foot');
+    expect(resolved(FOOTED, lean, 'foot').pivotOnArtboard[0]).toBeCloseTo(
+      following.pivotOnArtboard[0],
+      9,
+    );
+  });
+
+  it('keeps a planted foot level when the body leans, and only its own rotation', () => {
+    const lean = pose({ body: { rotate: -20 }, foot: { plant: 1, rotate: 5 } });
+    const foot = resolved(FOOTED, lean, 'foot');
+    expect((Math.atan2(foot.matrix.b, foot.matrix.a) * 180) / Math.PI).toBeCloseTo(5, 9);
+    // Still attached: its pivot is where the leaning body takes it.
+    const following = resolved(FOOTED, pose({ body: { rotate: -20 } }), 'foot');
+    expect(foot.pivotOnArtboard[0]).toBeCloseTo(following.pivotOnArtboard[0], 9);
+  });
+
+  it('lets a foot come along when the body rises, planted or not (spec: "Feet that leave the ground")', () => {
+    for (const plant of [0, 1]) {
+      const hop = pose({ body: { offset: [0, -50] }, foot: { plant } });
+      expect(resolved(FOOTED, hop, 'foot').pivotOnArtboard[1]).toBeCloseTo(490 - 50, 9);
+    }
+  });
+
+  it('pushes a half-planted foot halfway back up, and still applies the foot’s own rotation', () => {
+    const half = pose({ body: { offset: [0, 40] }, foot: { plant: 0.5 } });
+    expect(resolved(FOOTED, half, 'foot').pivotOnArtboard[1]).toBeCloseTo(490 + 20, 9);
+    const tilted = pose({ foot: { plant: 1, rotate: 15 } });
+    const foot = resolved(FOOTED, tilted, 'foot');
+    expect((Math.atan2(foot.matrix.b, foot.matrix.a) * 180) / Math.PI).toBeCloseTo(15, 9);
+    expect(groundOf('foot', tilted)).toBeLessThanOrEqual(510 + 1e-9);
+  });
+
+  it('rejects a plant outside 0–1, and clamps one there', () => {
+    expect(
+      errorsOf(validatePose({ name: 'x', label: 'X', layers: { foot: { plant: 1.5 } } }, FOOTED)),
+    ).toEqual(['Pose "x", layer "foot": "plant" must be a number from 0 to 1.']);
+    expect(clampToRig(pose({ foot: { plant: -0.2 } }), FOOTED).layers).toEqual({
+      foot: { plant: 0 },
+    });
   });
 });

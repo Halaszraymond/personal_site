@@ -17,6 +17,7 @@ import {
   type Pose,
   type Rig,
 } from '../../lib/kalman-rig';
+import { crossFade } from '../../lib/kalman-animation';
 import {
   normaliseAngle,
   turntableFrame,
@@ -58,6 +59,41 @@ export function applyFigure(figure: SVGSVGElement, which: Figure): void {
   figure.dataset['figure'] = which;
 }
 
+/**
+ * Shows the drawn pose of `frame` (from drawnFrame()) over the layers of `which` figure and
+ * cross-fades the two (crossFade(): the drawing in over the layers, then the layers out under
+ * the drawing, so he is never see-through). Without a frame the drawn poses hide and the
+ * layers are solid again.
+ */
+export function applyDrawn(
+  figure: SVGSVGElement,
+  which: Figure,
+  frame: { readonly name: string; readonly opacity: number } | undefined,
+  mood: Mood,
+): void {
+  const opacity = frame === undefined ? 0 : Math.round(frame.opacity * 1000) / 1000;
+  const fade = crossFade(opacity);
+  // `display` for the whole group (see applyTurn), `visibility` and `opacity` per drawing:
+  // SVG attributes, so the Content-Security-Policy allows them.
+  figure
+    .querySelector('[data-drawn-poses]')
+    ?.setAttribute('display', opacity > 0 ? 'inline' : 'none');
+  for (const group of figure.querySelectorAll<SVGGElement>('[data-drawn-pose]')) {
+    const shown =
+      frame !== undefined &&
+      group.dataset['drawnPose'] === frame.name &&
+      group.dataset['drawnMood'] === mood;
+    group.setAttribute('visibility', shown ? 'visible' : 'hidden');
+    group.setAttribute('opacity', shown ? String(fade.drawing) : '0');
+  }
+  figure
+    .querySelector(`[data-layers][data-figure="${which}"]`)
+    ?.setAttribute('opacity', String(fade.layers));
+  // `dataset.drawn` writes `data-drawn`, so the preview and the tests can read what shows.
+  if (frame !== undefined && opacity > 0) figure.dataset['drawn'] = `${frame.name} ${opacity}`;
+  else delete figure.dataset['drawn'];
+}
+
 /** Turns the whole figure as one piece by `degrees` around its centre; the pose stays as it is. */
 export function applySpin(figure: SVGSVGElement, rig: Rig, degrees: number): void {
   figure
@@ -80,7 +116,7 @@ export function applyTurn(
   mood: Mood,
 ): void {
   // The turntable is the front figure's: with the side figure chosen it stays out of the way.
-  const frontChosen = figure.dataset['figure'] !== 'side';
+  const frontChosen = (figure.dataset['figure'] ?? 'front') === 'front';
   const facingFront = normaliseAngle(degrees) === 0 || !frontChosen;
   // `display`, not `visibility`, for whole groups: in SVG a child that says
   // visibility="visible" (every layer does) would still show inside a hidden group.

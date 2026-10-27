@@ -159,6 +159,46 @@ test('the pose JSON is always visible as text and valid', async ({ page }) => {
   expect(JSON.parse(json)).toMatchObject({ name: 'custom', layers: { tail: { rotate: 12 } } });
 });
 
+test('a stretch slider squashes its layer with the keyboard, one step per key press', async ({
+  page,
+}) => {
+  const slider = page.getByLabel('Body stretch', { exact: true });
+  const before = await transformOf(page, 'body');
+  await slider.focus();
+  await page.keyboard.press('ArrowLeft');
+
+  await expect(slider).toHaveValue('0.99');
+  await expect(page.locator('[data-stretch-value="body"]').first()).toHaveText('0.99');
+  expect(await transformOf(page, 'body')).not.toBe(before);
+});
+
+test('only layers with a stretch range get a stretch slider, limited to that range', async ({
+  page,
+}) => {
+  const sliders = page.locator('[data-figure-stretches="front"] [data-stretch]');
+  const withRange = repoRig().layers.filter((l) => l.stretch !== undefined);
+  await expect(sliders).toHaveCount(withRange.length);
+  for (const rigLayer of withRange) {
+    const slider = page.locator(
+      `[data-figure-stretches="front"] [data-stretch="${rigLayer.name}"]`,
+    );
+    await expect(slider).toHaveAttribute('min', String(rigLayer.stretch?.[0]));
+    await expect(slider).toHaveAttribute('max', String(rigLayer.stretch?.[1]));
+  }
+});
+
+test('the copied pose holds a stretch, and leaves out stretches at 1', async ({ page }) => {
+  await page.getByLabel('Body stretch', { exact: true }).fill('0.9');
+  // The JSON box shows exactly what Copy pose copies.
+  const pose = JSON.parse(await page.getByLabel(/Pose JSON/).inputValue()) as {
+    layers: Record<string, { stretch?: number }>;
+  };
+  const result = validatePose(pose, repoRig());
+  expect(result.ok ? [] : result.errors).toEqual([]);
+  expect(pose.layers['body']?.stretch).toBe(0.9);
+  expect(pose.layers['head']).toBeUndefined();
+});
+
 test('Copy pose puts valid pose JSON on the clipboard', async ({ page, context, browserName }) => {
   test.skip(browserName !== 'chromium', 'Only Chromium lets tests read the clipboard.');
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
