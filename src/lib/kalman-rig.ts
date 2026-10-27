@@ -141,10 +141,18 @@ export interface LayerPose {
   readonly offset?: Pair;
 }
 
+/** Kálmán's two posable figures: seen from the front, and seen from the side (for swimming). */
+export type Figure = 'front' | 'side';
+
+/** Both figures, in a fixed order (the front first). */
+export const FIGURES: readonly Figure[] = ['front', 'side'];
+
 /** A named still pose. Layers it doesn't mention stay at rest. */
 export interface Pose {
   /** A short id, e.g. `bow`. */
   readonly name: string;
+  /** The figure the pose belongs to; poses without one are front poses. */
+  readonly figure?: Figure;
   /** What the preview's button says, e.g. `Bow`. */
   readonly label: string;
   /** Per layer name, how it differs from rest. Like a Python `dict[str, LayerPose]`. */
@@ -465,4 +473,32 @@ export function figureCentre(rig: Rig): Pair {
 /** Turns the whole figure, as one piece, by `degrees` around its centre. */
 export function spinMatrix(rig: Rig, degrees: number): Matrix {
   return rotateAround(degrees, figureCentre(rig));
+}
+
+// ---------------------------------------------------------------------------------------
+// Two figures: front and side
+// ---------------------------------------------------------------------------------------
+
+/** One rig per figure, like a Python dict {"front": rig, "side": rig}. */
+export type Rigs = Readonly<Record<Figure, Rig>>;
+
+/** The figure a pose belongs to (front when the pose doesn't say). */
+export function figureOf(pose: Pose): Figure {
+  return pose.figure ?? 'front';
+}
+
+/**
+ * Checks a pose against the rig of its own figure (spec: "Poses are data", scenario "Poses
+ * per figure"): first that `figure` is front or side, then everything `validatePose()` checks.
+ */
+export function validateFigurePose(data: unknown, rigs: Rigs): Validation<Pose> {
+  const figure = (data as { figure?: unknown } | null)?.figure ?? 'front';
+  if (figure !== 'front' && figure !== 'side') {
+    const name = (data as { name?: unknown } | null)?.name;
+    return {
+      ok: false,
+      errors: [`Pose "${String(name ?? '?')}" needs "figure" as "front" or "side".`],
+    };
+  }
+  return validatePose(data, rigs[figure]);
 }

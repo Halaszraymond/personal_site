@@ -412,3 +412,112 @@ export function frontRegions(
     tie: (x, y) => yes(inside(settings.tie, x, y)),
   };
 }
+
+/**
+ * How much of each pixel lies inside a polygon (a list of corner points), from 0 to 1. Each
+ * pixel is tested at `samples` × `samples` points spread over it, so the edge is smooth instead
+ * of jagged (like rendering with anti-aliasing). Used for the side flipper, whose outline is
+ * traced once on the image because it lies on the body and has no background around it.
+ */
+export function polygonCoverage(
+  points: readonly (readonly [number, number])[],
+  width: number,
+  height: number,
+  samples = 4,
+): AlphaMap {
+  // Point-in-polygon by ray casting: count how many edges a ray to the right crosses; an odd
+  // count means inside. Only rows inside the polygon's box are tested, for speed.
+  const inside = (px: number, py: number) => {
+    let crossings = 0;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      const [xi, yi] = points[i] ?? [0, 0];
+      const [xj, yj] = points[j] ?? [0, 0];
+      if (yi > py !== yj > py && px < ((xj - xi) * (py - yi)) / (yj - yi) + xi) crossings++;
+    }
+    return crossings % 2 === 1;
+  };
+  const xs = points.map(([x]) => x);
+  const ys = points.map(([, y]) => y);
+  const coverage = new Float32Array(width * height);
+  for (
+    let y = Math.max(0, Math.floor(Math.min(...ys)));
+    y <= Math.min(height - 1, Math.ceil(Math.max(...ys)));
+    y++
+  ) {
+    for (
+      let x = Math.max(0, Math.floor(Math.min(...xs)));
+      x <= Math.min(width - 1, Math.ceil(Math.max(...xs)));
+      x++
+    ) {
+      let hits = 0;
+      for (let sy = 0; sy < samples; sy++) {
+        for (let sx = 0; sx < samples; sx++) {
+          if (inside(x + (sx + 0.5) / samples, y + (sy + 0.5) / samples)) hits++;
+        }
+      }
+      coverage[y * width + x] = hits / (samples * samples);
+    }
+  }
+  return coverage;
+}
+
+/** Where the side figure's parts are in its images, in image pixels (kalman-animations design §6). */
+export interface SideCutSettings {
+  /** The head fades out between these rows; the body starts at the first and is solid from the second. */
+  readonly neck: {
+    readonly headFadeFrom: number;
+    readonly headFadeTo: number;
+    readonly bodyFrom: number;
+    readonly bodySolid: number;
+  };
+  /** The body ends at this row; the feet start a little above it (they overlap). */
+  readonly bodyBottomRow: number;
+  /**
+   * The tail: everything from this row down and this column to the right. The body keeps the
+   * tail's first `bodyOverlap` rows too, so no gap opens at the joint when the tail turns (the
+   * tail is drawn behind the body, so the overlap doesn't show).
+   */
+  readonly tail: { readonly fromRow: number; readonly minX: number; readonly bodyOverlap: number };
+  /** The feet: from this row down; the back foot is the part left of `backMaxX` above `backMaxRow`. */
+  readonly feet: {
+    readonly fromRow: number;
+    readonly backMaxX: number;
+    readonly backMaxRow: number;
+  };
+  /** Where the professional extras are. */
+  readonly glasses: PixelBounds;
+  readonly tie: PixelBounds;
+}
+
+/**
+ * The side figure's parts as regions. The flipper is not a box but its traced outline, passed
+ * in as a coverage map (`polygonCoverage()`); `width` is the image width, to look it up.
+ */
+export function sideRegions(
+  settings: SideCutSettings,
+  flipper: AlphaMap,
+  width: number,
+): Record<string, PartRegion> {
+  const { neck, bodyBottomRow, tail, feet } = settings;
+  const headFade = ramp(neck.headFadeFrom, neck.headFadeTo);
+  const bodyFade = ramp(neck.bodyFrom, neck.bodySolid);
+  const inTail = (x: number, y: number) => y >= tail.fromRow && x >= tail.minX;
+  const inBackFoot = (x: number, y: number) =>
+    y >= feet.fromRow && x <= feet.backMaxX && y < feet.backMaxRow;
+  const inside = (bounds: PixelBounds, x: number, y: number) =>
+    x >= bounds[0] && y >= bounds[1] && x <= bounds[2] && y < bounds[3];
+  const yes = (condition: boolean) => (condition ? 1 : 0);
+
+  return {
+    head: (_x, y) => 1 - headFade(y),
+    // Cut from the image without the flipper, so the body under the flipper is painted.
+    body: (x, y) =>
+      y < neck.bodyFrom || y >= bodyBottomRow || inTail(x, y - tail.bodyOverlap) ? 0 : bodyFade(y),
+    flipper: (x, y) => flipper[y * width + x] ?? 0,
+    footBack: (x, y) => yes(inBackFoot(x, y)),
+    footFront: (x, y) => yes(y >= feet.fromRow && !inBackFoot(x, y) && !inTail(x, y)),
+    tail: (x, y) => yes(inTail(x, y)),
+    glasses: (x, y) => yes(inside(settings.glasses, x, y)),
+    tie: (x, y) => yes(inside(settings.tie, x, y)),
+  };
+}

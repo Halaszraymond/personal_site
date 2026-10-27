@@ -14,7 +14,7 @@
 import type { ImageMetadata } from 'astro';
 import { resolvePose, spinMatrix, toSvgTransform, type Mood } from '../../lib/kalman-rig';
 import { viewImages, viewMatrix } from '../../lib/kalman-turntable';
-import { poseNamed, REPO_RIG, REPO_TURNTABLE } from './repo-rig';
+import { FIGURES, poseNamed, REPO_RIG, REPO_RIGS, REPO_TURNTABLE } from './repo-rig';
 
 interface Props {
   /** Name of a pose from poses.json; defaults to rest. */
@@ -65,10 +65,17 @@ const views = REPO_TURNTABLE.flatMap((view) => {
   }));
 });
 const chosenPose = poseNamed(pose);
-const layers = resolvePose(REPO_RIG, chosenPose, mood).map((resolved) => {
-  const rigLayer = REPO_RIG.layers.find((layer) => layer.name === resolved.name);
-  if (rigLayer === undefined) throw new Error(`Unknown layer ${resolved.name}`);
-  return { ...resolved, size: rigLayer.size, image: imageFor(rigLayer.image) };
+// Both figures (front and side), each in its rest pose except the front one, which shows the
+// chosen pose. Only the front shows at first; the preview and the player switch figures.
+const figures = FIGURES.map((figure) => {
+  const rig = REPO_RIGS[figure];
+  const figurePose = figure === 'front' ? chosenPose : poseNamed('rest', figure);
+  const layers = resolvePose(rig, figurePose, mood).map((resolved) => {
+    const rigLayer = rig.layers.find((layer) => layer.name === resolved.name);
+    if (rigLayer === undefined) throw new Error(`Unknown ${figure} layer ${resolved.name}`);
+    return { ...resolved, size: rigLayer.size, image: imageFor(rigLayer.image) };
+  });
+  return { figure, layers };
 });
 ---
 
@@ -78,24 +85,30 @@ const layers = resolvePose(REPO_RIG, chosenPose, mood).map((resolved) => {
   data-kalman-figure
   data-pose={chosenPose.name}
   data-mood={mood}
+  data-figure="front"
   role={label === undefined ? undefined : 'img'}
   aria-label={label}
   aria-hidden={label === undefined ? 'true' : undefined}
 >
   {/* The whole figure turns as one piece inside this group (the preview's spin slider). */}
   <g data-spin transform={toSvgTransform(spinMatrix(REPO_RIG, 0))}>
-    {/* The posable layers: shown while he faces front. */}
-    <g data-layers>
-      {layers.map((layer) => (
-        <g
-          data-layer={layer.name}
-          transform={toSvgTransform(layer.matrix)}
-          visibility={layer.visible ? 'visible' : 'hidden'}
-        >
-          <image href={layer.image.src} width={layer.size[0]} height={layer.size[1]} />
+    {
+      /* The posable layers, one group per figure: the front shows while he faces front, the
+         side while the side figure is chosen (kalman-animations design §2). */
+      figures.map(({ figure, layers }) => (
+        <g data-layers data-figure={figure} display={figure === 'front' ? 'inline' : 'none'}>
+          {layers.map((layer) => (
+            <g
+              data-layer={layer.name}
+              transform={toSvgTransform(layer.matrix)}
+              visibility={layer.visible ? 'visible' : 'hidden'}
+            >
+              <image href={layer.image.src} width={layer.size[0]} height={layer.size[1]} />
+            </g>
+          ))}
         </g>
-      ))}
-    </g>
+      ))
+    }
     {/* The turntable's drawn views: shown instead of the layers once he turns around. */}
     <g data-turntable display="none">
       {views.map((view) => (
@@ -109,19 +122,20 @@ const layers = resolvePose(REPO_RIG, chosenPose, mood).map((resolved) => {
         </g>
       ))}
     </g>
-    {pivotMarkers && (
-      <g class="pivots" data-pivots>
-        {layers.map((layer) => (
-          <circle
-            data-pivot={layer.name}
-            cx={layer.pivotOnArtboard[0]}
-            cy={layer.pivotOnArtboard[1]}
-            r="9"
-            visibility={layer.visible ? 'visible' : 'hidden'}
-          />
-        ))}
-      </g>
-    )}
+    {pivotMarkers &&
+      figures.map(({ figure, layers }) => (
+        <g class="pivots" data-pivots data-figure={figure}>
+          {layers.map((layer) => (
+            <circle
+              data-pivot={layer.name}
+              cx={layer.pivotOnArtboard[0]}
+              cy={layer.pivotOnArtboard[1]}
+              r="9"
+              visibility={layer.visible ? 'visible' : 'hidden'}
+            />
+          ))}
+        </g>
+      ))}
   </g>
 </svg>
 
@@ -140,6 +154,12 @@ const layers = resolvePose(REPO_RIG, chosenPose, mood).map((resolved) => {
 
   .kalman-figure[data-show-pivots] .pivots {
     display: inline;
+  }
+
+  /* Only the chosen figure's pivots show (CSS beats the SVG `display` attribute, so this is CSS). */
+  .kalman-figure[data-figure='front'] .pivots[data-figure='side'],
+  .kalman-figure[data-figure='side'] .pivots[data-figure='front'] {
+    display: none;
   }
 
   /* The pivots belong to the posable layers, which only show while he faces front. */

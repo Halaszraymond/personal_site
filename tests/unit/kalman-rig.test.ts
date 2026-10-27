@@ -19,6 +19,8 @@ import {
   toSvgTransform,
   translate,
   validatePose,
+  validateFigurePose,
+  figureOf,
   validateRig,
   type Pair,
   type Pose,
@@ -374,5 +376,47 @@ describe('spinning the whole figure', () => {
 
   it('is the identity at 0°', () => {
     expectPointClose(applyToPoint(spinMatrix(RIG, 0), [123, 45]), [123, 45]);
+  });
+});
+
+describe('poses per figure', () => {
+  // A side rig with a single flipper instead of two, to tell the figures apart.
+  const SIDE: Rig = {
+    artboard: [400, 600],
+    layers: [
+      layer({ name: 'body', parent: null, order: 20 }),
+      layer({ name: 'flipper', order: 30, rotate: [-90, 90] }),
+    ],
+  };
+  const RIGS = { front: RIG, side: SIDE };
+
+  it('checks a front pose against the front rig, also when it doesn’t say its figure', () => {
+    const data = { name: 'nod', label: 'Nod', layers: { head: { rotate: 10 } } };
+    expect(validateFigurePose(data, RIGS).ok).toBe(true);
+    expect(validateFigurePose({ ...data, figure: 'front' }, RIGS).ok).toBe(true);
+  });
+
+  it('checks a side pose against the side rig', () => {
+    const data = {
+      name: 'stroke',
+      label: 'Stroke',
+      figure: 'side',
+      layers: { flipper: { rotate: 60 } },
+    };
+    expect(validateFigurePose(data, RIGS).ok).toBe(true);
+    expect(figureOf(data as Pose)).toBe('side');
+  });
+
+  it('rejects a pose naming a layer of the other figure', () => {
+    const data = { name: 'x', label: 'X', figure: 'side', layers: { head: { rotate: 5 } } };
+    expect(errorsOf(validateFigurePose(data, RIGS))).toEqual([
+      'Pose "x" names the layer "head", which is not in the rig.',
+    ]);
+  });
+
+  it('rejects an unknown figure', () => {
+    expect(
+      errorsOf(validateFigurePose({ name: 'x', label: 'X', figure: 'top', layers: {} }, RIGS)),
+    ).toEqual(['Pose "x" needs "figure" as "front" or "side".']);
   });
 });

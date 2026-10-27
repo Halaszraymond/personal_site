@@ -1,32 +1,120 @@
 [
-  { "name": "rest", "label": "Rest", "layers": {} },
+  {
+    "name": "rest",
+    "label": "Rest",
+    "figure": "front",
+    "layers": {}
+  },
   {
     "name": "bow",
     "label": "Bow",
+    "figure": "front",
     "layers": {
-      "body": { "offset": [0, 6] },
-      "head": { "offset": [0, 26] },
-      "flipperLeft": { "rotate": -6 },
-      "flipperRight": { "rotate": 6 },
-      "tie": { "offset": [0, 14] }
+      "body": {
+        "offset": [0, 6]
+      },
+      "head": {
+        "offset": [0, 26]
+      },
+      "flipperLeft": {
+        "rotate": -6
+      },
+      "flipperRight": {
+        "rotate": 6
+      },
+      "tie": {
+        "offset": [0, 14]
+      }
     }
   },
   {
     "name": "flippersUp",
     "label": "Flippers up",
+    "figure": "front",
     "layers": {
-      "flipperLeft": { "rotate": 120 },
-      "flipperRight": { "rotate": -120 }
+      "flipperLeft": {
+        "rotate": 120
+      },
+      "flipperRight": {
+        "rotate": -120
+      }
     }
   },
   {
     "name": "headTiltLeft",
     "label": "Head tilt left",
-    "layers": { "head": { "rotate": -15 } }
+    "figure": "front",
+    "layers": {
+      "head": {
+        "rotate": -15
+      }
+    }
   },
   {
     "name": "headTiltRight",
     "label": "Head tilt right",
-    "layers": { "head": { "rotate": 15 } }
+    "figure": "front",
+    "layers": {
+      "head": {
+        "rotate": 15
+      }
+    }
+  },
+  {
+    "name": "rest",
+    "label": "Rest",
+    "figure": "side",
+    "layers": {}
+  },
+  {
+    "name": "strokeUp",
+    "label": "Stroke up",
+    "figure": "side",
+    "layers": {
+      "flipper": {
+        "rotate": 50
+      },
+      "body": {
+        "rotate": -3
+      },
+      "head": {
+        "rotate": 2
+      }
+    }
+  },
+  {
+    "name": "strokeDown",
+    "label": "Stroke down",
+    "figure": "side",
+    "layers": {
+      "flipper": {
+        "rotate": -60
+      },
+      "body": {
+        "rotate": 3
+      },
+      "head": {
+        "rotate": -2
+      }
+    }
+  },
+  {
+    "name": "dive",
+    "label": "Dive",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -60
+      },
+      "flipper": {
+        "rotate": -40
+      },
+      "head": {
+        "rotate": -10
+      },
+      "tail": {
+        "rotate": 10
+      }
+    }
   }
 ]

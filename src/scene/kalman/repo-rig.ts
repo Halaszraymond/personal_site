@@ -1,12 +1,22 @@
 /**
- * Kálmán's rig and poses from the repo (rig.json, poses.json), validated once.
+ * Kálmán's rigs and poses from the repo (rig.json, poses.json), validated once. There are two
+ * figures, front and side (kalman-animations design §2), each with its own rig and poses.
  *
  * Imported by the figure component (at build time) and by the preview's script (in the
  * browser). An invalid file throws here, so a bad edit fails the build with the validator's
  * message. Whether every image file exists is checked by the figure component, which looks
  * the images up, and by the unit test tests/unit/kalman-rig-data.test.ts.
  */
-import { REST_POSE, validatePose, validateRig, type Pose, type Rig } from '../../lib/kalman-rig';
+import {
+  FIGURES,
+  figureOf,
+  validateFigurePose,
+  validateRig,
+  type Figure,
+  type Pose,
+  type Rig,
+  type Rigs,
+} from '../../lib/kalman-rig';
 import { turntableErrors, type TurntableEntry } from '../../lib/kalman-turntable';
 import poseData from './poses.json';
 import rigData from './rig.json';
@@ -17,29 +27,47 @@ function fail(what: string, errors: readonly string[]): never {
   throw new Error(`${what} is invalid:\n  ${errors.join('\n  ')}`);
 }
 
-function loadRig(): Rig {
+function loadRig(figure: Figure): Rig {
   // Images are checked where they are looked up (see the header comment), so `() => true`.
-  const result = validateRig(rigData, () => true);
-  return result.ok ? result.value : fail('src/scene/kalman/rig.json', result.errors);
+  const result = validateRig(rigData[figure], () => true);
+  return result.ok ? result.value : fail(`src/scene/kalman/rig.json (${figure})`, result.errors);
 }
 
-/** The repo's rig. */
-export const REPO_RIG: Rig = loadRig();
+/** The repo's rigs, one per figure. */
+export const REPO_RIGS: Rigs = { front: loadRig('front'), side: loadRig('side') };
+
+/** The front figure's rig: the one the turntable, the spin and most poses use. */
+export const REPO_RIG: Rig = REPO_RIGS.front;
 
 function loadPoses(): Pose[] {
   return poseData.map((data) => {
-    const result = validatePose(data, REPO_RIG);
+    const result = validateFigurePose(data, REPO_RIGS);
     return result.ok ? result.value : fail('src/scene/kalman/poses.json', result.errors);
   });
 }
 
-/** The repo's named poses, in the order of poses.json. */
+/** The repo's named poses, in the order of poses.json, for both figures. */
 export const REPO_POSES: readonly Pose[] = loadPoses();
 
-/** A named pose, or the rest pose for a name that doesn't exist. */
-export function poseNamed(name: string): Pose {
-  return REPO_POSES.find((pose) => pose.name === name) ?? REST_POSE;
+/** The poses of one figure, in the order of poses.json. */
+export function posesFor(figure: Figure): Pose[] {
+  return REPO_POSES.filter((pose) => figureOf(pose) === figure);
 }
+
+/** A figure's named pose, or that figure's rest pose for a name that doesn't exist. */
+export function poseNamed(name: string, figure: Figure = 'front'): Pose {
+  return (
+    posesFor(figure).find((pose) => pose.name === name) ?? {
+      name: 'rest',
+      label: 'Rest',
+      figure,
+      layers: {},
+    }
+  );
+}
+
+/** Both figures, re-exported so pages and scripts import them from one place. */
+export { FIGURES };
 
 /** The turntable views from turntable.json (the four views of the design sheet). */
 export const REPO_TURNTABLE: readonly TurntableEntry[] = loadTurntable();

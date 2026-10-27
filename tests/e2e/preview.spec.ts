@@ -13,7 +13,10 @@ import { validatePose, validateRig, type Rig } from '../../src/lib/kalman-rig';
 import { expect, test } from './fixtures';
 
 const figure = (page: Page) => page.locator('[data-kalman-figure]');
-const layer = (page: Page, name: string) => page.locator(`[data-layer="${name}"]`);
+/** The front figure's layers and pivot markers (the side figure has layers with the same names). */
+const FRONT = '[data-figure="front"]';
+const layer = (page: Page, name: string) =>
+  page.locator(`[data-layers]${FRONT} [data-layer="${name}"]`);
 const transformOf = (page: Page, name: string) => layer(page, name).getAttribute('transform');
 
 /** Collects JavaScript errors and console errors. */
@@ -31,7 +34,8 @@ function repoRig(): Rig {
   // Read as text and parsed, because Playwright runs tests as plain Node modules, which can't
   // `import` a JSON file without an extra import attribute.
   const data: unknown = JSON.parse(readFileSync('src/scene/kalman/rig.json', 'utf8'));
-  const result = validateRig(data, () => true);
+  // rig.json holds a rig per figure; these tests are about the front one.
+  const result = validateRig((data as { front: unknown }).front, () => true);
   if (!result.ok) throw new Error(result.errors.join('\n'));
   return result.value;
 }
@@ -118,15 +122,15 @@ test('the glasses follow the head', async ({ page }) => {
 });
 
 test('show pivots marks every pivot, and the markers move with their layers', async ({ page }) => {
-  const markers = page.locator('[data-pivots]');
+  const markers = page.locator(`[data-pivots]${FRONT}`);
   await expect(markers).toBeHidden();
 
   await page.getByRole('switch', { name: 'Show pivots' }).check();
   await expect(markers).toBeVisible();
-  await expect(page.locator('[data-pivot]')).toHaveCount(repoRig().layers.length);
+  await expect(markers.locator('[data-pivot]')).toHaveCount(repoRig().layers.length);
 
   // The head's pivot is its neck: tilting the body moves it.
-  const neck = page.locator('[data-pivot="head"]');
+  const neck = markers.locator('[data-pivot="head"]');
   const before = await neck.getAttribute('cx');
   await page.getByLabel('Body', { exact: true }).fill('10');
   expect(await neck.getAttribute('cx')).not.toBe(before);
@@ -238,7 +242,7 @@ test('turning around shows the drawn back view instead of the layers', async ({ 
   await page.getByLabel('Turn around').fill('180');
 
   await expect(figure(page)).toHaveAttribute('data-turn', '180');
-  await expect(page.locator('[data-layers]')).toHaveAttribute('display', 'none');
+  await expect(page.locator(`[data-layers]${FRONT}`)).toHaveAttribute('display', 'none');
   await expect(page.locator('[data-view="back"][data-view-mood="goofy"]')).toHaveAttribute(
     'visibility',
     'visible',
@@ -247,7 +251,7 @@ test('turning around shows the drawn back view instead of the layers', async ({ 
 
   // Back to the front: the posable layers return.
   await page.getByLabel('Turn around').fill('0');
-  await expect(page.locator('[data-layers]')).toHaveAttribute('display', 'inline');
+  await expect(page.locator(`[data-layers]${FRONT}`)).toHaveAttribute('display', 'inline');
 });
 
 test('the professional mood also shows on the turntable views', async ({ page }) => {

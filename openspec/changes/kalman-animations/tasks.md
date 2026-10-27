@@ -8,10 +8,10 @@
 
 ## 2. Two figures: rigs and poses
 
-- [ ] 2.1 Add the `Figure` type and a `figure` field to poses in `src/lib/kalman-rig.ts`; `validatePose()` checks a pose against its own figure's rig; verify with unit tests for a front pose, a side pose and a pose naming the other figure's layer
-- [ ] 2.2 Add `fillEnclosed()` to `scripts/lib/kalman-cut.ts` with unit tests, and extend `scripts/cut-kalman-layers.ts` with the side settings and layer list (design §6: flipper from the difference with `side-no-flipper`, body from `side-no-flipper`), measured on Raymond's images, and write `rig.json` as `{ front, side }`; verify `npm run cut:kalman` writes both rigs, `check:kalman` passes, and the side layers line up at rest (screenshot)
-- [ ] 2.3 Load both rigs in `repo-rig.ts`, add `figure` to every pose in `poses.json` and the side poses rest, stroke up, stroke down and dive; update `tests/unit/kalman-rig-data.test.ts` for both layer sets; verify the tests pass
-- [ ] 2.4 Draw both figures in `KalmanFigure.astro` (`<g data-figure>` per figure, figure-scoped layer selectors) and pass the figure to `applyPose()`; verify the existing preview e2e tests still pass and the side figure shows in rest when switched to
+- [x] 2.1 Add the `Figure` type and a `figure` field to poses in `src/lib/kalman-rig.ts`; `validatePose()` checks a pose against its own figure's rig; verify with unit tests for a front pose, a side pose and a pose naming the other figure's layer
+- [x] 2.2 Add `polygonCoverage()` to `scripts/lib/kalman-cut.ts` with unit tests, and extend `scripts/cut-kalman-layers.ts` with the side settings and layer list (design §6: flipper along a traced outline, body from `side-no-flipper`), measured on Raymond's images, and write `rig.json` as `{ front, side }`; verify `npm run cut:kalman` writes both rigs, `check:kalman` passes, and the side layers line up at rest (screenshot)
+- [x] 2.3 Load both rigs in `repo-rig.ts`, add `figure` to every pose in `poses.json` and the side poses rest, stroke up, stroke down and dive; update `tests/unit/kalman-rig-data.test.ts` for both layer sets; verify the tests pass
+- [x] 2.4 Draw both figures in `KalmanFigure.astro` (`<g data-figure>` per figure, figure-scoped layer selectors) and pass the figure to `applyPose()`; verify the existing preview e2e tests still pass and the side figure shows in rest when switched to
 
 ## 3. Animation logic
 

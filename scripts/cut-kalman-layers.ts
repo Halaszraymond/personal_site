@@ -27,6 +27,9 @@ import {
   pivotIn,
   placeBox,
   plumageTone,
+  polygonCoverage,
+  sideRegions,
+  type SideCutSettings,
   type FrontCutSettings,
   type Placement,
   type RawImage,
@@ -35,6 +38,7 @@ import {
 const DESIGN = 'docs/images/kalman-design';
 const OUT = 'src/assets/kalman/front';
 const VIEWS_OUT = 'src/assets/kalman/views';
+const SIDE_OUT = 'src/assets/kalman/side';
 const RIG_FILE = 'src/scene/kalman/rig.json';
 const TURNTABLE_FILE = 'src/scene/kalman/turntable.json';
 
@@ -146,6 +150,111 @@ const MIRRORS = [
 /** The rows of the body (no head, bill or tail) used to centre a view. */
 const BODY_ROWS = [280, 900] as const;
 
+/**
+ * The side figure for posing and swimming (kalman-animations design §6): the goofy side view,
+ * its professional edit, and an edit without the near flipper, which gives the body under it.
+ */
+const SIDE = {
+  goofy: `${DESIGN}/side-goofy.png`,
+  professional: `${DESIGN}/side-professional.png`,
+  noFlipper: `${DESIGN}/side-no-flipper.png`,
+};
+
+/** Where the side figure's parts are, measured on side-goofy.png (outline per row, grid). */
+const SIDE_CUT: SideCutSettings = {
+  neck: { headFadeFrom: 208, headFadeTo: 262, bodyFrom: 184, bodySolid: 214 },
+  bodyBottomRow: 912,
+  tail: { fromRow: 840, minX: 448, bodyOverlap: 25 },
+  feet: { fromRow: 905, backMaxX: 299, backMaxRow: 950 },
+  glasses: [226, 66, 442, 162],
+  tie: [178, 198, 477, 622],
+};
+
+/**
+ * The near flipper's outline on side-goofy.png, clockwise from the shoulder: it lies on the
+ * body, so there is no background around it to find it by. The top, where it joins the back,
+ * is an estimate; the body underneath comes from the image without the flipper anyway.
+ */
+const SIDE_FLIPPER: readonly (readonly [number, number])[] = [
+  [365, 410],
+  [390, 385],
+  [430, 390],
+  [460, 425],
+  [475, 475],
+  [472, 520],
+  [460, 570],
+  [450, 610],
+  [442, 660],
+  [437, 710],
+  [432, 755],
+  [422, 782],
+  [407, 785],
+  [387, 760],
+  [367, 720],
+  [355, 670],
+  [350, 610],
+  [352, 550],
+  [357, 495],
+  [362, 450],
+];
+
+/** Per side layer: its file, its joint in the image (the pivot) and the rest of its rig entry. */
+const SIDE_LAYERS = [
+  {
+    name: 'body',
+    // The side body turns around its middle, so a dive or a launch keeps him on the stage.
+    pivot: [345, 560],
+    parent: null,
+    order: 20,
+    rotate: [-100, 100],
+    from: 'noFlipper',
+  },
+  { name: 'head', pivot: [350, 236], parent: 'body', order: 30, rotate: [-30, 30], from: 'goofy' },
+  {
+    name: 'flipper',
+    pivot: [405, 415],
+    parent: 'body',
+    order: 40,
+    rotate: [-120, 60],
+    from: 'goofy',
+  },
+  {
+    name: 'footBack',
+    pivot: [290, 915],
+    parent: 'body',
+    order: 12,
+    rotate: [-10, 10],
+    from: 'goofy',
+  },
+  {
+    name: 'footFront',
+    pivot: [365, 912],
+    parent: 'body',
+    order: 25,
+    rotate: [-10, 10],
+    from: 'goofy',
+  },
+  { name: 'tail', pivot: [452, 848], parent: 'body', order: 10, rotate: [-25, 25], from: 'goofy' },
+  {
+    name: 'tie',
+    pivot: [262, 272],
+    parent: 'body',
+    order: 50,
+    rotate: [-15, 15],
+    from: 'professional',
+    accessory: true,
+  },
+  {
+    name: 'glasses',
+    pivot: [320, 105],
+    parent: 'head',
+    order: 60,
+    rotate: [-10, 10],
+    from: 'professional',
+    accessory: true,
+  },
+] as const;
+
 // ---------------------------------------------------------------------------------------
 // Reading and writing images
 // ---------------------------------------------------------------------------------------
@@ -212,7 +321,58 @@ for (const layer of LAYERS) {
   });
   console.log(`${layer.name.padEnd(13)} ${part.box.width}×${part.box.height} px`);
 }
-writeJson(RIG_FILE, { artboard: [1600, 1500], layers: rigLayers });
+const ARTBOARD = [1600, 1500] as const;
+
+// The side figure: the same steps, with the body from the image without the flipper and the
+// flipper along its traced outline. Placed like the front: his body centred on x 800, the top of
+// his head at y 180, so switching figures doesn't make him jump.
+const side = {
+  goofy: await readRgb(SIDE.goofy),
+  professional: await readRgb(SIDE.professional),
+  noFlipper: await readRgb(SIDE.noFlipper),
+};
+assertSameSize(side.goofy, side.professional, 'The goofy and professional side views');
+assertSameSize(side.goofy, side.noFlipper, 'The side view and the side view without the flipper');
+const sideAlpha = {
+  goofy: figureAlpha(side.goofy, findBackground(side.goofy)),
+  professional: differenceAlpha(side.goofy, side.professional),
+  noFlipper: figureAlpha(side.noFlipper, findBackground(side.noFlipper)),
+};
+const sideRegionsByName = sideRegions(
+  SIDE_CUT,
+  polygonCoverage(SIDE_FLIPPER, side.goofy.width, side.goofy.height),
+  side.goofy.width,
+);
+const sidePlacement: Placement = {
+  scale: PLACEMENT.scale,
+  from: [bodyCentreX(sideAlpha.noFlipper, side.goofy.width, ...BODY_ROWS), PLACEMENT.from[1]],
+  to: PLACEMENT.to,
+};
+mkdirSync(SIDE_OUT, { recursive: true });
+const sideLayers = [];
+for (const layer of SIDE_LAYERS) {
+  const region = sideRegionsByName[layer.name];
+  const part =
+    region === undefined ? undefined : cutPart(side[layer.from], sideAlpha[layer.from], region);
+  if (part === undefined)
+    throw new Error(`The side ${layer.name} region is empty: check the settings.`);
+  await writePng(join(SIDE_OUT, `${layer.name}.png`), part.rgba, part.box.width, part.box.height);
+  sideLayers.push({
+    name: layer.name,
+    image: `side/${layer.name}.png`,
+    ...placeBox(part.box, sidePlacement),
+    pivot: pivotIn(part.box, layer.pivot, sidePlacement.scale),
+    parent: layer.parent,
+    order: layer.order,
+    rotate: layer.rotate,
+    ...('accessory' in layer ? { accessory: true } : {}),
+  });
+  console.log(`side ${layer.name.padEnd(9)} ${part.box.width}×${part.box.height} px`);
+}
+writeJson(RIG_FILE, {
+  front: { artboard: ARTBOARD, layers: rigLayers },
+  side: { artboard: ARTBOARD, layers: sideLayers },
+});
 
 // The front view, whole, for the turntable: one image per mood.
 const frontImages: Record<

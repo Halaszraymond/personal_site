@@ -9,7 +9,7 @@
  */
 import { layerLabel, PREVIEW_EN as TEXT } from '../i18n/preview';
 import { canTurn } from '../lib/kalman-turntable';
-import { REPO_POSES, REPO_RIG, REPO_TURNTABLE } from '../scene/kalman/repo-rig';
+import { posesFor, REPO_RIG, REPO_TURNTABLE } from '../scene/kalman/repo-rig';
 
 const showTurnControl = canTurn(REPO_TURNTABLE);
 ---
@@ -18,7 +18,7 @@ const showTurnControl = canTurn(REPO_TURNTABLE);
   <fieldset>
     <legend>{TEXT.posesLegend}</legend>
     <div class="pose-buttons">
-      {REPO_POSES.map((pose) => (
+      {posesFor('front').map((pose) => (
         <button
           type="button"
           data-pose-button={pose.name}

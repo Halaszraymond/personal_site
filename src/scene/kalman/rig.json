@@ -1,97 +1,186 @@
 {
-  "artboard": [1600, 1500],
-  "layers": [
-    {
-      "name": "body",
-      "image": "front/body.png",
-      "size": [492.1, 961.6],
-      "position": [554, 355.6],
-      "pivot": [246.1, 951],
-      "parent": null,
-      "order": 20,
-      "rotate": [-15, 15]
-    },
-    {
-      "name": "head",
-      "image": "front/head.png",
-      "size": [315.2, 278],
-      "position": [643.1, 180],
-      "pivot": [156.9, 243.4],
-      "parent": "body",
-      "order": 30,
-      "rotate": [-25, 25]
-    },
-    {
-      "name": "flipperLeft",
-      "image": "front/flipper-left.png",
-      "size": [231.4, 695.6],
-      "position": [464.8, 442],
-      "pivot": [204.8, 47.9],
-      "parent": "body",
-      "order": 10,
-      "rotate": [-15, 150]
-    },
-    {
-      "name": "flipperRight",
-      "image": "front/flipper-right.png",
-      "size": [231.4, 695.6],
-      "position": [905.1, 442],
-      "pivot": [25.3, 47.9],
-      "parent": "body",
-      "order": 11,
-      "rotate": [-150, 15]
-    },
-    {
-      "name": "footLeft",
-      "image": "front/foot-left.png",
-      "size": [127.7, 98.4],
-      "position": [611.1, 1303.9],
-      "pivot": [79.8, 10.6],
-      "parent": "body",
-      "order": 25,
-      "rotate": [-20, 20]
-    },
-    {
-      "name": "footRight",
-      "image": "front/foot-right.png",
-      "size": [131.7, 97.1],
-      "position": [862.5, 1303.9],
-      "pivot": [49.2, 10.6],
-      "parent": "body",
-      "order": 26,
-      "rotate": [-20, 20]
-    },
-    {
-      "name": "tail",
-      "image": "front/tail.png",
-      "size": [134.3, 85.1],
-      "position": [733.5, 1290.6],
-      "pivot": [66.5, 10.6],
-      "parent": "body",
-      "order": 15,
-      "rotate": [-25, 25]
-    },
-    {
-      "name": "tie",
-      "image": "front/tie.png",
-      "size": [315.2, 569.2],
-      "position": [639.1, 388.8],
-      "pivot": [160.9, 119.7],
-      "parent": "body",
-      "order": 50,
-      "rotate": [-15, 15],
-      "accessory": true
-    },
-    {
-      "name": "glasses",
-      "image": "front/glasses.png",
-      "size": [271.3, 145],
-      "position": [664.3, 200],
-      "pivot": [135.7, 55.9],
-      "parent": "head",
-      "order": 60,
-      "rotate": [-10, 10],
-      "accessory": true
-    }
-  ]
+  "front": {
+    "artboard": [1600, 1500],
+    "layers": [
+      {
+        "name": "body",
+        "image": "front/body.png",
+        "size": [492.1, 961.6],
+        "position": [554, 355.6],
+        "pivot": [246.1, 951],
+        "parent": null,
+        "order": 20,
+        "rotate": [-15, 15]
+      },
+      {
+        "name": "head",
+        "image": "front/head.png",
+        "size": [315.2, 278],
+        "position": [643.1, 180],
+        "pivot": [156.9, 243.4],
+        "parent": "body",
+        "order": 30,
+        "rotate": [-25, 25]
+      },
+      {
+        "name": "flipperLeft",
+        "image": "front/flipper-left.png",
+        "size": [231.4, 695.6],
+        "position": [464.8, 442],
+        "pivot": [204.8, 47.9],
+        "parent": "body",
+        "order": 10,
+        "rotate": [-15, 150]
+      },
+      {
+        "name": "flipperRight",
+        "image": "front/flipper-right.png",
+        "size": [231.4, 695.6],
+        "position": [905.1, 442],
+        "pivot": [25.3, 47.9],
+        "parent": "body",
+        "order": 11,
+        "rotate": [-150, 15]
+      },
+      {
+        "name": "footLeft",
+        "image": "front/foot-left.png",
+        "size": [127.7, 98.4],
+        "position": [611.1, 1303.9],
+        "pivot": [79.8, 10.6],
+        "parent": "body",
+        "order": 25,
+        "rotate": [-20, 20]
+      },
+      {
+        "name": "footRight",
+        "image": "front/foot-right.png",
+        "size": [131.7, 97.1],
+        "position": [862.5, 1303.9],
+        "pivot": [49.2, 10.6],
+        "parent": "body",
+        "order": 26,
+        "rotate": [-20, 20]
+      },
+      {
+        "name": "tail",
+        "image": "front/tail.png",
+        "size": [134.3, 85.1],
+        "position": [733.5, 1290.6],
+        "pivot": [66.5, 10.6],
+        "parent": "body",
+        "order": 15,
+        "rotate": [-25, 25]
+      },
+      {
+        "name": "tie",
+        "image": "front/tie.png",
+        "size": [315.2, 569.2],
+        "position": [639.1, 388.8],
+        "pivot": [160.9, 119.7],
+        "parent": "body",
+        "order": 50,
+        "rotate": [-15, 15],
+        "accessory": true
+      },
+      {
+        "name": "glasses",
+        "image": "front/glasses.png",
+        "size": [271.3, 145],
+        "position": [664.3, 200],
+        "pivot": [135.7, 55.9],
+        "parent": "head",
+        "order": 60,
+        "rotate": [-10, 10],
+        "accessory": true
+      }
+    ]
+  },
+  "side": {
+    "artboard": [1600, 1500],
+    "layers": [
+      {
+        "name": "body",
+        "image": "side/body.png",
+        "size": [481.5, 966.9],
+        "position": [550.1, 355.6],
+        "pivot": [224.8, 498.8],
+        "parent": null,
+        "order": 20,
+        "rotate": [-100, 100]
+      },
+      {
+        "name": "head",
+        "image": "side/head.png",
+        "size": [468.2, 278],
+        "position": [484.9, 180],
+        "pivot": [296.6, 243.4],
+        "parent": "body",
+        "order": 30,
+        "rotate": [-30, 30]
+      },
+      {
+        "name": "flipper",
+        "image": "side/flipper.png",
+        "size": [166.3, 532],
+        "position": [781.5, 621.6],
+        "pivot": [73.2, 39.9],
+        "parent": "body",
+        "order": 40,
+        "rotate": [-120, 60]
+      },
+      {
+        "name": "footBack",
+        "image": "side/footBack.png",
+        "size": [107.7, 50.5],
+        "position": [607.3, 1322.5],
+        "pivot": [94.4, 4],
+        "parent": "body",
+        "order": 12,
+        "rotate": [-10, 10]
+      },
+      {
+        "name": "footFront",
+        "image": "side/footFront.png",
+        "size": [271.3, 89.1],
+        "position": [640.6, 1313.2],
+        "pivot": [160.9, 9.3],
+        "parent": "body",
+        "order": 25,
+        "rotate": [-10, 10]
+      },
+      {
+        "name": "tail",
+        "image": "side/tail.png",
+        "size": [167.6, 126.4],
+        "position": [911.9, 1226.7],
+        "pivot": [5.3, 10.6],
+        "parent": "body",
+        "order": 10,
+        "rotate": [-25, 25]
+      },
+      {
+        "name": "tie",
+        "image": "side/tie.png",
+        "size": [383, 563.9],
+        "position": [558.1, 372.9],
+        "pivot": [106.4, 98.4],
+        "parent": "body",
+        "order": 50,
+        "rotate": [-15, 15],
+        "accessory": true
+      },
+      {
+        "name": "glasses",
+        "image": "side/glasses.png",
+        "size": [286, 126.4],
+        "position": [617.9, 198.6],
+        "pivot": [123.7, 50.5],
+        "parent": "head",
+        "order": 60,
+        "rotate": [-10, 10],
+        "accessory": true
+      }
+    ]
+  }
 }
