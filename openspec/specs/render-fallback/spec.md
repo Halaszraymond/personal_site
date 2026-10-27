@@ -20,13 +20,6 @@ When the visitor's system asks for reduced motion (`prefers-reduced-motion: redu
 - **WHEN** a visitor with `prefers-reduced-motion: reduce` opens a page
 - **THEN** the page stays in fallback mode
 
-### Requirement: Missing WebGL2 selects the fallback
-When the browser cannot create a WebGL2 context, the site SHALL stay in fallback mode.
-
-#### Scenario: No WebGL2
-- **WHEN** a visitor whose browser cannot create a WebGL2 context opens a page
-- **THEN** the page stays in fallback mode and no error is shown or logged
-
 ### Requirement: Save-Data selects the fallback
 When the browser reports that the visitor has asked to save data, the site SHALL stay in fallback mode. Browsers that do not report this setting SHALL be treated as not asking to save data.
 
@@ -39,10 +32,10 @@ When the browser reports that the visitor has asked to save data, the site SHALL
 - **THEN** the page switches to full mode
 
 ### Requirement: Full mode when every check passes
-When reduced motion is not requested, WebGL2 is available and Save-Data is off, the site SHALL switch to full mode. In this change the full mode shows an empty scene slot; the 3D scene arrives in a later change.
+When reduced motion is not requested and Save-Data is off, the site SHALL switch to full mode. Until the animated scene arrives, the full mode shows an empty scene slot.
 
 #### Scenario: Capable browser
-- **WHEN** a visitor without reduced motion, with WebGL2 and without Save-Data opens a page
+- **WHEN** a visitor without reduced motion and without Save-Data opens a page
 - **THEN** the page switches to full mode and the scene slot is present
 
 ### Requirement: The chosen mode is visible in the page
