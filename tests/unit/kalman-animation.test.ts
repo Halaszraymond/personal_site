@@ -9,6 +9,7 @@ import {
   drawnFrame,
   duration,
   EASES,
+  eyeShift,
   headTurn,
   playLength,
   samplePose,
@@ -413,5 +414,30 @@ describe('crossFade', () => {
       // Where both pictures are the same, the one on top covers what the other leaves open.
       expect(Math.max(drawing, layers)).toBe(1);
     }
+  });
+});
+
+describe('eyeShift', () => {
+  const eyes: [number, number] = [200, 100];
+  const shift: [number, number] = [6, 4];
+
+  it('shifts to the right end of the limit for a point far to the right (spec: "Pointer far to the right")', () => {
+    expect(eyeShift([2000, 100], eyes, shift, 500)).toEqual([6, 0]);
+  });
+
+  it('looks up without shifting sideways for a point straight above (spec: "Pointer straight above the head")', () => {
+    expect(eyeShift([200, -2000], eyes, shift, 500)).toEqual([0, -4]);
+  });
+
+  it('shifts down and to the left for a point below and to the left (spec: "Pointer below and to the left")', () => {
+    const [x, y] = eyeShift([100, 150], eyes, shift, 500);
+    expect(x).toBeCloseTo(-1.2, 9);
+    expect(y).toBeCloseTo(0.4, 9);
+  });
+
+  it('stays at rest for a point on the eyes, and never goes past the limit', () => {
+    expect(eyeShift(eyes, eyes, shift, 500)).toEqual([0, 0]);
+    const [x, y] = eyeShift([-5000, 5000], eyes, shift, 500);
+    expect([x, y]).toEqual([-6, 4]);
   });
 });

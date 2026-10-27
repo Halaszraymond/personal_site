@@ -271,6 +271,18 @@ export function headTurn(point: Pair, headPivot: Pair, range: Pair, reach: numbe
   return Math.min(range[1], Math.max(range[0], turn));
 }
 
+/**
+ * How far the pupils shift towards `point`, as an offset `[x, y]`: in both directions
+ * proportional to how far the point is from the eyes, reaching `shift` (the rig's limit) at
+ * `reach` artboard units away, and never beyond it. Unlike the head, which only turns sideways,
+ * the eyes also look up and down.
+ */
+export function eyeShift(point: Pair, eyes: Pair, shift: Pair, reach: number): Pair {
+  const towards = (from: number, to: number, limit: number) =>
+    Math.min(limit, Math.max(-limit, ((to - from) / reach) * limit));
+  return [towards(eyes[0], point[0], shift[0]), towards(eyes[1], point[1], shift[1])];
+}
+
 // ---------------------------------------------------------------------------------------
 // Validation
 // ---------------------------------------------------------------------------------------

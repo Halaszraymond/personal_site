@@ -12,6 +12,7 @@
 import { gsap } from 'gsap';
 import {
   drawnFrame,
+  eyeShift,
   headTurn,
   playLength,
   samplePose,
@@ -37,6 +38,10 @@ const easeOf: EaseOf = (name) => gsap.parseEase(name);
 const HEAD_REACH = 500;
 /** How long the head takes to catch up with the pointer, in seconds: smooth, not jittery. */
 const HEAD_LAG = 0.3;
+/** The eyes are quicker than the head: they look first, and the head follows (overlap). */
+const EYES_LAG = 0.15;
+/** The layers that hold the pupils (goofy and professional); each moves only if the rig has it. */
+const PUPIL_LAYERS = ['pupils', 'pupilsProfessional'] as const;
 
 /** What the player can do; created once per figure with `createPlayer()`. */
 export interface Player {
@@ -126,23 +131,33 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   // -------------------------------------------------------------------------------------
 
   const head = { rotate: 0 };
+  // The pupils' offset, which they glide towards (like `head.rotate`).
+  const eyes = { x: 0, y: 0 };
   const frontRig = REPO_RIGS.front;
   const headLayer = frontRig.layers.find((layer) => layer.name === 'head');
-  const headPivot: Pair = resolvePose(frontRig, poseNamed('rest'), 'goofy').find(
-    (l) => l.name === 'head',
-  )?.pivotOnArtboard ?? [0, 0];
-  const drawHead = () =>
-    applyPose(
-      figure,
-      frontRig,
-      {
-        name: 'head-follow',
-        label: 'Head-follow',
-        figure: 'front',
-        layers: { head: { rotate: head.rotate } },
-      },
-      moodOf(),
+  const atRest = resolvePose(frontRig, poseNamed('rest'), 'goofy');
+  const headPivot: Pair = atRest.find((l) => l.name === 'head')?.pivotOnArtboard ?? [0, 0];
+  const pupilLayers = frontRig.layers.filter((layer) =>
+    (PUPIL_LAYERS as readonly string[]).includes(layer.name),
+  );
+  // Where the eyes are, and how far a pupil may shift: from the first pupil layer the rig has.
+  const firstPupil = pupilLayers[0];
+  const eyesAt: Pair =
+    atRest.find((l) => l.name === firstPupil?.name)?.pivotOnArtboard ?? headPivot;
+  const eyesShift: Pair = firstPupil?.shift ?? [0, 0];
+  const drawHead = () => {
+    const pupils = Object.fromEntries(
+      pupilLayers.map((layer) => [layer.name, { offset: [eyes.x, eyes.y] as Pair }]),
     );
+    const pose: Pose = {
+      name: 'head-follow',
+      label: 'Head-follow',
+      figure: 'front',
+      layers: { head: { rotate: head.rotate }, ...pupils },
+    };
+    // Clamped, so neither pupil layer goes past its own limit.
+    applyPose(figure, frontRig, clampToRig(pose, frontRig), moodOf());
+  };
   // `quickTo` makes one reusable tween: calling it with a new value glides there in HEAD_LAG s.
   const turnHeadTo = gsap.quickTo(head, 'rotate', {
     duration: HEAD_LAG,
@@ -166,12 +181,31 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
     return applyToPoint(m, [event.clientX, event.clientY]);
   }
 
+  // The eyes glide like the head, but faster, and both directions at once.
+  const moveEyesX = gsap.quickTo(eyes, 'x', {
+    duration: EYES_LAG,
+    ease: 'power2.out',
+    onUpdate: drawHead,
+  });
+  const moveEyesY = gsap.quickTo(eyes, 'y', {
+    duration: EYES_LAG,
+    ease: 'power2.out',
+    onUpdate: drawHead,
+  });
+
   const onPointerMove = (event: PointerEvent) => {
     const point = pointerOnArtboard(event);
     if (point === undefined || headLayer === undefined) return;
     turnHeadTo(headTurn(point, headPivot, headLayer.rotate, HEAD_REACH));
+    const [x, y] = eyeShift(point, eyesAt, eyesShift, HEAD_REACH);
+    moveEyesX(x);
+    moveEyesY(y);
   };
-  const onPointerLeave = () => turnHeadTo(0);
+  const onPointerLeave = () => {
+    turnHeadTo(0);
+    moveEyesX(0);
+    moveEyesY(0);
+  };
   let following = false;
 
   function startFollowing(): void {
@@ -187,7 +221,10 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
     figure.removeEventListener('pointermove', onPointerMove);
     figure.removeEventListener('pointerleave', onPointerLeave);
     gsap.killTweensOf(head);
+    gsap.killTweensOf(eyes);
     head.rotate = 0;
+    eyes.x = 0;
+    eyes.y = 0;
   }
 
   // -------------------------------------------------------------------------------------
