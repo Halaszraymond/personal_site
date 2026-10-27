@@ -1,10 +1,12 @@
 /**
- * Cuts Kálmán's layers and turntable views out of Raymond's design images (kalman-rig design §5).
+ * Cuts Kálmán's layers, turntable views and drawn poses out of Raymond's design images
+ * (kalman-rig design §5, kalman-animation-feel design §7).
  *
  * Run with `npm run cut:kalman` after changing an image in docs/images/kalman-design/. It
  * writes the layers and front views to src/assets/kalman/front/, the turntable views to
- * src/assets/kalman/views/, and src/scene/kalman/rig.json and
- * turntable.json (Prettier formats them afterwards). Running it twice on the same images gives
+ * src/assets/kalman/views/, the drawn poses to src/assets/kalman/drawn/, and
+ * src/scene/kalman/rig.json, turntable.json and drawn-poses.json (Prettier formats them
+ * afterwards). Running it twice on the same images gives
  * the same files, so `git status` shows exactly what a new image changed.
  *
  * This file only reads, writes and holds the settings; every decision is a tested function in
@@ -42,6 +44,14 @@ const VIEWS_OUT = 'src/assets/kalman/views';
 const SIDE_OUT = 'src/assets/kalman/side';
 const RIG_FILE = 'src/scene/kalman/rig.json';
 const TURNTABLE_FILE = 'src/scene/kalman/turntable.json';
+const DRAWN_OUT = 'src/assets/kalman/drawn';
+const DRAWN_FILE = 'src/scene/kalman/drawn-poses.json';
+
+/**
+ * The drawn poses: whole drawings shown instead of the layers at a keyframe. Each is an edit
+ * of front-goofy.png that changes only his upper body, with a professional edit of it.
+ */
+const DRAWN_POSES = [{ name: 'bow', file: 'front-bow' }] as const;
 
 // ---------------------------------------------------------------------------------------
 // Settings: the numbers that belong to these images (pixel rows and columns of the front view)
@@ -429,6 +439,35 @@ for (const [mood, image, file] of [
   frontImages[mood] = { image: `front/${file}`, ...placeBox(whole.box, PLACEMENT) };
 }
 
+// The drawn poses. They are edits of front-goofy.png that leave his lower half untouched, so
+// they are placed exactly like the front figure (same scale, same spot) and keep their colours:
+// at the start of the cross-fade their lower half must match the layers pixel for pixel.
+mkdirSync(DRAWN_OUT, { recursive: true });
+const drawnPoses = [];
+for (const drawn of DRAWN_POSES) {
+  const drawnGoofy = await readRgb(`${DESIGN}/${drawn.file}-goofy.png`);
+  const drawnPro = await readRgb(`${DESIGN}/${drawn.file}-professional.png`);
+  assertSameSize(goofy, drawnGoofy, `The front view and the "${drawn.name}" drawn pose`);
+  assertSameSize(drawnGoofy, drawnPro, `The goofy and professional "${drawn.name}" drawn poses`);
+  const images: Record<
+    string,
+    { image: string; size: [number, number]; position: [number, number] }
+  > = {};
+  for (const [mood, image, suffix] of [
+    ['goofy', drawnGoofy, ''],
+    ['professional', drawnPro, '-pro'],
+  ] as const) {
+    const whole = cutPart(image, figureAlpha(image, findBackground(image)), () => 1);
+    if (whole === undefined) throw new Error(`The ${mood} "${drawn.name}" drawn pose is empty.`);
+    const file = `${drawn.name}${suffix}.png`;
+    await writePng(join(DRAWN_OUT, file), whole.rgba, whole.box.width, whole.box.height);
+    images[mood] = { image: `drawn/${file}`, ...placeBox(whole.box, PLACEMENT) };
+  }
+  drawnPoses.push({ name: drawn.name, images });
+  console.log(`drawn ${drawn.name}`);
+}
+writeJson(DRAWN_FILE, { poses: drawnPoses });
+
 // The turntable views: the same plumage tone as the front view, his feet on the front view's
 // ground line and his body centred on the same line. The professional version gets exactly the
 // goofy version's correction, so the pair stays aligned.
@@ -475,4 +514,4 @@ writeJson(TURNTABLE_FILE, {
   views: [{ name: 'front', angle: 0, images: frontImages }, ...drawnViews, ...MIRRORS],
 });
 
-console.log(`Written: ${OUT}/, ${RIG_FILE} and ${TURNTABLE_FILE}.`);
+console.log(`Written: ${OUT}/, ${RIG_FILE}, ${TURNTABLE_FILE} and ${DRAWN_FILE}.`);

@@ -1,0 +1,19 @@
+{
+  "poses": [
+    {
+      "name": "bow",
+      "images": {
+        "goofy": {
+          "image": "drawn/bow.png",
+          "size": [674.3, 1126.5],
+          "position": [463.5, 275.8]
+        },
+        "professional": {
+          "image": "drawn/bow-pro.png",
+          "size": [674.3, 1153.1],
+          "position": [463.5, 249.2]
+        }
+      }
+    }
+  ]
+}

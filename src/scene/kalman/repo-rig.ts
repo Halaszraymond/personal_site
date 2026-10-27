@@ -19,8 +19,10 @@ import {
   type Rigs,
 } from '../../lib/kalman-rig';
 import { validateAnimations, type Animation } from '../../lib/kalman-animation';
+import { drawnPoseErrors, type DrawnPose } from '../../lib/kalman-drawn-poses';
 import { turntableErrors, type TurntableEntry } from '../../lib/kalman-turntable';
 import animationData from './animations.json';
+import drawnPoseData from './drawn-poses.json';
 import poseData from './poses.json';
 import rigData from './rig.json';
 import turntableData from './turntable.json';
@@ -81,6 +83,16 @@ function loadTurntable(): TurntableEntry[] {
   // TypeScript reads `[577.5, 1222.5]` in JSON as `number[]`, not as a pair; turntableErrors()
   // has just checked the pairs, so going through `unknown` is safe here.
   return turntableData.views as unknown as TurntableEntry[];
+}
+
+/** The drawn poses from drawn-poses.json (whole drawings, such as the bow). */
+export const REPO_DRAWN_POSES: readonly DrawnPose[] = loadDrawnPoses();
+
+function loadDrawnPoses(): DrawnPose[] {
+  const errors = drawnPoseErrors(drawnPoseData);
+  if (errors.length > 0) fail('src/scene/kalman/drawn-poses.json', errors);
+  // Checked above; JSON reads the pairs as `number[]`, hence the step through `unknown`.
+  return drawnPoseData.poses as unknown as DrawnPose[];
 }
 
 /** The animations from animations.json, checked against the repo's poses. */

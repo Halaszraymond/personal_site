@@ -8,6 +8,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import drawnPoses from '../../src/scene/kalman/drawn-poses.json';
 import poses from '../../src/scene/kalman/poses.json';
 import rigData from '../../src/scene/kalman/rig.json';
 import {
@@ -104,6 +105,28 @@ describe('the poses in the repo', () => {
     for (const pose of poses) {
       const result = validateFigurePose(pose, rigs);
       expect(result.ok ? [] : result.errors).toEqual([]);
+    }
+  });
+});
+
+describe('the drawn poses in the repo', () => {
+  it('include the bow, in both moods, with images that exist (spec: "The drawn bow in place")', () => {
+    const bow = drawnPoses.poses.find((pose) => pose.name === 'bow');
+    expect(bow).toBeDefined();
+    for (const placed of [bow?.images.goofy, bow?.images.professional]) {
+      expect(placed && existsSync(join(ASSETS, placed.image))).toBe(true);
+    }
+  });
+
+  it('stand the bow on the front figure’s ground line', () => {
+    // The ground line: the lowest edge of any front layer (his feet).
+    const front = repoRig('front');
+    const ground = Math.max(...front.layers.map((l) => l.position[1] + l.size[1]));
+    const bow = drawnPoses.poses.find((pose) => pose.name === 'bow');
+    for (const placed of [bow?.images.goofy, bow?.images.professional]) {
+      const bottom = (placed?.position[1] ?? 0) + (placed?.size[1] ?? 0);
+      // Within 2 artboard units: about one pixel of the drawing.
+      expect(Math.abs(bottom - ground)).toBeLessThanOrEqual(2);
     }
   });
 });
