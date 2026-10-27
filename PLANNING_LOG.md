@@ -118,3 +118,4 @@ Append-only: one line per decision. Never rewrite an earlier line.
 - 2026-10-28 — `diveState()` takes (previous, zone, direction), without the depth: the zone already says what the depth would. Design and task updated. Decided by: Claude.
 - 2026-10-28 — The bundle-size check missed lazy imports written with backticks (Vite's style) and is fixed. Measured honestly: the home pages load 40.0–40.3 KB of gzipped JavaScript, within the 50 KB budget. Decided by: Claude (measured).
 - 2026-10-28 — Kálmán's images are built as WebP at twice their width on a 480 px stage: the front figure goes from 1.6 MB of PNG to about 90 KB. Decided by: Claude (measured).
+- 2026-10-28 — Kálmán is a guide, not the centre of attention: the dive's stage is at most 18rem wide on desktop (was 30rem) and 22% of a phone screen (was 30%); sections are about one screen each (The catch 1.2, the ascent 0.8). Decided by: Raymond (sizes proposed by Claude).

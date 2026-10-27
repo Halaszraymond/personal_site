@@ -90,7 +90,7 @@ const text = UI[locale].dive;
     --gauge-width: 4.75rem;
     /* The stage's band at the top of a phone screen. `svh`: the small viewport height, which
        doesn't change when a phone's address bar slides away, so the band doesn't jump. */
-    --stage-band: 30svh;
+    --stage-band: 22svh;
 
     max-width: none;
     margin: 0;
@@ -141,7 +141,7 @@ const text = UI[locale].dive;
   /* The stage only exists in full mode (RenderModeSwitch hides the slot in the fallback). */
   .stage {
     width: 100%;
-    max-width: 30rem;
+    max-width: 18rem;
     height: 100%;
     margin: 0 auto;
     display: flex;
@@ -176,30 +176,29 @@ const text = UI[locale].dive;
     outline-color: var(--accent);
   }
 
-  /* Long sections give the dive its length; The catch is the deepest stretch (164 m). */
-  html[data-render-mode='full'] [data-section='ice'] {
+  /* A screen per section gives the dive its length; The catch is the deepest stretch (164 m).
+     Tuned with Raymond: short, so there is little empty water until the content grows. */
+  html[data-render-mode='full']
+    :is(
+      [data-section='ice'],
+      [data-section='about'],
+      [data-section='work'],
+      [data-section='education']
+    ) {
     min-height: 100svh;
   }
 
-  html[data-render-mode='full'] :is([data-section='about'], [data-section='work']) {
-    min-height: 140svh;
-  }
-
-  html[data-render-mode='full'] [data-section='education'] {
-    min-height: 140svh;
-  }
-
   html[data-render-mode='full'] [data-section='catch'] {
-    min-height: 170svh;
+    min-height: 120svh;
   }
 
   html[data-render-mode='full'] .ascent {
     display: block;
-    height: 100svh;
+    height: 80svh;
   }
 
   html[data-render-mode='full'] [data-section='contact'] {
-    min-height: 100svh;
+    min-height: 80svh;
   }
 
   /* Phone: the stage is a band at the top, sharing the grid cell with the text so it can stay
@@ -255,7 +254,7 @@ const text = UI[locale].dive;
 
     /* Desktop: the text on the left, Kálmán's stage on the right, stuck to the viewport. */
     html[data-render-mode='full'] body[data-layout='dive'] {
-      grid-template-columns: minmax(0, 40rem) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 44rem) minmax(12rem, 20rem);
       grid-template-areas:
         'header header'
         'main stage';

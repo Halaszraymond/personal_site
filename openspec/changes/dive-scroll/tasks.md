@@ -26,7 +26,7 @@
 - [x] 4.1 Write the dive client script: measure the anchors, follow the scroll (passive, once per frame), set the colours on `<html>` and update the gauge; verify with e2e tests that the gauge and the background follow the scroll, and "Contrast at every depth" on the page
 - [x] 4.2 Put Kálmán on the stage in `RenderModeSwitch.astro` (front, side and swimming figures, no turntable) and drive the player from `diveState()`; verify with e2e tests for "The dive scene", "The first scroll", "The ascent" and "Scrolling back up"
 - [x] 4.3 Add the express dive (design §5): the tween in full mode, instant with reduced motion and in the fallback, focus on the heading, the hash updated; verify with e2e tests for "Express dive to The catch" and "Express dive with reduced motion"
-- [ ] 4.4 Tune with Raymond in the browser: the section heights, the stage size, the gauge on a phone, the colours; verify Raymond approves and the tests still pass
+- [x] 4.4 Tune with Raymond in the browser: the section heights, the stage size, the gauge on a phone, the colours; verify Raymond approves and the tests still pass
 
 ## 5. Wrap-up
 
