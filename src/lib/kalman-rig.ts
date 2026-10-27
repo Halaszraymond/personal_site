@@ -137,8 +137,15 @@ export interface RigLayer {
    * stretch at all.
    */
   readonly stretch?: Pair;
+  /**
+   * How far the layer's offset may go from rest, `[x, y]` each way (a pupil stays in its eye).
+   * Without it the offset is free.
+   */
+  readonly shift?: Pair;
   /** True for the professional accessories (tie, glasses): only shown in the professional mood. */
   readonly accessory?: boolean;
+  /** Only shown in this mood (the goofy pupils, which would peek out behind the calm eyes). */
+  readonly mood?: Mood;
 }
 
 /** The whole rig: the artboard and its layers. */
@@ -241,7 +248,9 @@ export function resolvePose(rig: Rig, pose: Pose, mood: Mood): ResolvedLayer[] {
       return {
         name: layer.name,
         matrix,
-        visible: layer.accessory !== true || mood === 'professional',
+        visible:
+          (layer.accessory !== true || mood === 'professional') &&
+          (layer.mood === undefined || layer.mood === mood),
         pivotOnArtboard: applyToPoint(matrix, layer.pivot),
       };
     });
@@ -285,7 +294,9 @@ const LAYER_FIELDS = new Set([
   'order',
   'rotate',
   'stretch',
+  'shift',
   'accessory',
+  'mood',
 ]);
 
 /** Checks one layer's fields and types; returns the problems, empty when it is fine. */
@@ -308,6 +319,17 @@ function layerShapeErrors(value: unknown, index: number): string[] {
   }
   if (value['stretch'] !== undefined && !isPair(value['stretch'])) {
     errors.push(`${label} needs "stretch" as two numbers, or none.`);
+  }
+  const shift = value['shift'];
+  if (shift !== undefined && (!isPair(shift) || shift[0] < 0 || shift[1] < 0)) {
+    errors.push(`${label} needs "shift" as two numbers of 0 or more, or none.`);
+  }
+  if (
+    value['mood'] !== undefined &&
+    value['mood'] !== 'goofy' &&
+    value['mood'] !== 'professional'
+  ) {
+    errors.push(`${label} needs "mood" as "goofy" or "professional", or none.`);
   }
   const size = value['size'];
   if (isPair(size) && (size[0] <= 0 || size[1] <= 0)) {
@@ -478,8 +500,16 @@ export function validatePose(data: unknown, rig: Rig): Validation<Pose> {
         );
       }
     }
-    if (value['offset'] !== undefined && !isPair(value['offset'])) {
+    const offset = value['offset'];
+    if (offset !== undefined && !isPair(offset)) {
       errors.push(`${label}, layer "${layerName}": "offset" must be two numbers.`);
+    } else if (offset !== undefined && layer.shift !== undefined) {
+      const [sx, sy] = layer.shift;
+      if (Math.abs(offset[0]) > sx || Math.abs(offset[1]) > sy) {
+        errors.push(
+          `${label} shifts "${layerName}" by [${offset[0]}, ${offset[1]}], beyond its allowed shift [${sx}, ${sy}].`,
+        );
+      }
     }
     errors.push(...stretchErrors(label, layer, value['stretch']));
   }
@@ -516,8 +546,8 @@ function clamp(value: number, [min, max]: Pair): number {
 /**
  * The pose with every rotation and stretch pulled back inside its layer's range (design §4).
  * An overshooting easing may ask for a little more than a layer allows; this keeps the drawn
- * figure within the rig. Offsets have no range, so they stay as they are, and layers the rig
- * doesn't have are left alone.
+ * figure within the rig. Offsets only have a limit on layers with a `shift` (the pupils); the
+ * others stay as they are, and layers the rig doesn't have are left alone.
  */
 export function clampToRig(pose: Pose, rig: Rig): Pose {
   const byName = new Map(rig.layers.map((layer) => [layer.name, layer]));
@@ -531,6 +561,10 @@ export function clampToRig(pose: Pose, rig: Rig): Pose {
     const clamped: { rotate?: number; offset?: Pair; stretch?: number } = { ...own };
     if (own.rotate !== undefined) clamped.rotate = clamp(own.rotate, layer.rotate);
     if (own.stretch !== undefined) clamped.stretch = clamp(own.stretch, layer.stretch ?? [1, 1]);
+    if (own.offset !== undefined && layer.shift !== undefined) {
+      const [sx, sy] = layer.shift;
+      clamped.offset = [clamp(own.offset[0], [-sx, sx]), clamp(own.offset[1], [-sy, sy])];
+    }
     layers[name] = clamped;
   }
   return { ...pose, layers };

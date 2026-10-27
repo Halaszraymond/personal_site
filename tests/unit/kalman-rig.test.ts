@@ -561,3 +561,79 @@ describe('clampToRig', () => {
     });
   });
 });
+
+// ---------------------------------------------------------------------------------------
+// Pupils: a limited shift and a mood of their own (spec: "A layer's shift can be limited",
+// "The professional accessories can be shown or hidden"; kalman-animation-feel design §11)
+// ---------------------------------------------------------------------------------------
+
+/** The tiny rig with goofy and professional pupils on the head. */
+const EYED: Rig = {
+  ...RIG,
+  layers: [
+    ...RIG.layers,
+    layer({ name: 'pupils', parent: 'head', order: 35, shift: [6, 4], mood: 'goofy' }),
+    layer({
+      name: 'pupilsProfessional',
+      parent: 'head',
+      order: 45,
+      shift: [5, 3],
+      accessory: true,
+    }),
+  ],
+};
+
+describe('pupils', () => {
+  it('accepts a rig with a shift and a mood, and a pose within the shift', () => {
+    const data = { artboard: EYED.artboard, layers: EYED.layers };
+    expect(validateRig(data, allImagesExist).ok).toBe(true);
+    const look = { name: 'look', label: 'Look', layers: { pupils: { offset: [-6, 4] } } };
+    expect(validatePose(look, EYED).ok).toBe(true);
+  });
+
+  it('rejects a shift beyond the allowed shift (spec: "Pupil at the edge")', () => {
+    const far = { name: 'far', label: 'Far', layers: { pupils: { offset: [7, 0] } } };
+    expect(errorsOf(validatePose(far, EYED))).toEqual([
+      'Pose "far" shifts "pupils" by [7, 0], beyond its allowed shift [6, 4].',
+    ]);
+  });
+
+  it('rejects a negative shift range and an unknown mood', () => {
+    const data = {
+      artboard: RIG.artboard,
+      layers: [
+        ...RIG.layers,
+        { ...layer({ name: 'pupils', parent: 'head', order: 35 }), shift: [-1, 2], mood: 'sleepy' },
+      ],
+    };
+    expect(errorsOf(validateRig(data, allImagesExist))).toEqual([
+      'Layer "pupils" needs "shift" as two numbers of 0 or more, or none.',
+      'Layer "pupils" needs "mood" as "goofy" or "professional", or none.',
+    ]);
+  });
+
+  it('clamps an offset to the shift, and leaves offsets of other layers free', () => {
+    const wild = pose({ pupils: { offset: [20, -9] }, head: { offset: [300, 0] } });
+    expect(clampToRig(wild, EYED).layers).toEqual({
+      pupils: { offset: [6, -4] },
+      head: { offset: [300, 0] },
+    });
+  });
+
+  it('shows each pair of pupils only in its own mood (scenarios "Professional mood", "Goofy mood")', () => {
+    expect(resolved(EYED, REST_POSE, 'pupils', 'goofy').visible).toBe(true);
+    expect(resolved(EYED, REST_POSE, 'pupilsProfessional', 'goofy').visible).toBe(false);
+    expect(resolved(EYED, REST_POSE, 'pupils', 'professional').visible).toBe(false);
+    expect(resolved(EYED, REST_POSE, 'pupilsProfessional', 'professional').visible).toBe(true);
+  });
+
+  it('turns the pupils with the head, as its children', () => {
+    const tilted = pose({ head: { rotate: 20 } });
+    const head = resolved(EYED, tilted, 'head');
+    const pupils = resolved(EYED, tilted, 'pupils');
+    expect(Math.atan2(pupils.matrix.b, pupils.matrix.a)).toBeCloseTo(
+      Math.atan2(head.matrix.b, head.matrix.a),
+      9,
+    );
+  });
+});
