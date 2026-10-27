@@ -251,6 +251,9 @@
       },
       "footFront": {
         "plant": 1
+      },
+      "head": {
+        "rotate": 12
       }
     }
   },
@@ -272,6 +275,9 @@
       },
       "footFront": {
         "rotate": 15
+      },
+      "head": {
+        "rotate": 25
       }
     }
   },
@@ -329,7 +335,7 @@
       "body": {
         "rotate": -40,
         "offset": [-60, -300],
-        "stretch": 1.08
+        "stretch": 1.1
       },
       "flipper": {
         "rotate": -10
@@ -433,10 +439,12 @@
         "rotate": -5
       },
       "footBack": {
-        "rotate": 20
+        "rotate": 20,
+        "plant": 1
       },
       "footFront": {
-        "rotate": 20
+        "rotate": 20,
+        "plant": 1
       }
     }
   },

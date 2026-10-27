@@ -166,3 +166,15 @@ The launch SHALL be clean and powerful: he rises upright like a rocket with his 
 #### Scenario: Standing up
 - **WHEN** the launch is held while he pushes himself up
 - **THEN** the body is between lying and upright, the feet are planted on the ground and the flipper is turned away from the body, and when the launch has finished he is at rest
+
+### Requirement: Smooth animations flow through their keyframes
+An animation SHALL be able to move smoothly through its keyframes: every value then follows one flowing curve through all of them, keeps moving through a keyframe it passes through, slows to a stop only where it turns around or holds still, and never swings past a keyframe's value. The dive and the launch SHALL move this way.
+
+#### Scenario: Passing through a keyframe
+- **WHEN** a smooth animation passes a keyframe on its way to the next one
+- **THEN** the values keep moving at about the same speed just before and just after it
+
+#### Scenario: Turning around
+- **WHEN** a value reaches a keyframe where it turns around or holds
+- **THEN** it slows to a stop there and does not swing past it
+

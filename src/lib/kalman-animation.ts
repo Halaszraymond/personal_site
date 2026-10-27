@@ -51,6 +51,12 @@ export interface Animation {
   readonly lag?: Readonly<Record<string, number>>;
   /** How long a drawn pose takes to cross-fade in and out, in seconds; DRAWN_FADE when left out. */
   readonly fade?: number;
+  /**
+   * Move through the keyframes in one flowing curve instead of piece by piece (design §15):
+   * no stop at a keyframe he passes through, only where a value turns around. The keyframes'
+   * eases are then not used.
+   */
+  readonly smooth?: boolean;
 }
 
 /** The default cross-fade time of a drawn pose: short, so nothing pops, but no ghost lingers. */
@@ -212,9 +218,107 @@ function keyframePoseAt(
   if (next === undefined || time <= current.at) {
     return { ...poseOf(current), name: animation.name };
   }
+  if (animation.smooth === true) return smoothPoseAt(animation, frames.map(poseOf), index, time);
   const progress = (time - current.at) / (next.at - current.at);
   const eased = easeOf(current.ease ?? 'none')(Math.min(1, Math.max(0, progress)));
   return blendPoses(poseOf(current), poseOf(next), eased, animation.name);
+}
+
+/**
+ * How fast a value moves through keyframe `i` (its slope), for a smooth curve: 0 where it
+ * turns around, holds still or starts and ends (so he slows down there, as anything real
+ * does), and otherwise the average of the slopes before and after, so the curve flows straight
+ * through. Clamped so the curve never swings past its neighbours (no extra wobble). This is the
+ * monotone cubic of Fritsch and Carlson, the kind of curve plotting libraries use.
+ */
+export function smoothSlope(
+  times: readonly number[],
+  values: readonly number[],
+  i: number,
+): number {
+  const before =
+    i > 0 ? ((values[i] ?? 0) - (values[i - 1] ?? 0)) / ((times[i] ?? 0) - (times[i - 1] ?? 0)) : 0;
+  const after =
+    i < values.length - 1
+      ? ((values[i + 1] ?? 0) - (values[i] ?? 0)) / ((times[i + 1] ?? 0) - (times[i] ?? 0))
+      : 0;
+  if (i === 0 || i === values.length - 1 || before * after <= 0) return 0;
+  const slope = (before + after) / 2;
+  const limit = 3 * Math.min(Math.abs(before), Math.abs(after));
+  return Math.sign(slope) * Math.min(Math.abs(slope), limit);
+}
+
+/** The value at `t` on a cubic from (t0, v0) to (t1, v1) with slopes m0 and m1 (a Hermite curve). */
+export function hermite(
+  t0: number,
+  v0: number,
+  m0: number,
+  t1: number,
+  v1: number,
+  m1: number,
+  t: number,
+): number {
+  const h = t1 - t0;
+  const s = (t - t0) / h;
+  const s2 = s * s;
+  const s3 = s2 * s;
+  return (
+    (2 * s3 - 3 * s2 + 1) * v0 +
+    (s3 - 2 * s2 + s) * h * m0 +
+    (-2 * s3 + 3 * s2) * v1 +
+    (s3 - s2) * h * m1
+  );
+}
+
+/** The pose at `time` between keyframes `index` and `index + 1`, on smooth curves (design §15). */
+function smoothPoseAt(
+  animation: Animation,
+  poses: readonly Pose[],
+  index: number,
+  time: number,
+): Pose {
+  const times = animation.keyframes.map((frame) => frame.at);
+  const layerNames = new Set(poses.flatMap((pose) => Object.keys(pose.layers)));
+  // One curve per number: like reading a column per field from a table of keyframes.
+  const curve = (read: (layer: LayerPose) => number, layer: string): number => {
+    const values = poses.map((pose) => read(pose.layers[layer] ?? {}));
+    return hermite(
+      times[index] ?? 0,
+      values[index] ?? 0,
+      smoothSlope(times, values, index),
+      times[index + 1] ?? 0,
+      values[index + 1] ?? 0,
+      smoothSlope(times, values, index + 1),
+      time,
+    );
+  };
+  const layers: Record<string, LayerPose> = {};
+  for (const layer of layerNames) {
+    const entry: { rotate: number; offset: Pair; stretch?: number; plant?: number } = {
+      rotate: curve((l) => l.rotate ?? 0, layer),
+      offset: [curve((l) => l.offset?.[0] ?? 0, layer), curve((l) => l.offset?.[1] ?? 0, layer)],
+    };
+    if (poses.some((pose) => pose.layers[layer]?.stretch !== undefined)) {
+      entry.stretch = curve((l) => l.stretch ?? 1, layer);
+    }
+    if (poses.some((pose) => pose.layers[layer]?.plant !== undefined)) {
+      entry.plant = Math.min(
+        1,
+        Math.max(
+          0,
+          curve((l) => l.plant ?? 0, layer),
+        ),
+      );
+    }
+    layers[layer] = entry;
+  }
+  const first = poses[0];
+  return {
+    name: animation.name,
+    label: first?.label ?? animation.label,
+    figure: animation.figure,
+    layers,
+  };
 }
 
 // ---------------------------------------------------------------------------------------
@@ -352,7 +456,8 @@ interface FigureNames {
 /** The problems with one animation, given the names its figure has. */
 function animationErrors(value: unknown, index: number, names: FigureNames): string[] {
   if (!isRecord(value)) return [`Animation ${index + 1} is not an object.`];
-  const { name, label, figure, loop, follow, keyframes, lag, fade } = value;
+  const { name, label, figure, loop, follow, keyframes, lag, fade, smooth } = value;
+
   const title =
     typeof name === 'string' && name !== '' ? `Animation "${name}"` : `Animation ${index + 1}`;
   const errors: string[] = [];
@@ -364,6 +469,9 @@ function animationErrors(value: unknown, index: number, names: FigureNames): str
   if (isFigure(figure)) errors.push(...lagErrors(title, lag, names.layers(figure)));
   if (fade !== undefined && (typeof fade !== 'number' || !Number.isFinite(fade) || fade < 0)) {
     errors.push(`${title} needs "fade" as 0 or more seconds.`);
+  }
+  if (smooth !== undefined && typeof smooth !== 'boolean') {
+    errors.push(`${title} needs "smooth" as true or false.`);
   }
   if (!Array.isArray(keyframes) || keyframes.length === 0) {
     errors.push(`${title} needs a list of "keyframes".`);

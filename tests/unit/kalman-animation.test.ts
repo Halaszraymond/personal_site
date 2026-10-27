@@ -14,8 +14,10 @@ import {
   followAngles,
   HEAD_SHARE,
   headTurn,
+  hermite,
   playLength,
   samplePose,
+  smoothSlope,
   validateAnimations,
   type Animation,
   type EaseOf,
@@ -467,5 +469,53 @@ describe('followAngles', () => {
 
   it('turns neither for a point straight above the head', () => {
     expect(followAngles([200, -500], [200, 100], [-25, 25], 500)).toEqual({ head: 0, body: 0 });
+  });
+});
+
+describe('smooth animations (design §15)', () => {
+  // The head goes 0° → 10° → 30° → 30°: through 10° on the way up, a hold at 30°.
+  const UP: Pose = { ...REST, name: 'up', layers: { head: { rotate: 10 } } };
+  const TOP: Pose = { ...REST, name: 'top', layers: { head: { rotate: 30 } } };
+  const SMOOTH_POSES = new Map([
+    ['rest', REST],
+    ['up', UP],
+    ['top', TOP],
+  ]);
+  const RISING: Animation = {
+    ...NODDING,
+    name: 'rising',
+    smooth: true,
+    keyframes: [
+      { at: 0, pose: 'rest' },
+      { at: 1, pose: 'up' },
+      { at: 2, pose: 'top' },
+      { at: 3, pose: 'top' },
+    ],
+  };
+  const head = (time: number) =>
+    samplePose(RISING, SMOOTH_POSES, time, linear).layers['head']?.rotate ?? 0;
+
+  it('is exactly each keyframe’s pose at its own moment', () => {
+    expect(head(0)).toBe(0);
+    expect(head(1)).toBeCloseTo(10, 9);
+    expect(head(2)).toBeCloseTo(30, 9);
+  });
+
+  it('keeps moving through a keyframe it passes through, instead of stopping there', () => {
+    // Just before and just after 1 s the head is clearly moving, at about the same speed.
+    const before = (head(1) - head(0.99)) / 0.01;
+    const after = (head(1.01) - head(1)) / 0.01;
+    expect(before).toBeGreaterThan(5);
+    expect(after).toBeCloseTo(before, 0);
+  });
+
+  it('slows to a stop where it turns around or holds, and never swings past it', () => {
+    expect(smoothSlope([0, 1, 2, 3], [0, 10, 30, 30], 2)).toBe(0);
+    for (let time = 2; time <= 3; time += 0.1) expect(head(time)).toBeLessThanOrEqual(30 + 1e-9);
+  });
+
+  it('hermite runs from one value to the next with the given slopes', () => {
+    expect(hermite(0, 0, 0, 1, 10, 0, 0.5)).toBeCloseTo(5, 9);
+    expect(hermite(0, 0, 0, 1, 10, 0, 1)).toBeCloseTo(10, 9);
   });
 });

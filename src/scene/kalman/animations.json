@@ -122,11 +122,13 @@
       }
     ],
     "lag": {
-      "tail": 0.12,
+      "tail": 0.16,
       "footBack": 0.1,
       "footFront": 0.1,
-      "flipper": 0.06
-    }
+      "flipper": 0.06,
+      "head": 0.07
+    },
+    "smooth": true
   },
   {
     "name": "swim",
@@ -230,10 +232,12 @@
       }
     ],
     "lag": {
-      "tail": 0.12,
+      "tail": 0.16,
       "footBack": 0.1,
       "footFront": 0.1,
-      "flipper": 0.08
-    }
+      "flipper": 0.08,
+      "head": 0.07
+    },
+    "smooth": true
   }
 ]
