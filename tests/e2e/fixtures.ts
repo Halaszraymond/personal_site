@@ -21,10 +21,14 @@ if (rules.length !== 1 || rules[0]?.pattern !== '/*') {
 }
 const productionHeaders = rules[0].headers;
 
-/** True for the errors Playwright gives when a request was cancelled by a navigation or close. */
+/**
+ * True for the errors Playwright gives when a request was cancelled by a navigation, a close or
+ * the end of the test. "Test ended" happens when a test finishes while an image is still
+ * loading, which the Kálmán preview (with its many layer and view images) makes common.
+ */
 function isCancelledRequest(error: unknown): boolean {
   const message = error instanceof Error ? error.message : String(error);
-  return /has been disposed|has been closed|Route is already handled/.test(message);
+  return /has been disposed|has been closed|Route is already handled|Test ended/.test(message);
 }
 
 // The fixture gives the test no value (`undefined`); it only sets up the routing.
