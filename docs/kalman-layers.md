@@ -29,7 +29,14 @@ For the animations (diving, swimming, launching) the side view is also a posable
 | `side-professional.png` | The same with tie, glasses and the calm eye | Prompt 4 (the ¾ front version), an **edit** of `side-goofy.png` |
 | `side-no-flipper.png` | The same without the near flipper, the body painted underneath | Prompt 6, an **edit** of `side-goofy.png` |
 
-In a side view the flipper lies *on* the body, so there is no white gap to cut along. The difference with the flipper-less image is exactly the flipper, and that image gives the body as it looks under the flipper, so a swinging flipper never leaves a copy of itself behind.
+In a side view the flipper lies *on* the body, so there is no white gap to cut along. The script cuts the flipper along an outline traced once on `side-goofy.png`, and takes the body from the flipper-less image, so a swinging flipper shows painted body underneath and never leaves a copy of itself behind.
+
+For the bow the front figure gets a **drawn pose**: a whole drawing of him bowing, which cross-fades in at the deepest moment (from the front a bow can't be made by turning layers). It needs two more images, edits that change only his upper body, so the lower half lines up with `front-goofy.png`:
+
+| File | What | How it's made |
+|---|---|---|
+| `front-bow-goofy.png` | Bowing politely, like a butler: head and shoulders tipped forward, bill pointing down at the chest, the round goofy eyes looking down, a small smile | Prompt 7, an **edit** of `front-goofy.png` |
+| `front-bow-professional.png` | The same bow with the glasses, the calm eyes and the tie | Prompt 8, an **edit** of `front-bow-goofy.png` |
 
 **Why edits:** a professional image made as an edit of its goofy one lines up with it pixel for pixel. Then the difference between the two is exactly the tie, the glasses and the eyes, and that becomes the tie and glasses layers. A professional image drawn from scratch would never line up.
 
@@ -102,6 +109,24 @@ No text, no labels, no logos, no shadow on the ground, nothing else in the image
 Edit this exact image. Remove his near flipper completely and paint the side of his body that was behind it, continuing the grey back and the white belly naturally, with the same feather texture and lighting.
 
 Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere outside the area where the flipper was.
+```
+
+### 7. The bow, goofy (attach `front-goofy.png`)
+
+```text
+Edit this exact image. Make him bow politely and deeply, like a butler welcoming a guest: his head and shoulders tip forward and down so we look at the top of his slate-grey head, his bill points straight down towards his chest, and both golden-yellow ear patches are still visible at the sides. Keep his big round goofy eyes, now looking down at the ground, and a small friendly smile at the base of his bill: polite and warm, not stern.
+
+Change nothing below his shoulders: same belly, same flippers hanging at his sides, same feet, same position, same size, same lighting, same background.
+```
+
+If the eyes come out stern, add: *"his eyes are the same big round white eyes with black pupils as in the attached image"*.
+
+### 8. The bow, professional (attach `front-bow-goofy.png` and `front-professional.png`)
+
+```text
+Edit the first image. Add the round black glasses and the calmer professional eyes from the second image, seen from above because his head is bowed: the glasses tip down with his head and sit on the base of his bill, his eyes look down behind them. Add the purple patterned tie exactly as in the second image. Keep the ear patches exactly where they are in the first image.
+
+Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere outside the glasses, the eyes and the tie.
 ```
 
 ## Before running the script, check

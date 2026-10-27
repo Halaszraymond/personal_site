@@ -15,3 +15,6 @@ coverage/
 !.env.playground
 .DS_Store
 npm-debug.log*
+
+# Reference stills of real penguins (other people's footage): keep them locally, never commit them.
+references/
