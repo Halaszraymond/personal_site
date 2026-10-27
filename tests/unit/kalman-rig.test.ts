@@ -637,3 +637,54 @@ describe('pupils', () => {
     );
   });
 });
+
+// ---------------------------------------------------------------------------------------
+// Planted feet: the knees (spec: "Feet can stay on the ground"; design §12)
+// ---------------------------------------------------------------------------------------
+
+/** The tiny rig with a foot hanging from the body, at its bottom. */
+const FOOTED: Rig = {
+  ...RIG,
+  layers: [
+    ...RIG.layers.map((l) => (l.name === 'body' ? { ...l, stretch: [0.8, 1.2] as Pair } : l)),
+    layer({ name: 'foot', position: [180, 490], size: [40, 20], pivot: [20, 0], order: 25 }),
+  ],
+};
+
+describe('planted feet', () => {
+  it('keeps a planted foot where it stands at rest while the body sinks and squashes (spec: "Crouching on planted feet")', () => {
+    const crouch = pose({
+      body: { offset: [0, 30], stretch: 0.85, rotate: -8 },
+      foot: { plant: 1 },
+    });
+    expect(resolved(FOOTED, crouch, 'foot').matrix).toEqual(
+      resolved(FOOTED, REST_POSE, 'foot').matrix,
+    );
+    // ...while the body above it really is lower: its top-left corner moved down.
+    const bodyTop = applyToPoint(resolved(FOOTED, crouch, 'body').matrix, [100, 0])[1];
+    expect(bodyTop).toBeGreaterThan(200);
+  });
+
+  it('lets an unplanted foot move up with the body (spec: "Feet that leave the ground")', () => {
+    const hop = pose({ body: { offset: [0, -50] } });
+    expect(resolved(FOOTED, hop, 'foot').pivotOnArtboard[1]).toBeCloseTo(490 - 50, 9);
+  });
+
+  it('follows the body halfway at plant 0.5, and still applies the foot’s own rotation', () => {
+    const half = pose({ body: { offset: [0, -40] }, foot: { plant: 0.5 } });
+    expect(resolved(FOOTED, half, 'foot').pivotOnArtboard[1]).toBeCloseTo(490 - 20, 9);
+    const tilted = pose({ body: { offset: [0, -40] }, foot: { plant: 1, rotate: 15 } });
+    const foot = resolved(FOOTED, tilted, 'foot');
+    expectPointClose(foot.pivotOnArtboard, [200, 490]);
+    expect((Math.atan2(foot.matrix.b, foot.matrix.a) * 180) / Math.PI).toBeCloseTo(15, 9);
+  });
+
+  it('rejects a plant outside 0–1, and clamps one there', () => {
+    expect(
+      errorsOf(validatePose({ name: 'x', label: 'X', layers: { foot: { plant: 1.5 } } }, FOOTED)),
+    ).toEqual(['Pose "x", layer "foot": "plant" must be a number from 0 to 1.']);
+    expect(clampToRig(pose({ foot: { plant: -0.2 } }), FOOTED).layers).toEqual({
+      foot: { plant: 0 },
+    });
+  });
+});

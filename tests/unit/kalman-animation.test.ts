@@ -441,3 +441,11 @@ describe('eyeShift', () => {
     expect([x, y]).toEqual([-6, 4]);
   });
 });
+
+describe('blending plant', () => {
+  it('blends a plant like a rotation, and adds none where neither pose plants', () => {
+    const planted: Pose = { ...REST, name: 'crouch', layers: { footLeft: { plant: 1 } } };
+    expect(blendPoses(REST, planted, 0.25).layers['footLeft']?.plant).toBeCloseTo(0.25, 12);
+    expect(blendPoses(REST, NOD, 0.5).layers['head']).not.toHaveProperty('plant');
+  });
+});

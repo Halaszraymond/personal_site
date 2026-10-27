@@ -92,6 +92,23 @@ export function stretchAround(stretch: number, [px, py]: Pair): Matrix {
   return compose(translate([px, py]), scale, translate([-px, -py]));
 }
 
+/**
+ * `a` at 0, `b` at 1, each of the six numbers on a straight line in between. Not an exact way
+ * to blend two transforms with very different angles, but right for what it's used for: a foot
+ * between following a body that leans a little and staying on the ground.
+ */
+export function mixMatrices(a: Matrix, b: Matrix, amount: number): Matrix {
+  const mix = (x: number, y: number) => x + (y - x) * amount;
+  return {
+    a: mix(a.a, b.a),
+    b: mix(a.b, b.b),
+    c: mix(a.c, b.c),
+    d: mix(a.d, b.d),
+    e: mix(a.e, b.e),
+    f: mix(a.f, b.f),
+  };
+}
+
 /** Where a point ends up after the transform. */
 export function applyToPoint(m: Matrix, [x, y]: Pair): Pair {
   return [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f];
@@ -163,6 +180,13 @@ export interface LayerPose {
   readonly offset?: Pair;
   /** Squash (below 1) or stretch (above 1) around the pivot; missing means 1. */
   readonly stretch?: number;
+  /**
+   * How firmly the layer stays where it is at rest instead of moving with its parent, from 0
+   * (moves with the parent, the default) to 1 (stays put). For the feet: penguins stand on bent
+   * knees hidden in the body, so when he crouches the body sinks over feet that stay on the
+   * ground. The layer's own rotation, offset and stretch still apply.
+   */
+  readonly plant?: number;
 }
 
 /** Kálmán's two posable figures: seen from the front, and seen from the side (for swimming). */
@@ -227,7 +251,11 @@ export function resolvePose(rig: Rig, pose: Pose, mood: Mood): ResolvedLayer[] {
     );
     // A child takes the parent's whole movement, its stretch included: it stays attached.
     const parent = layer.parent === null ? undefined : byName.get(layer.parent);
-    return parent === undefined ? local : multiply(movementOf(parent), local);
+    if (parent === undefined) return local;
+    const following = multiply(movementOf(parent), local);
+    // A planted layer (a foot on the ground) mixes "following" with staying at rest.
+    const plant = Math.min(1, Math.max(0, own.plant ?? 0));
+    return plant === 0 ? following : mixMatrices(following, local, plant);
   }
 
   function movementOf(layer: RigLayer): Matrix {
@@ -485,7 +513,7 @@ export function validatePose(data: unknown, rig: Rig): Validation<Pose> {
       continue;
     }
     for (const key of Object.keys(value)) {
-      if (key !== 'rotate' && key !== 'offset' && key !== 'stretch') {
+      if (key !== 'rotate' && key !== 'offset' && key !== 'stretch' && key !== 'plant') {
         errors.push(`${label}, layer "${layerName}" has an unknown field "${key}".`);
       }
     }
@@ -512,6 +540,10 @@ export function validatePose(data: unknown, rig: Rig): Validation<Pose> {
       }
     }
     errors.push(...stretchErrors(label, layer, value['stretch']));
+    const plant = value['plant'];
+    if (plant !== undefined && (!isFiniteNumber(plant) || plant < 0 || plant > 1)) {
+      errors.push(`${label}, layer "${layerName}": "plant" must be a number from 0 to 1.`);
+    }
   }
   if (errors.length > 0) return { ok: false, errors };
   return { ok: true, value: data as unknown as Pose };
@@ -558,7 +590,10 @@ export function clampToRig(pose: Pose, rig: Rig): Pose {
       layers[name] = own;
       continue;
     }
-    const clamped: { rotate?: number; offset?: Pair; stretch?: number } = { ...own };
+    const clamped: { rotate?: number; offset?: Pair; stretch?: number; plant?: number } = {
+      ...own,
+    };
+    if (own.plant !== undefined) clamped.plant = clamp(own.plant, [0, 1]);
     if (own.rotate !== undefined) clamped.rotate = clamp(own.rotate, layer.rotate);
     if (own.stretch !== undefined) clamped.stretch = clamp(own.stretch, layer.stretch ?? [1, 1]);
     if (own.offset !== undefined && layer.shift !== undefined) {

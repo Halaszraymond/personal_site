@@ -137,10 +137,19 @@ export function blendPoses(from: Pose, to: Pose, amount: number, name = from.nam
     const [bx, by] = b.offset ?? [0, 0];
     const offset: Pair = [mix(ax, bx, amount), mix(ay, by, amount)];
     const rotate = mix(a.rotate ?? 0, b.rotate ?? 0, amount);
-    layers[layer] =
-      a.stretch === undefined && b.stretch === undefined
-        ? { rotate, offset }
-        : { rotate, offset, stretch: mix(a.stretch ?? 1, b.stretch ?? 1, amount) };
+    // Stretch and plant are only written when one of the poses has them, so layers that may
+    // not stretch never get one, and unplanted layers stay as simple as before.
+    const entry: { rotate: number; offset: Pair; stretch?: number; plant?: number } = {
+      rotate,
+      offset,
+    };
+    if (a.stretch !== undefined || b.stretch !== undefined) {
+      entry.stretch = mix(a.stretch ?? 1, b.stretch ?? 1, amount);
+    }
+    if (a.plant !== undefined || b.plant !== undefined) {
+      entry.plant = mix(a.plant ?? 0, b.plant ?? 0, amount);
+    }
+    layers[layer] = entry;
   }
   return { name, label: from.label, figure: figureOf(from), layers };
 }

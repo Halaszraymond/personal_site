@@ -50,7 +50,7 @@
 
 ## 7. Second round: knees, a smoother bow, head-follow and the belly landing
 
-- [ ] 7.1 Add `plant` to `LayerPose` and to `resolvePose()` (a planted layer mixed between following its parent and staying at rest, design §12), blended in `blendPoses()` and validated as 0–1; verify with unit tests for "Crouching on planted feet" and "Feet that leave the ground", and that a foot's own rotation still applies
+- [x] 7.1 Add `plant` to `LayerPose` and to `resolvePose()` (a planted layer mixed between following its parent and staying at rest, design §12), blended in `blendPoses()` and validated as 0–1; verify with unit tests for "Crouching on planted feet" and "Feet that leave the ground", and that a foot's own rotation still applies
 - [ ] 7.2 Use planted feet in the dive's crouch and push-off, the launch's wind-up and stand-up, and the bow; verify with the scenario tests of 5.1 (updated) and film strips
 - [ ] 7.3 Make the bow fold smoothly (shorter head on the way down, `fade` 0.5 s, earlier and overlapping cross-fade, `sine.inOut`); verify with the updated "On the way down" test and a film strip, and Raymond approves the bow
 - [ ] 7.4 Let the body turn along during head-follow (a fraction of the head's angle, slower) and reduce the head's own turn; verify with unit tests for the body's share and an e2e test that the body leans with the pointer, and Raymond approves

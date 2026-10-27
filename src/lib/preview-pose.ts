@@ -31,15 +31,18 @@ export function poseFromControls(
   let changed = false;
   for (const name of names) {
     const offset = base.layers[name]?.offset;
+    // Like the offset, a planted foot isn't on a slider; it stays as the named pose has it.
+    const plant = base.layers[name]?.plant;
     const rotate = rotations[name] ?? base.layers[name]?.rotate ?? 0;
     const stretch = stretches[name] ?? base.layers[name]?.stretch ?? 1;
     if (rotate !== (base.layers[name]?.rotate ?? 0)) changed = true;
     if (stretch !== (base.layers[name]?.stretch ?? 1)) changed = true;
     // Build the layer entry with only the fields that matter, in a fixed order.
-    const entry: { rotate?: number; offset?: Pair; stretch?: number } = {};
+    const entry: { rotate?: number; offset?: Pair; stretch?: number; plant?: number } = {};
     if (rotate !== 0) entry.rotate = rotate;
     if (offset !== undefined) entry.offset = offset;
     if (stretch !== 1) entry.stretch = stretch;
+    if (plant !== undefined) entry.plant = plant;
     if (Object.keys(entry).length > 0) layers[name] = entry;
   }
   // The figure comes along, so a copied side pose is pasted into poses.json as a side pose.
