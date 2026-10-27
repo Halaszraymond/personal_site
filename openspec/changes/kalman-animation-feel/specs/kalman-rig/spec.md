@@ -69,3 +69,14 @@ When a layer squashes or stretches, the layers that hang from it SHALL move with
 #### Scenario: Head on a squashed body
 - **WHEN** the body is squashed
 - **THEN** the head moves down with the top of the body and its pivot stays on the neck
+
+### Requirement: Drawn poses come from the design images
+A drawn pose SHALL be cut by the cutting script from Raymond's design images, in a goofy and a professional version, and placed so that it stands on the same ground line and centre line as the front figure. The script SHALL stop with a message when a drawn pose's professional image is not the same size as its goofy one.
+
+#### Scenario: The drawn bow in place
+- **WHEN** the drawn-pose config in the repo is checked
+- **THEN** the bow has a goofy and a professional image, both cut from the design images, and its feet stand on the front figure's ground line
+
+#### Scenario: Mismatched bow images
+- **WHEN** the professional bow image is not the same size as the goofy one
+- **THEN** the script stops with a message instead of writing the drawn pose

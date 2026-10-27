@@ -5,7 +5,7 @@
 - [ ] 1.1 Add `stretch?: number` to `LayerPose` and `stretch?: Pair` to `RigLayer` in `src/lib/kalman-rig.ts`, with a `scaleAround()` matrix helper, and stretch each layer around its pivot in `resolvePose()` (design §1, §5); verify with unit tests: stretch 0.9 is 10% shorter and 1/0.9 wider with the pivot in place, no stretch changes nothing, the stretch turns with the layer, and a child's pivot stays attached on a squashed parent
 - [ ] 1.2 Validate stretch: `validateRig()` rejects a stretch range that is empty, inverted or without 1; `validatePose()` rejects a stretch outside the range, a stretch for a layer without a range, and a stretch that is not a finite number; verify with one unit test per message
 - [ ] 1.3 Add `clampToRig(pose, rig)` (design §4), which keeps every rotation and stretch inside its range and leaves offsets alone; verify with unit tests at, inside and beyond both ends of a range
-- [ ] 1.4 Add the stretch ranges to `scripts/cut-kalman-layers.ts` (body [0.85, 1.15] and head [0.92, 1.08] for both figures) and widen the side feet's rotation to ±30° (design §6); verify `npm run cut:kalman` writes them to `rig.json`, `check:kalman` passes, and the side feet at ±30° and the bodies at both stretch ends show no cut edge or seam in the preview (screenshots)
+- [ ] 1.4 Add the stretch ranges to `scripts/cut-kalman-layers.ts` (body [0.85, 1.15] and head [0.92, 1.08] for both figures), widen the side body's rotation to [−150, 100] and the side feet's to ±30° (design §6); verify `npm run cut:kalman` writes them to `rig.json`, `check:kalman` passes, and the side body at −150°, the side feet at ±30° and the bodies at both stretch ends show no cut edge or seam in the preview (screenshots)
 - [ ] 1.5 Update `docs/architecture.md` (stretch in the matrix chain), `docs/glossary.md` (squash and stretch) and `src/scene/README.md` (the `stretch` field in poses and the rig); verify they match the code
 
 ## 2. Lag, overshoot and length in the animations
@@ -13,27 +13,36 @@
 - [ ] 2.1 Add `lag` to `Animation` in `src/lib/kalman-animation.ts`, and sample each lagging layer at `t − lag` in `samplePose()`: the first pose before the start of a non-looping animation, wrapped around the loop's length in a loop (design §2); verify with unit tests for "A trailing tail" and "Lag in a loop", and that a layer without lag is unchanged
 - [ ] 2.2 Add `playLength()` (last keyframe + largest lag for a non-looping animation, the keyframe length for a loop) and blend `stretch` in `blendPoses()`; verify with unit tests for both lengths and for a stretch halfway between 1 and 0.9
 - [ ] 2.3 Add `back.out` and `back.inOut` to `EASES` and the lag checks to `validateAnimations()` (negative, not a number, a layer the figure doesn't have); verify with unit tests, including "Lag for an unknown layer"
-- [ ] 2.4 Use `playLength()` and `clampToRig()` in `src/scene/kalman/kalman-player.ts`: the tween, the scrub range and "finished" use the play length, and every sampled pose is clamped before it is drawn; verify with the e2e tests "Lagging layers settle" (the dive only finishes once the tail is at rest) and the existing bow and scrub tests, with the scrub range read from the data
+- [ ] 2.4 Use `playLength()` and `clampToRig()` in `src/scene/kalman/kalman-player.ts`: the tween, the scrub range and "finished" use the play length, and every sampled pose is clamped before it is drawn; verify with the e2e test "Lagging layers settle" (the dive only finishes once the tail is at rest) and the existing bow and scrub tests, with the scrub range read from the data
 - [ ] 2.5 Update `docs/architecture.md` (lag as a time shift, clamping, play length) and `docs/glossary.md` (anticipation, follow-through, overlap, overshoot, lag); verify they match the code
 
-## 3. The preview: stretch sliders
+## 3. The drawn bow
 
-- [ ] 3.1 Add a stretch slider (step 0.01) per layer with a stretch range to the preview, below the rotation sliders, following the chosen figure and the named poses, and include stretches other than 1 in the pose JSON and Copy pose (`src/playground/preview-client.ts`, `src/lib/preview-pose.ts`, `src/i18n/preview.ts` for the labels in NL, HU and EN); verify with unit tests for `preview-pose.ts` and e2e tests for "Squashing with the keyboard", "Stretch slider limits" and "Stretch in the copied pose", passing in all four browsers and at 360 px
+- [ ] 3.1 Add `references/` to `.gitignore` (design, Migration Plan); verify `git check-ignore references/x.png` reports it as ignored
+- [ ] 3.2 Add prompts 7 and 8 (the bowed head, goofy and professional, with the warmer eyes and the ear patches kept in place) to `docs/kalman-layers.md`; verify the prompts name the files `front-bow-goofy.png` and `front-bow-professional.png`
+- [ ] 3.3 Check Raymond's regenerated bow images (same size as `front-goofy.png`, the lower half lined up, white background, no text) and save them in `docs/images/kalman-design/`; verify with the alignment check (best shift 0, 0 against `front-goofy.png`) and a side-by-side screenshot for Raymond
+- [ ] 3.4 Cut the drawn bow in `scripts/cut-kalman-layers.ts` like a turntable view (plumage matched, feet on the front ground line, centred), stopping when the two bow images differ in size, and write `src/scene/kalman/drawn-poses.json` (design §7); verify `npm run cut:kalman` writes it, `check:kalman` passes, a unit test for the size check, and a data test for "The drawn bow in place"
+- [ ] 3.5 Draw the drawn poses hidden in `KalmanFigure.astro` per mood (as the turntable views), and add `drawn` and the fade to keyframes: `samplePose()` also returns the drawing's opacity, validation rejects an unknown drawn pose, and the player sets the opacity on the drawing and the opposite on the layers (design §8); verify with unit tests for "Holding the drawn pose" and "Halfway through the cross-fade" (opacity 1 and 0.5, the same when scrubbed), and that the drawn bow's images only load on pages that already show the figure
+- [ ] 3.6 Update `docs/architecture.md` (drawn poses next to the turntable), `docs/glossary.md` (drawn pose, cross-fade) and `src/scene/README.md` (`drawn-poses.json`, the `drawn` field); verify they match the code
 
-## 4. The new poses and animations, tuned with Raymond
+## 4. The preview: stretch sliders
 
-- [ ] 4.1 Add the poses and keyframes of design §7 to `poses.json` and `animations.json` (bow: `bowRise`, `bowDeep`; dive: `crouch` with squash, `diveRise`, stretched `dive`; swim: surging `strokeDown`; launch: `launchWindUp`, stretched `launchHigh`, `landing`; idle unchanged); verify the data tests pass, plus unit tests against the repo data for "The deepest moment" (head lowered by at least a quarter of its height, body squashed, flippers outwards), "Crouch before the jump", "Rising before the fall", "Stretched in flight", "Surge on the down stroke", "Trailing", "Wind-up", "In flight" and "Landing"
-- [ ] 4.2 Tune the bow with Raymond in the preview (depth, timing, lag, settle) and put his values in the data; verify Raymond approves the bow and the tests of 4.1 still pass
-- [ ] 4.3 Tune the dive with Raymond in the same way (crouch, arc, stretch, trailing); verify Raymond approves the dive and the tests of 4.1 still pass
-- [ ] 4.4 Tune the swim with Raymond (surge, glide, trailing, loop without a jump); verify Raymond approves the swim and the tests of 4.1 still pass
-- [ ] 4.5 Tune the launch with Raymond (wind-up, flight, top, fall, landing and settle); verify Raymond approves the launch and the tests of 4.1 still pass
-- [ ] 4.6 Update the snapshots of key moments (bow at its deepest, crouch, dive halfway, swim at the end of the down stroke, launch pointing up, launch landing) and make the baselines with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
-- [ ] 4.7 Log the chosen values in `PLANNING_LOG.md` and record the session in `docs/making-of.md` (what made it look static, the animation principles, before/after screenshots); verify the files are updated
+- [ ] 4.1 Add a stretch slider (step 0.01) per layer with a stretch range to the preview, below the rotation sliders, following the chosen figure and the named poses, and include stretches other than 1 in the pose JSON and Copy pose (`src/playground/preview-client.ts`, `src/lib/preview-pose.ts`, `src/i18n/preview.ts` for the labels in NL, HU and EN); verify with unit tests for `preview-pose.ts` and e2e tests for "Squashing with the keyboard", "Stretch slider limits" and "Stretch in the copied pose", passing in all four browsers and at 360 px
 
-## 5. Wrap-up
+## 5. The new poses and animations, tuned with Raymond
 
-- [ ] 5.1 Measure the preview's JavaScript with `npm run size`; verify it is still within the 50 KB budget and public pages are unchanged
-- [ ] 5.2 Run `npm run check` (with no dev server on port 4321) and let CI pass on the branch; verify everything is green and Raymond has judged all animations
+- [ ] 5.1 Add the poses and keyframes of design §10 to `poses.json` and `animations.json` (bow with `drawn: "bow"`; dive with lean, crouch, hop and face-first entry; horizontal swim with surge, drift and glance; launch with wind-up, rise, flight, landing, wobble and recovery; idle unchanged); verify the data tests pass, plus unit tests against the repo data for every scenario of "The bow is a deep, polite bow", "The dive moves like a dive", "The swim moves like a stroke" and "The launch is professional, the landing goofy"
+- [ ] 5.2 Tune the bow with Raymond in the preview (depth, the moment of the cross-fade, the hold, the settle); verify Raymond approves the bow and the tests of 5.1 still pass
+- [ ] 5.3 Tune the dive with Raymond (lean, crouch, hop, flailing flippers, face-first entry, trailing); verify Raymond approves the dive and the tests of 5.1 still pass
+- [ ] 5.4 Tune the swim with Raymond (horizontal glide, surge, drift, the glance at a fish, loop without a jump); verify Raymond approves the swim and the tests of 5.1 still pass
+- [ ] 5.5 Tune the launch with Raymond (wind-up, rocket rise, flight, landing, wobble, recovery); verify Raymond approves the launch and the tests of 5.1 still pass
+- [ ] 5.6 Update the snapshots of key moments (bow halfway through the cross-fade and at the drawn bow, the dive's crouch and entry, the swim at the end of the down stroke, the launch rising, landing and wobbling) and make the baselines with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
+- [ ] 5.7 Log the chosen values in `PLANNING_LOG.md` and record the session in `docs/making-of.md` (what made it look static, the references in words, the animation principles, before/after screenshots of Kálmán only); verify the files are updated
+
+## 6. Wrap-up
+
+- [ ] 6.1 Measure the preview's JavaScript with `npm run size`; verify it is still within the 50 KB budget and public pages are unchanged
+- [ ] 6.2 Run `npm run check` (with no dev server on port 4321) and let CI pass on the branch; verify everything is green and Raymond has judged all animations
 
 ## Workflow follow-up
 

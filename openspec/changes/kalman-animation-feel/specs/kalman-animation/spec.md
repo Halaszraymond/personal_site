@@ -3,7 +3,7 @@
 ## MODIFIED Requirements
 
 ### Requirement: Animations are data
-Each animation SHALL be stored as data: a name, a label, the figure it uses (front or side), whether it loops, a list of keyframes, each a pose of that figure at a moment in time with an easing towards the next keyframe, and optionally a lag per layer. The repo SHALL contain the animations idle, bow, head-follow, dive, swim and launch.
+Each animation SHALL be stored as data: a name, a label, the figure it uses (front or side), whether it loops, a list of keyframes, each a pose of that figure at a moment in time with an easing towards the next keyframe and optionally a drawn pose to show instead of the layers, and optionally a lag per layer. The repo SHALL contain the animations idle, bow, head-follow, dive, swim and launch.
 
 #### Scenario: Animations in the repo
 - **WHEN** the animation data in the repo is checked
@@ -67,30 +67,49 @@ An animation SHALL be able to give a layer a lag in seconds: that layer then sho
 - **WHEN** a looping animation gives a layer a lag and is sampled just after its start
 - **THEN** that layer shows the end of the previous loop, not the first keyframe held still
 
-### Requirement: The bow is a deep bow
-The bow SHALL use the front figure and read as a real bow from the front: at its deepest, the head is lowered well into the shoulders, the body squashes, and the flippers spread outwards. It SHALL rise slightly before bending, and settle with a small overshoot as he comes back up.
+### Requirement: An animation can show a drawn pose
+A keyframe SHALL be able to name a drawn pose: a whole drawing of Kálmán in that pose, in the current mood, shown instead of his layers at that keyframe. Towards and away from such a keyframe the layers and the drawing SHALL cross-fade over a short time, so neither appears or disappears at once, and a moment of the cross-fade SHALL look the same whether it is played or scrubbed.
+
+#### Scenario: Holding the drawn pose
+- **WHEN** an animation is held at a keyframe that names a drawn pose
+- **THEN** the drawing shows fully and the layers are hidden
+
+#### Scenario: Halfway through the cross-fade
+- **WHEN** an animation is held halfway through the cross-fade into a drawn pose
+- **THEN** the layers and the drawing both show, each half see-through
+
+### Requirement: The bow is a deep, polite bow
+The bow SHALL use the front figure and read as a polite, deep bow, like a butler welcoming a guest: the body stays almost upright, the head folds down until the bill points at the chest and the top of the head shows, and the flippers stay calmly at his sides. At its deepest moment it SHALL show the drawn bow and hold it briefly before he comes back up and settles.
 
 #### Scenario: The deepest moment
 - **WHEN** the bow is held at its deepest moment
-- **THEN** the head is lowered by at least a quarter of its own height, the body is squashed and both flippers are turned outwards
+- **THEN** the drawn bow shows in the current mood, standing on the same ground line as the layered figure
+
+#### Scenario: On the way down
+- **WHEN** the bow is held just before the cross-fade into the drawn bow
+- **THEN** the head is lowered by at least a quarter of its own height, the body is barely turned, and the flippers are within a few degrees of rest
 
 ### Requirement: The dive moves like a dive
-The dive SHALL show anticipation, an arc and follow-through: he crouches and squashes before he jumps, rises a little before he falls, stretches while he dives, and his head leads while his tail and feet trail behind and settle after his body.
+The dive SHALL be a little goofy but natural: he leans forward with his flippers back, crouches and squashes, makes a small hop in which his flippers flail, and goes into the water face first, his head leading while his tail and feet trail behind.
 
-#### Scenario: Crouch before the jump
+#### Scenario: Crouch before the hop
 - **WHEN** the dive is held at the end of its crouch
-- **THEN** the body is lower than at rest and squashed
+- **THEN** the body is leaning forward, lower than at rest and squashed
 
-#### Scenario: Rising before the fall
-- **WHEN** the dive is sampled just after the jump
-- **THEN** the body is higher than at rest before it moves down
+#### Scenario: The hop
+- **WHEN** the dive is sampled just after the hop
+- **THEN** the body is higher than at rest before it moves down, and the flippers are away from the body
 
-#### Scenario: Stretched in flight
-- **WHEN** the dive is held halfway through the fall
-- **THEN** the body is stretched, and the tail and feet are behind the body's movement
+#### Scenario: Face first
+- **WHEN** the dive is held as he enters the water
+- **THEN** the body is turned past horizontal so the head is lower than the tail, the body is stretched, and the tail and feet are behind the body's movement
 
 ### Requirement: The swim moves like a stroke
-The swim SHALL make each stroke move him: on the down stroke the body surges forward and stretches slightly, on the up stroke it glides back; the head, tail and feet follow the body's movement a moment later.
+The swim SHALL be elegant: he lies horizontally like a torpedo with his bill forward, and each stroke moves him, the body surging forward and stretching slightly on the down stroke and gliding on the up stroke, while the head, tail and feet follow a moment later. Once per loop he SHALL glance aside, as if at a passing fish, and then look ahead again.
+
+#### Scenario: Horizontal
+- **WHEN** the swim is held at any moment
+- **THEN** the body is turned close to horizontal with the bill forward
 
 #### Scenario: Surge on the down stroke
 - **WHEN** the swim is sampled at the end of the down stroke and at the end of the up stroke
@@ -100,17 +119,21 @@ The swim SHALL make each stroke move him: on the down stroke the body surges for
 - **WHEN** the swim plays
 - **THEN** the tail and feet reach each turning point of the stroke later than the body
 
-### Requirement: The launch has a wind-up and a landing
-The launch SHALL squash before he shoots up, stretch while he rises, slow down at the top, fall faster as he comes down, and land with a squash that settles back to rest with a small overshoot.
+#### Scenario: A glance at a fish
+- **WHEN** the swim plays one whole loop
+- **THEN** the head turns away from straight ahead once and returns
 
-#### Scenario: Wind-up
-- **WHEN** the launch is held at the end of its wind-up
-- **THEN** the body is lower than at rest and squashed
+### Requirement: The launch is professional, the landing goofy
+The launch SHALL be clean and powerful: he rises upright like a rocket with his flippers pressed to his body and stretched, then flies out at an angle with his feet trailing. The landing SHALL be goofy: he lands on his feet with a squash, tips forward with his flippers out as if he almost loses his balance, wobbles, and straightens up to rest.
 
-#### Scenario: In flight
+#### Scenario: Rising
 - **WHEN** the launch is held halfway up
-- **THEN** the body is stretched
+- **THEN** the body is stretched and the flipper is close to the body
 
 #### Scenario: Landing
 - **WHEN** the launch is held at the moment he lands
-- **THEN** the body is at ground level and squashed, and when the launch has finished he is at rest
+- **THEN** the body is at ground level and squashed
+
+#### Scenario: Almost losing his balance
+- **WHEN** the launch is held just after the landing
+- **THEN** the body is tipped forward and the flipper is turned away from the body, and when the launch has finished he is at rest

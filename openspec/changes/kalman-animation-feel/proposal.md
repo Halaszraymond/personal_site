@@ -2,18 +2,20 @@
 
 ## Why
 
-Raymond judged the animations after Phase 1 was merged: the idle loop moves in a relaxed, natural way, but the bow is not deep enough and the dive looks stiff, "too static". The cause is in the data and the rig. All layers start and stop together on the same keyframes, nothing overshoots or settles, the anticipation before the dive is tiny, the dive slides in a straight line, the feet never move, and the bow from the front only slides the head down 26 px. Raymond found the swim and the launch off too. Phase 2 (the dive) builds on these animations, so they should feel alive before it starts.
+Raymond judged the animations after Phase 1 was merged: the idle loop moves in a relaxed, natural way, but the bow is not deep enough, and the dive, the swim and the launch look stiff, "too static". The cause is in the data and the rig. All layers start and stop together on the same keyframes, nothing overshoots or settles, the anticipation before the dive is tiny, the dive slides in a straight line, the feet never move, he swims upright instead of lying in the water, and the bow from the front only slides the head down 26 px. Phase 2 (the dive) builds on these animations, so they should feel alive before it starts. Raymond supplied reference stills of real penguins and described the feeling of each animation (design.md, "References and feeling").
 
 ## What Changes
 
-- **Follow-through and overlap:** an animation can give layers a small **lag** in seconds: that layer follows the keyframes a moment later than the body, so the head leads and the tail, feet and flippers trail behind and settle after the body stops.
-- **Overshoot:** the easings `back.out` and `back.inOut` are allowed, so a movement can go slightly past its target and settle back. A blended pose is still clamped to each layer's allowed range, so nothing turns further than the rig allows.
-- **Squash and stretch:** a layer can **stretch** (taller and thinner) or **squash** (shorter and wider) around its pivot, keeping its area roughly the same. The rig gives each layer an allowed stretch range; layers without one don't stretch. Children follow their parent's stretch, like they follow its rotation.
-- **A deeper bow on the front figure:** head far down, body squashing as he bends, flippers spreading out, a small rise beforehand, and a settle on the way back up.
-- **A natural dive:** a real crouch with squash (anticipation), a rise before the fall (an arc), stretch in the dive itself, and feet and tail that react and trail.
-- **A swim with a stroke:** the body surges forward and stretches a little on the down stroke and glides back on the up stroke; the head, tail and feet trail behind.
-- **A launch with a landing:** a wind-up squash before he shoots up, stretch in flight, slowing at the top, a fall that speeds up, and a landing squash that settles back to rest.
+- **Follow-through and overlap:** an animation can give layers a small **lag** in seconds, so the head leads and the tail, feet and flippers trail behind and settle after the body stops.
+- **Overshoot:** the easings `back.out` and `back.inOut` are allowed, so a movement can go slightly past its target and settle back. A blended pose is still clamped to each layer's allowed range.
+- **Squash and stretch:** a layer can **stretch** (taller and thinner) or **squash** (shorter and wider) around its pivot, keeping its area the same. The rig gives each layer an allowed stretch range; children follow their parent's stretch.
+- **Drawn poses:** a keyframe can show a whole drawing of Kálmán instead of his layers, cross-fading in and out, as the turntable views already do. The first one is the **drawn bow**, cut from two new images by Raymond (goofy and professional).
+- **A polite, deep bow** (front): like a butler welcoming a guest. The head folds down, the body stays almost upright, the flippers stay at his sides, and at the deepest moment the drawn bow takes over and holds.
+- **A dive that is a little goofy but natural:** lean forward, crouch with squash, a small hop with flailing flippers, and face first into the water with the tail and feet trailing.
+- **An elegant swim:** horizontal like a torpedo, surging on the down stroke and gliding on the up stroke, trailing feet and tail, and a glance at a passing fish once per loop.
+- **A professional launch with a goofy landing:** rising upright like a rocket with the flippers pressed to his body, flying out at an angle, landing on his feet with a squash, almost losing his balance with the flippers out, and straightening up.
 - **The idle loop** keeps its current keyframes, because Raymond likes how it moves.
+- **Tempo and travel:** animations may get longer where the feeling needs it (bow ~2.4 s, dive ~2.2 s, swim loop ~3.6 s, launch ~2.8 s). He stays in his spot sideways and moves up and down only where the story asks for it.
 - **The preview** gets a stretch slider for each layer that may stretch, and Copy pose includes stretch values, so Raymond can tune the new poses by eye.
 
 ## Capabilities
@@ -24,15 +26,17 @@ None.
 
 ### Modified Capabilities
 
-- `kalman-rig`: poses can stretch layers; the rig gives each layer an allowed stretch range; validation rejects a stretch outside it; children follow their parent's stretch; the rig config holds the stretch range.
-- `kalman-animation`: animations can give layers a lag; overshooting easings are allowed with the blended pose kept inside the rig's ranges; a non-looping animation ends at rest only once every lagging layer has settled; the bow, dive, swim and launch each get their own requirement for how they move.
+- `kalman-rig`: poses can stretch layers within a stretch range from the rig; validation rejects a stretch outside it; children follow their parent's stretch; drawn poses are cut from the design images and placed on the front figure's ground line.
+- `kalman-animation`: animations can give layers a lag and can show a drawn pose with a cross-fade; overshooting easings are allowed with the blended pose kept inside the rig's ranges; a non-looping animation ends at rest only once every lagging layer has settled; the bow, dive, swim and launch each get their own requirement for how they move.
 - `kalman-preview`: a stretch slider per layer that may stretch; Copy pose includes stretch.
 
 ## Impact
 
-- **Code:** `src/lib/kalman-rig.ts` (stretch in poses, rig layers, `resolvePose()` and validation), `src/lib/kalman-animation.ts` (lag, overshoot eases, clamping, duration), `src/scene/kalman/kalman-player.ts` (the animation's length including lag), `scripts/cut-kalman-layers.ts` (stretch ranges per layer, written to `rig.json`), `src/playground/preview-client.ts` and `src/lib/preview-pose.ts` (stretch sliders, Copy pose).
-- **Data:** `rig.json` (regenerated by `npm run cut:kalman`), `poses.json` (new and changed poses), `animations.json` (lag, new keyframes).
-- **Tests:** unit tests for stretch, lag, clamping and the new eases; e2e tests for the stretch sliders; new snapshot baselines for the key moments.
-- **Docs:** `docs/architecture.md`, `docs/glossary.md` (anticipation, follow-through, overlap, overshoot, squash and stretch, lag), `docs/making-of.md`, `src/scene/README.md`.
+- **Code:** `src/lib/kalman-rig.ts` (stretch in poses, rig layers, `resolvePose()` and validation), `src/lib/kalman-animation.ts` (lag, overshoot eases, clamping, play length, drawn-pose fades), `src/scene/kalman/kalman-player.ts` (play length, clamping, cross-fading drawn poses), `src/scene/kalman/KalmanFigure.astro` and `kalman-figure-client.ts` (drawing the drawn poses, hidden until used), `scripts/cut-kalman-layers.ts` (stretch ranges, the side body's wider range, cutting the drawn bow), `src/playground/preview-client.ts` and `src/lib/preview-pose.ts` (stretch sliders, Copy pose).
+- **Data:** `rig.json` (regenerated), a new `drawn-poses.json` (generated, like `turntable.json`), `poses.json` and `animations.json`.
+- **Art:** `front-bow-goofy.png` and `front-bow-professional.png` from Raymond (regenerated with warmer eyes), in `docs/images/kalman-design/`.
+- **Tests:** unit tests for stretch, lag, clamping, the new eases, the drawn-pose fade and each animation's scenarios against the repo data; e2e tests for the stretch sliders and the drawn bow; new snapshot baselines.
+- **Docs:** `docs/architecture.md`, `docs/glossary.md` (anticipation, follow-through, overlap, overshoot, squash and stretch, lag, drawn pose), `docs/kalman-layers.md` (prompts 7 and 8), `docs/making-of.md`, `src/scene/README.md`.
+- **Repo:** a `.gitignore` entry for a local `references/` folder, so reference stills of real penguins (other people's footage) never get committed.
 - **Dependencies:** none. GSAP already has the `back` easings.
-- **Budget:** a few hundred bytes more JavaScript in the dev-only preview; public pages are unchanged.
+- **Budget:** the drawn bow adds two images (lazy, dev preview only for now) and a few hundred bytes of JavaScript; public pages are unchanged.
