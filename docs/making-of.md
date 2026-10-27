@@ -188,4 +188,7 @@ The last part of Phase 1: idle, bow, head-follow, dive, swim and launch, each ju
 - **Turn around the middle, not the feet.** The side body first turned around his feet, so a dive tipped him out of the frame. Turning around the middle of the body keeps him on the stage.
 - **Rotating isn't always the right move.** To make him point up for the launch, turning the whole body tipped him onto his back. A launch is an upright body with the head tilted back: the pose had to tell the story, not the angle.
 - **Tests that move the page.** On a phone, switching a control below the figure scrolled the page, so a drag test missed Kálmán entirely. Tests now scroll him back into view first.
+- **Wait for a change, don't sleep for one.** "The idle loop plays" checked the time once, waited 400 ms and checked again. On a busy CI machine WebKit skipped frames for that long, so the test failed although the loop played. It now polls until the time moves (up to 5 s); retries stay off, so a stuck animation still fails.
 - **Tooling:** Claude Code's auto mode depends on a server-side safety check per shell command; when that check was down for a while, work went on with file edits and continued in normal permission mode.
+
+Raymond judged the animations in the preview and approved them. With that, Phase 1 is done: Kálmán exists, is drawn from Raymond's own art, and moves.
