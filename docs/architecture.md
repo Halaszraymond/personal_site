@@ -79,7 +79,7 @@ flowchart TD
 
 ## Kálmán: rig, poses and figure
 
-Kálmán is a **cut-out figure**: nine flat images (layers) moved like a paper puppet. Where they sit and how they move is data, not code; the maths is pure functions; the browser only applies the result.
+Kálmán is a **cut-out figure**: flat images (layers) moved like a paper puppet, in two **figures**: the front (nine layers) and the side (eight layers, for diving and swimming). Where they sit and how they move is data, not code; the maths is pure functions; the browser only applies the result.
 
 ```mermaid
 flowchart LR
@@ -91,6 +91,7 @@ flowchart LR
     F -->|rewrites transform and visibility| E
 ```
 
+- **Two figures.** `rig.json` holds a rig per figure (`{ "front": …, "side": … }`), on the same artboard and placement, so switching doesn't make him jump; every pose says its `figure`. The SVG has a `<g data-layers data-figure>` per figure, and `applyFigure()` shows one of them.
 - **The rig** (`src/scene/kalman/rig.json`) places every layer on a 1600 × 1500 **artboard**. Positions are absolute artboard coordinates, so they can be read off the design sheet; pivots are in the image's own coordinates. `docs/kalman-layers.md` explains every field.
 - **Poses** (`src/scene/kalman/poses.json`) only store differences from rest: rotation around the pivot and an offset. Layers a pose doesn't mention stay at rest.
 - **`resolvePose()`** turns rig + pose + mood into one SVG transform matrix per layer. A child gets its own movement plus its parent's *movement from rest*, so the glasses follow the head and everything follows the body. The tie and the glasses are `accessory` layers: hidden in the goofy mood.
@@ -118,6 +119,7 @@ flowchart LR
 - **Background:** a flood fill from the edges through near-white pixels; the outline gets a soft edge from how far a pixel is from white.
 - **Tie and glasses:** the professional front view is an edit of the goofy one, so they line up pixel for pixel; where they differ (within the area of the tie and of the glasses) is the tie and glasses layers. The script refuses images of different sizes.
 - **The parts:** the flippers are cut at the gap Gemini drew between flipper and body, found row by row; above it along the shoulder. Body and flipper share no pixel below the gap (a shared column would show as a line when the flipper turns), and above it the flipper reaches 2 px under the body to hide the seam. The head fades into the neck.
+- **The side figure** comes from three images: `side-goofy.png`, its professional edit, and an edit without the near flipper. The body is cut from the flipper-less one, so a swinging flipper shows painted body underneath; the flipper lies on the body, so it is cut along an outline traced once in the script's settings (`polygonCoverage()`).
 - **Reproducible:** the same images always give the same files. The cut lines are in one settings object at the top of the script; all decisions are tested functions in `scripts/lib/kalman-cut.ts`. It uses `sharp` (the image library Astro already uses, declared as a devDependency).
 
 ### Turning around: the turntable
@@ -127,6 +129,24 @@ flowchart LR
 - `turntableFrame()` (`src/lib/kalman-turntable.ts`) decides what shows at an angle: exactly the drawing at a view's own angle; in between, the current view narrows and, over a short band halfway, the next one fades in **on top** while the outgoing one stays solid, so the background never shows through.
 - `applyTurn()` shows the posable layers only at exactly 0° and the views at any other angle. Whole groups are hidden with `display`, not `visibility`: an SVG child that says `visibility="visible"` would still show inside a hidden group.
 - The preview's control is a "Turn around" slider plus dragging sideways on the figure; it is left out while `turntable.json` has only one view.
+
+### Animations
+
+The six animations (idle, bow, head-follow, dive, swim, launch) are keyframes of poses in `src/scene/kalman/animations.json`: a pose at a moment, with an easing towards the next one.
+
+```mermaid
+flowchart LR
+    A["animations.json<br/>keyframes: at, pose, ease"] --> S
+    P[poses.json] --> S
+    G["GSAP tween<br/>moves a clock 0 → length"] -->|time, every frame| S
+    S["samplePose(animation, poses, time, ease)<br/>src/lib/kalman-animation.ts"] --> D["applyFigure() + applyPose()<br/>kalman-figure-client.ts"]
+```
+
+- **GSAP is only the clock.** `kalman-player.ts` makes one tween of a plain `time` value per animation; on every frame `samplePose()` blends the two keyframes around that time (through GSAP's easing curve, `gsap.parseEase`) and `applyPose()` draws it. So the poses and timing are data, and the maths is tested without GSAP.
+- **One at a time.** Starting an animation stops the previous one; a non-looping one ends with him at rest. The figure carries `data-animation` and `data-time`, which the preview and the tests read.
+- **Scrubbing** pauses the tween and sets its progress; **a hidden tab** pauses it (`visibilitychange`) and continues it when visible again.
+- **Head-follow** turns the front figure's head towards the pointer: `headTurn()` gives the angle from how far the pointer is to the side, and `gsap.quickTo` glides the head there.
+- **Reduced motion:** nothing starts by itself; an animation only plays when it is explicitly started.
 
 ## The dev-only Kálmán preview
 
@@ -147,7 +167,7 @@ Only exactly `PLAYGROUND=1` switches it on, so a typo never leaks it.
 
 **The proof:** `npm run check:production` (after `npm run build`) fails if `dist/` has a `playground` folder or any HTML or JavaScript containing the preview's marker `kalman-preview`. The search is a pure function in `scripts/lib/production-check.ts`. Kálmán's figure and rig code are not preview code (the hero will use them), so the check doesn't look for them.
 
-**The page:** pose buttons (`aria-pressed`), a switch for the professional mood, a switch for the pivot markers, the turn-around and spin sliders, one slider per layer (limited to its `rotate` range), and **Copy pose**. All controls are plain HTML, built from `rig.json` and `poses.json` at build time (`PreviewControls.astro`). The browser script `preview-client.ts` keeps the state; the logic of "named pose + slider changes = custom pose" is a pure function in `src/lib/preview-pose.ts`. If the clipboard is refused, the JSON is still in a text box to copy by hand. English only (`src/i18n/preview.ts`) while it is dev-only, `noindex`, and no public page links to it.
+**The page:** a play button per animation, the idle loop switch (on by default, off with reduced motion) and a scrub slider; a front/side switch; pose buttons (`aria-pressed`) and one slider per layer (limited to its `rotate` range) for the chosen figure; a switch for the professional mood, a switch for the pivot markers, the turn-around (front figure) and spin sliders; and **Copy pose** (with the pose's figure). All controls are plain HTML, built from `rig.json`, `poses.json` and `animations.json` at build time (`PreviewControls.astro`). The browser script `preview-client.ts` keeps the state; the logic of "named pose + slider changes = custom pose" is a pure function in `src/lib/preview-pose.ts`. If the clipboard is refused, the JSON is still in a text box to copy by hand. English only (`src/i18n/preview.ts`) while it is dev-only, `noindex`, and no public page links to it.
 
 **Cloudflare setup:** Pages project → Settings → Variables and Secrets → `PLAYGROUND` = `1`, for the **Preview** environment only. If it is ever missing, `/playground/` simply 404s on previews; nothing leaks.
 

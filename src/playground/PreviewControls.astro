@@ -1,33 +1,90 @@
 ---
 /**
- * The preview's controls, built at build time from rig.json and poses.json, so there is always
- * exactly one pose button per named pose and one slider per layer (spec: kalman-preview).
+ * The preview's controls, built at build time from the repo's data, so there is always exactly
+ * one play button per animation, one pose button per named pose and one slider per layer, for
+ * each figure (spec: kalman-preview).
  *
- * All plain HTML: buttons, checkboxes shown as switches and range sliders. Keyboard support,
- * labels and screen-reader output come from the browser. preview-client.ts connects them to
- * the figure.
+ * All plain HTML: buttons, radio buttons, checkboxes shown as switches and range sliders.
+ * Keyboard support, labels and screen-reader output come from the browser. The side figure's
+ * pose buttons and sliders are in the page too, `hidden` until that figure is chosen.
+ * preview-client.ts connects everything to the figure and the player.
  */
 import { layerLabel, PREVIEW_EN as TEXT } from '../i18n/preview';
+import { duration } from '../lib/kalman-animation';
+import { FIGURES } from '../lib/kalman-rig';
 import { canTurn } from '../lib/kalman-turntable';
-import { REPO_POSES, REPO_RIG, REPO_TURNTABLE } from '../scene/kalman/repo-rig';
+import { posesFor, REPO_ANIMATIONS, REPO_RIGS, REPO_TURNTABLE } from '../scene/kalman/repo-rig';
 
 const showTurnControl = canTurn(REPO_TURNTABLE);
+// The scrub slider starts on the first animation (idle); the script changes it per animation.
+const firstAnimation = REPO_ANIMATIONS[0];
+const firstDuration = firstAnimation === undefined ? 1 : duration(firstAnimation);
 ---
 
 <div class="controls">
   <fieldset>
-    <legend>{TEXT.posesLegend}</legend>
+    <legend>{TEXT.animationsLegend}</legend>
     <div class="pose-buttons">
-      {REPO_POSES.map((pose) => (
-        <button
-          type="button"
-          data-pose-button={pose.name}
-          aria-pressed={pose.name === 'rest' ? 'true' : 'false'}
-        >
-          {pose.label}
+      {REPO_ANIMATIONS.map((animation) => (
+        <button type="button" data-animation-button={animation.name} aria-pressed="false">
+          {TEXT.play} {animation.label.toLowerCase()}
         </button>
       ))}
     </div>
+    <label class="switch">
+      <input type="checkbox" role="switch" data-idle-switch />
+      {TEXT.idleLoop}
+    </label>
+    <div class="slider">
+      <label for="scrub">{TEXT.scrub}</label>
+      <input
+        type="range"
+        id="scrub"
+        data-scrub-slider
+        min="0"
+        max={firstDuration}
+        step="0.01"
+        value="0"
+      />
+      <output for="scrub" data-scrub-value>
+        0.00 s
+      </output>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{TEXT.figureLegend}</legend>
+    <div class="choices">
+      {FIGURES.map((figure) => (
+        <label class="switch">
+          <input
+            type="radio"
+            name="figure"
+            value={figure}
+            data-figure-choice
+            checked={figure === 'front'}
+          />
+          {TEXT.figures[figure]}
+        </label>
+      ))}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>{TEXT.posesLegend}</legend>
+    {FIGURES.map((figure) => (
+      <div class="pose-buttons" data-figure-poses={figure} hidden={figure !== 'front'}>
+        {posesFor(figure).map((pose) => (
+          <button
+            type="button"
+            data-pose-button={pose.name}
+            aria-pressed={pose.name === 'rest' ? 'true' : 'false'}
+          >
+            {pose.label}
+          </button>
+        ))}
+      </div>
+    ))}
   </fieldset>
 
   <fieldset>
@@ -71,22 +128,30 @@ const showTurnControl = canTurn(REPO_TURNTABLE);
   <fieldset>
     <legend>{TEXT.rotationsLegend}</legend>
     {
-      /* In the rig's own order (body, head, flippers, ...), which reads better than drawing order. */
-      REPO_RIG.layers.map((layer) => (
-        <div class="slider">
-          <label for={`rotate-${layer.name}`}>{layerLabel(layer.name)}</label>
-          <input
-            type="range"
-            id={`rotate-${layer.name}`}
-            data-rotation={layer.name}
-            min={layer.rotate[0]}
-            max={layer.rotate[1]}
-            step="1"
-            value="0"
-          />
-          <output for={`rotate-${layer.name}`} data-rotation-value={layer.name}>
-            0°
-          </output>
+      /* In the rig's own order (body, head, flippers, ...), which reads better than drawing order.
+         The front sliders keep their ids (rotate-head); the side ones are rotate-side-head. */
+      FIGURES.map((figure) => (
+        <div data-figure-sliders={figure} hidden={figure !== 'front'}>
+          {REPO_RIGS[figure].layers.map((layer) => {
+            const id = figure === 'front' ? `rotate-${layer.name}` : `rotate-side-${layer.name}`;
+            return (
+              <div class="slider">
+                <label for={id}>{layerLabel(layer.name, figure)}</label>
+                <input
+                  type="range"
+                  id={id}
+                  data-rotation={layer.name}
+                  min={layer.rotate[0]}
+                  max={layer.rotate[1]}
+                  step="1"
+                  value="0"
+                />
+                <output for={id} data-rotation-value={layer.name}>
+                  0°
+                </output>
+              </div>
+            );
+          })}
         </div>
       ))
     }
@@ -116,6 +181,16 @@ const showTurnControl = canTurn(REPO_TURNTABLE);
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
+  }
+
+  /* `hidden` must win over the flex layout above. */
+  .pose-buttons[hidden] {
+    display: none;
+  }
+
+  .choices {
+    display: flex;
+    gap: 1.5rem;
   }
 
   button {
@@ -148,7 +223,7 @@ const showTurnControl = canTurn(REPO_TURNTABLE);
 
   .slider {
     display: grid;
-    grid-template-columns: 7rem minmax(0, 1fr) 3.5rem;
+    grid-template-columns: 7rem minmax(0, 1fr) 4rem;
     align-items: center;
     gap: 0.5rem;
     min-height: 2.75rem;

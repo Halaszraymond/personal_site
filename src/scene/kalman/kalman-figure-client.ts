@@ -8,9 +8,11 @@
  * component uses at build time, so the browser and the HTML always agree.
  */
 import {
+  figureOf,
   resolvePose,
   spinMatrix,
   toSvgTransform,
+  type Figure,
   type Mood,
   type Pose,
   type Rig,
@@ -24,13 +26,17 @@ import {
 } from '../../lib/kalman-turntable';
 
 export function applyPose(figure: SVGSVGElement, rig: Rig, pose: Pose, mood: Mood): void {
+  // Each figure (front, side) has its own layers and markers; `rig` must be the pose's figure's.
+  const which = figureOf(pose);
+  const layers = figure.querySelector(`[data-layers][data-figure="${which}"]`);
+  const pivots = figure.querySelector(`[data-pivots][data-figure="${which}"]`);
   for (const layer of resolvePose(rig, pose, mood)) {
-    const group = figure.querySelector(`[data-layer="${layer.name}"]`);
+    const group = layers?.querySelector(`[data-layer="${layer.name}"]`);
     group?.setAttribute('transform', toSvgTransform(layer.matrix));
     // An SVG attribute, not an inline style, so the Content-Security-Policy allows it.
     group?.setAttribute('visibility', layer.visible ? 'visible' : 'hidden');
 
-    const marker = figure.querySelector(`[data-pivot="${layer.name}"]`);
+    const marker = pivots?.querySelector(`[data-pivot="${layer.name}"]`);
     marker?.setAttribute('cx', String(layer.pivotOnArtboard[0]));
     marker?.setAttribute('cy', String(layer.pivotOnArtboard[1]));
     marker?.setAttribute('visibility', layer.visible ? 'visible' : 'hidden');
@@ -38,6 +44,18 @@ export function applyPose(figure: SVGSVGElement, rig: Rig, pose: Pose, mood: Moo
   // `dataset.pose` writes `data-pose`: readable by styles and tests.
   figure.dataset['pose'] = pose.name;
   figure.dataset['mood'] = mood;
+}
+
+/**
+ * Shows one figure (front or side) and hides the other. The turntable belongs to the front
+ * figure, so it only takes over while the front figure is chosen (see applyTurn).
+ */
+export function applyFigure(figure: SVGSVGElement, which: Figure): void {
+  for (const group of figure.querySelectorAll<SVGGElement>('[data-layers]')) {
+    group.setAttribute('display', group.dataset['figure'] === which ? 'inline' : 'none');
+  }
+  // `dataset.figure` writes `data-figure`; the CSS uses it to show the right pivot markers.
+  figure.dataset['figure'] = which;
 }
 
 /** Turns the whole figure as one piece by `degrees` around its centre; the pose stays as it is. */
@@ -61,12 +79,14 @@ export function applyTurn(
   degrees: number,
   mood: Mood,
 ): void {
-  const facingFront = normaliseAngle(degrees) === 0;
+  // The turntable is the front figure's: with the side figure chosen it stays out of the way.
+  const frontChosen = figure.dataset['figure'] !== 'side';
+  const facingFront = normaliseAngle(degrees) === 0 || !frontChosen;
   // `display`, not `visibility`, for whole groups: in SVG a child that says
   // visibility="visible" (every layer does) would still show inside a hidden group.
   const show = (selector: string, visible: boolean) =>
     figure.querySelector(selector)?.setAttribute('display', visible ? 'inline' : 'none');
-  show('[data-layers]', facingFront);
+  if (frontChosen) show('[data-layers][data-figure="front"]', facingFront);
   show('[data-turntable]', !facingFront);
 
   const frames = facingFront ? [] : turntableFrame(views, degrees);

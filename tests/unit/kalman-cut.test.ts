@@ -17,9 +17,12 @@ import {
   matchTone,
   pivotIn,
   placeBox,
+  polygonCoverage,
   plumageTone,
   ramp,
+  sideRegions,
   type FrontCutSettings,
+  type SideCutSettings,
   type RawImage,
 } from '../../scripts/lib/kalman-cut';
 
@@ -224,5 +227,77 @@ describe('frontRegions: the joints', () => {
   it('keeps the professional extras inside their own boxes', () => {
     expect([take('glasses', 20, 2), take('glasses', 30, 2)]).toEqual([1, 0]);
     expect([take('tie', 20, 10), take('tie', 20, 25)]).toEqual([1, 0]);
+  });
+});
+
+describe('polygonCoverage', () => {
+  it('is 1 inside, 0 outside and partly covered on a slanted edge', () => {
+    // A square from (1, 1) to (3, 3) on a 4 × 4 image.
+    const square = polygonCoverage(
+      [
+        [1, 1],
+        [3, 1],
+        [3, 3],
+        [1, 3],
+      ],
+      4,
+      4,
+    );
+    expect([...square]).toEqual([0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0]);
+
+    // A triangle over the bottom-left half of a 2 × 2 image: the diagonal pixels are half covered.
+    const triangle = polygonCoverage(
+      [
+        [0, 0],
+        [2, 2],
+        [0, 2],
+      ],
+      2,
+      2,
+      8,
+    );
+    // Sample points exactly on the diagonal count as outside, so it is just under a half.
+    expect(Math.abs((triangle[0] ?? 0) - 0.5)).toBeLessThan(0.1);
+    expect(triangle[2]).toBe(1);
+    expect(triangle[1]).toBe(0);
+  });
+});
+
+describe('sideRegions', () => {
+  const settings: SideCutSettings = {
+    neck: { headFadeFrom: 4, headFadeTo: 8, bodyFrom: 3, bodySolid: 6 },
+    bodyBottomRow: 30,
+    tail: { fromRow: 26, minX: 30, bodyOverlap: 2 },
+    feet: { fromRow: 28, backMaxX: 12, backMaxRow: 31 },
+    glasses: [10, 1, 20, 4],
+    tie: [8, 6, 14, 18],
+  };
+  // A 40-wide image with a flipper covering column 25 from row 10 to 19.
+  const flipper = new Float32Array(40 * 40);
+  for (let y = 10; y < 20; y++) flipper[y * 40 + 25] = 1;
+  const regions = sideRegions(settings, flipper, 40);
+  const take = (part: string, x: number, y: number) => regions[part]?.(x, y);
+
+  it('takes the flipper from its traced outline, and the body under it as well', () => {
+    expect([take('flipper', 25, 15), take('flipper', 24, 15)]).toEqual([1, 0]);
+    // The body (from the image without the flipper) also covers that pixel: painted body
+    // shows when the flipper swings away.
+    expect(take('body', 25, 15)).toBe(1);
+  });
+
+  it('keeps the tail out of the body, except a little overlap at the joint', () => {
+    // The first two tail rows are in both (the body hides the joint), below that only the tail.
+    expect([take('tail', 32, 27), take('body', 32, 27)]).toEqual([1, 1]);
+    expect([take('tail', 32, 29), take('body', 32, 29)]).toEqual([1, 0]);
+  });
+
+  it('splits the feet into the back foot (left, upper) and the front foot', () => {
+    expect([take('footBack', 10, 29), take('footFront', 10, 29)]).toEqual([1, 0]);
+    expect([take('footBack', 10, 32), take('footFront', 10, 32)]).toEqual([0, 1]);
+    expect([take('footBack', 20, 29), take('footFront', 20, 29)]).toEqual([0, 1]);
+  });
+
+  it('fades the head into the neck', () => {
+    expect([take('head', 5, 3), take('head', 5, 6), take('head', 5, 9)]).toEqual([1, 0.5, 0]);
   });
 });

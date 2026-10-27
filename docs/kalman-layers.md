@@ -21,6 +21,16 @@ All images are the same size (now 687 × 1024), with Kálmán in the same relaxe
 
 You don't make the other side: the script mirrors the ¾ front, side and ¾ back, so four drawn views give eight angles.
 
+For the animations (diving, swimming, launching) the side view is also a posable figure, which needs three more images:
+
+| File | What | How it's made |
+|---|---|---|
+| `side-goofy.png` | Side view, goofy, rest pose, bill to the left, feet flat | Prompt 5, with `front-goofy.png` as the reference |
+| `side-professional.png` | The same with tie, glasses and the calm eye | Prompt 4 (the ¾ front version), an **edit** of `side-goofy.png` |
+| `side-no-flipper.png` | The same without the near flipper, the body painted underneath | Prompt 6, an **edit** of `side-goofy.png` |
+
+In a side view the flipper lies *on* the body, so there is no white gap to cut along. The difference with the flipper-less image is exactly the flipper, and that image gives the body as it looks under the flipper, so a swinging flipper never leaves a copy of itself behind.
+
 **Why edits:** a professional image made as an edit of its goofy one lines up with it pixel for pixel. Then the difference between the two is exactly the tie, the glasses and the eyes, and that becomes the tie and glasses layers. A professional image drawn from scratch would never line up.
 
 ## Prompts for Gemini
@@ -74,6 +84,24 @@ For the ¾ back and the back:
 
 ```text
 Edit this exact image. Add the purple patterned tie and the round black glasses from the attached professional reference, as they would look from this angle: from behind you only see the tie's band around the back of the neck and the arms of the glasses over the sides of the head. Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere else.
+```
+
+### 5. The side view for posing, goofy (attach `front-goofy.png`)
+
+```text
+Use the attached image as the exact reference for this penguin: same painted style, same colours, same proportions, same goofy face with the big round eyes, same lighting, same plain white background, same image size.
+
+Draw the same penguin exactly from the side, in profile, his bill pointing to the left of the picture, standing relaxed with his feet flat. His near flipper hangs down along his body. Same height and same ground line as the attached image.
+
+No text, no labels, no logos, no shadow on the ground, nothing else in the image. Portrait format (2:3), as high resolution as possible.
+```
+
+### 6. The side view without the flipper (attach `side-goofy.png`, nothing else)
+
+```text
+Edit this exact image. Remove his near flipper completely and paint the side of his body that was behind it, continuing the grey back and the white belly naturally, with the same feather texture and lighting.
+
+Change nothing else: same pose, same position, same size, same lighting, same background, same pixels everywhere outside the area where the flipper was.
 ```
 
 ## Before running the script, check

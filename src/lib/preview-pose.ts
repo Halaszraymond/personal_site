@@ -6,7 +6,7 @@
  * has them. Once a slider differs from the named pose, the result is no longer that pose but
  * a "custom" one, which is what "Copy pose" exports. Pure, so it is unit-tested.
  */
-import type { LayerPose, Pair, Pose } from './kalman-rig';
+import { figureOf, type LayerPose, type Pair, type Pose } from './kalman-rig';
 
 /** The name and label a pose gets once the sliders have changed it. */
 export const CUSTOM_POSE = { name: 'custom', label: 'Custom' } as const;
@@ -30,7 +30,11 @@ export function poseFromControls(base: Pose, rotations: Readonly<Record<string, 
     if (offset !== undefined) entry.offset = offset;
     if (entry.rotate !== undefined || entry.offset !== undefined) layers[name] = entry;
   }
-  return changed ? { ...CUSTOM_POSE, layers } : { name: base.name, label: base.label, layers };
+  // The figure comes along, so a copied side pose is pasted into poses.json as a side pose.
+  const figure = figureOf(base);
+  return changed
+    ? { ...CUSTOM_POSE, figure, layers }
+    : { name: base.name, label: base.label, figure, layers };
 }
 
 /** The pose as JSON for "Copy pose", indented like poses.json (`json.dumps(pose, indent=2)`). */
@@ -45,4 +49,9 @@ export function poseToJson(pose: Pose): string {
 export function figureDescription(pose: Pose, mood: string, seenFrom?: string): string {
   const base = `Kálmán, pose: ${pose.label}, mood: ${mood}`;
   return seenFrom === undefined ? base : `${base}, seen from the ${seenFrom}`;
+}
+
+/** The figure's description while an animation plays, e.g. "Kálmán, animation: Bow, mood: goofy". */
+export function animationDescription(animationLabel: string, mood: string): string {
+  return `Kálmán, animation: ${animationLabel}, mood: ${mood}`;
 }

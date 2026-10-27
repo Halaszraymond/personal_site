@@ -111,3 +111,23 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 **Flood fill**: colouring every connected pixel of the same kind, starting from one point, like the paint-bucket tool. The cutting script uses it from the image's edges to find the white background, which leaves the (enclosed) white belly alone.
 
 **Alpha**: how solid a pixel is, from 0 (fully transparent) to 1 (fully solid). A PNG stores it as a fourth value next to red, green and blue.
+
+**Polygon (traced outline)**: a shape given as a list of corner points. The side flipper lies on the body, so there is no background around it to find it by; its outline is traced once on the image and the script cuts along it, with a smooth edge (each pixel tested at 16 points: anti-aliasing).
+
+## Kálmán's animations
+
+**Keyframe**: a fixed moment in an animation: "at 0.6 s he is in the bow pose". The animation is everything in between, worked out by the computer. Here an animation is a list of keyframes in `animations.json`.
+
+**Interpolation (blending)**: working out the values between two keyframes. Halfway from a head at 0° to a head at 20° is 10°. Like `numpy.interp`, for every layer's rotation and offset at once.
+
+**Easing**: how the speed changes during a movement. `none` is a constant speed (mechanical), `power2.out` starts fast and slows down at the end (like something coming to rest), `sine.inOut` starts and ends gently (like breathing). The easing bends the progress (0 to 1) before it is used for the blend.
+
+**Timeline / tween**: GSAP's words. A *tween* changes a value from A to B over time (here: the animation's clock, from 0 to its length); a *timeline* strings tweens together. Here GSAP only runs the clock; the poses come from the keyframes.
+
+**Scrubbing**: moving through an animation by hand, like dragging the playhead of a video. The preview's scrub slider holds the animation still at a chosen moment.
+
+**Loop**: an animation that starts again when it ends (idle, swim), until something else starts.
+
+**Head-follow**: the head turning towards the pointer. The further to the side the pointer is, the further the head turns, up to the end of its range; `gsap.quickTo` makes it glide there instead of jumping.
+
+**Figure (front, side)**: Kálmán is posable from two angles, each with its own rig of layers. Idle, bow and head-follow use the front figure; dive, swim and launch the side one.
