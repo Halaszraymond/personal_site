@@ -15,10 +15,10 @@
 
 ## 3. Animation logic
 
-- [ ] 3.1 Write `src/lib/kalman-animation.ts` types and `validateAnimations()` (first keyframe at 0, increasing times, poses of the right figure, allowed eases, the six names) with one unit test per failure; verify the tests pass
-- [ ] 3.2 Implement `blendPoses()` and `samplePose()` with an injected easing function; unit tests at keyframes, halfway with a linear ease, with a fixed S-curve, and staying inside the rotation ranges; verify the tests pass
-- [ ] 3.3 Implement `headTurn()` with unit tests (straight above → 0, far left and right → the ends of the range, in between proportional); verify the tests pass
-- [ ] 3.4 Write `src/scene/kalman/animations.json` with the six animations (design §7) and a data test that it validates against the repo's poses; verify the test passes
+- [x] 3.1 Write `src/lib/kalman-animation.ts` types and `validateAnimations()` (first keyframe at 0, increasing times, poses of the right figure, allowed eases, the six names) with one unit test per failure; verify the tests pass
+- [x] 3.2 Implement `blendPoses()` and `samplePose()` with an injected easing function; unit tests at keyframes, halfway with a linear ease, with a fixed S-curve, and staying inside the rotation ranges; verify the tests pass
+- [x] 3.3 Implement `headTurn()` with unit tests (straight above → 0, far left and right → the ends of the range, in between proportional); verify the tests pass
+- [x] 3.4 Write `src/scene/kalman/animations.json` with the six animations (design §7) and a data test that it validates against the repo's poses; verify the test passes
 
 ## 4. The player
 

@@ -1,0 +1,160 @@
+[
+  {
+    "name": "idle",
+    "label": "Idle",
+    "figure": "front",
+    "loop": true,
+    "keyframes": [
+      {
+        "at": 0,
+        "pose": "rest",
+        "ease": "sine.inOut"
+      },
+      {
+        "at": 1.2,
+        "pose": "swayLeft",
+        "ease": "sine.inOut"
+      },
+      {
+        "at": 3.2,
+        "pose": "swayRight",
+        "ease": "sine.inOut"
+      },
+      {
+        "at": 4.4,
+        "pose": "rest"
+      }
+    ]
+  },
+  {
+    "name": "bow",
+    "label": "Bow",
+    "figure": "front",
+    "loop": false,
+    "keyframes": [
+      {
+        "at": 0,
+        "pose": "rest",
+        "ease": "power2.inOut"
+      },
+      {
+        "at": 0.6,
+        "pose": "bow",
+        "ease": "none"
+      },
+      {
+        "at": 1.2,
+        "pose": "bow",
+        "ease": "power2.inOut"
+      },
+      {
+        "at": 1.8,
+        "pose": "rest"
+      }
+    ]
+  },
+  {
+    "name": "head-follow",
+    "label": "Head-follow",
+    "figure": "front",
+    "loop": false,
+    "follow": "head",
+    "keyframes": [
+      {
+        "at": 0,
+        "pose": "rest"
+      }
+    ]
+  },
+  {
+    "name": "dive",
+    "label": "Dive",
+    "figure": "side",
+    "loop": false,
+    "keyframes": [
+      {
+        "at": 0,
+        "pose": "rest",
+        "ease": "power1.out"
+      },
+      {
+        "at": 0.35,
+        "pose": "crouch",
+        "ease": "power2.in"
+      },
+      {
+        "at": 0.9,
+        "pose": "dive",
+        "ease": "power2.out"
+      },
+      {
+        "at": 1.5,
+        "pose": "diveDeep",
+        "ease": "none"
+      },
+      {
+        "at": 1.9,
+        "pose": "diveDeep",
+        "ease": "power2.inOut"
+      },
+      {
+        "at": 2.6,
+        "pose": "rest"
+      }
+    ]
+  },
+  {
+    "name": "swim",
+    "label": "Swim",
+    "figure": "side",
+    "loop": true,
+    "keyframes": [
+      {
+        "at": 0,
+        "pose": "strokeDown",
+        "ease": "sine.inOut"
+      },
+      {
+        "at": 0.4,
+        "pose": "strokeUp",
+        "ease": "sine.inOut"
+      },
+      {
+        "at": 0.8,
+        "pose": "strokeDown"
+      }
+    ]
+  },
+  {
+    "name": "launch",
+    "label": "Launch",
+    "figure": "side",
+    "loop": false,
+    "keyframes": [
+      {
+        "at": 0,
+        "pose": "strokeDown",
+        "ease": "power2.in"
+      },
+      {
+        "at": 0.4,
+        "pose": "pointUp",
+        "ease": "power3.out"
+      },
+      {
+        "at": 1.0,
+        "pose": "launchHigh",
+        "ease": "none"
+      },
+      {
+        "at": 1.3,
+        "pose": "launchHigh",
+        "ease": "power2.inOut"
+      },
+      {
+        "at": 2.0,
+        "pose": "rest"
+      }
+    ]
+  }
+]
