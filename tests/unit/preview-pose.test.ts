@@ -44,6 +44,33 @@ describe('poseFromControls', () => {
   });
 });
 
+describe('poseFromControls with stretch', () => {
+  const rest: Pose = { name: 'rest', label: 'Rest', layers: {} };
+
+  it('takes a stretch from its slider, and leaves out stretches at 1', () => {
+    expect(poseFromControls(rest, {}, { body: 0.9, head: 1 }).layers).toEqual({
+      body: { stretch: 0.9 },
+    });
+  });
+
+  it('keeps the named pose when the stretch sliders match it, and becomes custom when not', () => {
+    const squat: Pose = {
+      ...rest,
+      name: 'squat',
+      label: 'Squat',
+      layers: { body: { stretch: 0.9 } },
+    };
+    expect(poseFromControls(squat, {}, { body: 0.9 })).toEqual({ ...squat, figure: 'front' });
+    expect(poseFromControls(squat, {}, { body: 0.95 }).name).toBe('custom');
+  });
+
+  it('gives JSON with a stretch that passes pose validation', () => {
+    const json = poseToJson(poseFromControls(rest, { head: 5 }, { body: 0.88 }));
+    const result = validateFigurePose(JSON.parse(json), REPO_RIGS);
+    expect(result.ok ? [] : result.errors).toEqual([]);
+  });
+});
+
 describe('poseToJson', () => {
   it('gives JSON that passes pose validation for the repo’s rigs', () => {
     const json = poseToJson(poseFromControls(BOW, { head: 10, tail: -20 }));

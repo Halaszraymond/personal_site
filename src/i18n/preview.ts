@@ -24,6 +24,9 @@ export const PREVIEW_EN = {
   professional: 'Professional (tie and glasses)',
   showPivots: 'Show pivots',
   rotationsLegend: 'Rotation per layer (degrees)',
+  stretchesLegend: 'Squash and stretch per layer (1 = rest)',
+  /** A stretch slider's label: "Body stretch", "Side: body stretch". */
+  stretch: 'stretch',
   viewLegend: 'View',
   spin: 'Spin whole figure',
   turn: 'Turn around',

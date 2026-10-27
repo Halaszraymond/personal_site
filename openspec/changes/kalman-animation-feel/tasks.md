@@ -27,7 +27,7 @@
 
 ## 4. The preview: stretch sliders
 
-- [ ] 4.1 Add a stretch slider (step 0.01) per layer with a stretch range to the preview, below the rotation sliders, following the chosen figure and the named poses, and include stretches other than 1 in the pose JSON and Copy pose (`src/playground/preview-client.ts`, `src/lib/preview-pose.ts`, `src/i18n/preview.ts` for the labels in NL, HU and EN); verify with unit tests for `preview-pose.ts` and e2e tests for "Squashing with the keyboard", "Stretch slider limits" and "Stretch in the copied pose", passing in all four browsers and at 360 px
+- [x] 4.1 Add a stretch slider (step 0.01) per layer with a stretch range to the preview, below the rotation sliders, following the chosen figure and the named poses, and include stretches other than 1 in the pose JSON and Copy pose (`src/playground/preview-client.ts`, `src/lib/preview-pose.ts`, `src/i18n/preview.ts` for the labels, in English only like the rest of the dev-only preview); verify with unit tests for `preview-pose.ts` and e2e tests for "Squashing with the keyboard", "Stretch slider limits" and "Stretch in the copied pose", passing in all four browsers and at 360 px
 
 ## 5. The new poses and animations, tuned with Raymond
 
