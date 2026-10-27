@@ -131,7 +131,7 @@
   {
     "name": "swim",
     "label": "Swim",
-    "figure": "side",
+    "figure": "swim",
     "loop": true,
     "keyframes": [
       {
@@ -170,11 +170,7 @@
       }
     ],
     "lag": {
-      "head": 0.05,
-      "tail": 0.1,
-      "footBack": 0.08,
-      "footFront": 0.08,
-      "flipper": 0.04
+      "flipper": 0.06
     }
   },
   {

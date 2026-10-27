@@ -116,7 +116,7 @@ export function applyTurn(
   mood: Mood,
 ): void {
   // The turntable is the front figure's: with the side figure chosen it stays out of the way.
-  const frontChosen = figure.dataset['figure'] !== 'side';
+  const frontChosen = (figure.dataset['figure'] ?? 'front') === 'front';
   const facingFront = normaliseAngle(degrees) === 0 || !frontChosen;
   // `display`, not `visibility`, for whole groups: in SVG a child that says
   // visibility="visible" (every layer does) would still show inside a hidden group.

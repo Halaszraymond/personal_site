@@ -39,7 +39,11 @@ function loadRig(figure: Figure): Rig {
 }
 
 /** The repo's rigs, one per figure. */
-export const REPO_RIGS: Rigs = { front: loadRig('front'), side: loadRig('side') };
+export const REPO_RIGS: Rigs = {
+  front: loadRig('front'),
+  side: loadRig('side'),
+  swim: loadRig('swim'),
+};
 
 /** The front figure's rig: the one the turntable, the spin and most poses use. */
 export const REPO_RIG: Rig = REPO_RIGS.front;

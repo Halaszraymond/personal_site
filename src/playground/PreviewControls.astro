@@ -133,7 +133,8 @@ const firstDuration = firstAnimation === undefined ? 1 : playLength(firstAnimati
       FIGURES.map((figure) => (
         <div data-figure-sliders={figure} hidden={figure !== 'front'}>
           {REPO_RIGS[figure].layers.map((layer) => {
-            const id = figure === 'front' ? `rotate-${layer.name}` : `rotate-side-${layer.name}`;
+            const id =
+              figure === 'front' ? `rotate-${layer.name}` : `rotate-${figure}-${layer.name}`;
             return (
               <div class="slider">
                 <label for={id}>{layerLabel(layer.name, figure)}</label>
@@ -165,7 +166,8 @@ const firstDuration = firstAnimation === undefined ? 1 : playLength(firstAnimati
         <div data-figure-stretches={figure} hidden={figure !== 'front'}>
           {REPO_RIGS[figure].layers.flatMap((layer) => {
             if (layer.stretch === undefined) return [];
-            const id = figure === 'front' ? `stretch-${layer.name}` : `stretch-side-${layer.name}`;
+            const id =
+              figure === 'front' ? `stretch-${layer.name}` : `stretch-${figure}-${layer.name}`;
             return [
               <div class="slider">
                 <label for={id}>

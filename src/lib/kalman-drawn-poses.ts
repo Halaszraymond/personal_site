@@ -9,7 +9,7 @@
  * image per mood, placed on the artboard exactly like the front figure. This file only checks
  * that data; the figure draws it and the player fades it in and out.
  */
-import type { Figure, Mood } from './kalman-rig';
+import { FIGURES, isFigure, type Figure, type Mood } from './kalman-rig';
 import { isPlacedImage, type PlacedImage } from './kalman-turntable';
 
 /** One drawn pose: its name (used by keyframes), its figure, and a placed image per mood. */
@@ -39,9 +39,7 @@ export function drawnPoseErrors(data: unknown): string[] {
     if (typeof name !== 'string' || name === '') errors.push(`${label} needs a "name".`);
     else if (names.has(name)) errors.push(`${label} is listed twice.`);
     else names.add(name);
-    if (figure !== 'front' && figure !== 'side') {
-      errors.push(`${label} needs "figure" as "front" or "side".`);
-    }
+    if (!isFigure(figure)) errors.push(`${label} needs "figure" as one of ${FIGURES.join(', ')}.`);
     const byMood = (images ?? {}) as Record<string, unknown>;
     for (const mood of MOODS) {
       if (!isPlacedImage(byMood[mood])) {

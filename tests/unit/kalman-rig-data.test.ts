@@ -39,12 +39,14 @@ const PARTS: Record<Figure, string[]> = {
   ],
   // The far flipper is hidden behind the body in a side view, so it is part of the body.
   side: ['body', 'head', 'flipper', 'footFront', 'footBack', 'tail', 'tie', 'glasses'],
+  swim: ['body', 'flipper', 'tie', 'glasses'],
 };
 
 /** The poses each figure must have (spec: "Poses are data"). */
 const REQUIRED_POSES: Record<Figure, string[]> = {
   front: ['rest', 'bow', 'flippersUp', 'headTiltLeft', 'headTiltRight'],
   side: ['rest', 'strokeUp', 'strokeDown', 'dive'],
+  swim: ['rest', 'strokeUp', 'strokeDown'],
 };
 
 /** A figure's rig from the repo, validated against the real files in src/assets/kalman/. */
@@ -55,7 +57,11 @@ function repoRig(figure: Figure): Rig {
   return result.value;
 }
 
-const repoRigs = (): Rigs => ({ front: repoRig('front'), side: repoRig('side') });
+const repoRigs = (): Rigs => ({
+  front: repoRig('front'),
+  side: repoRig('side'),
+  swim: repoRig('swim'),
+});
 
 describe.each(FIGURES)('the %s rig in the repo', (figure) => {
   it('is valid, and every layer points to an existing image', () => {

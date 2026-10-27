@@ -11,7 +11,7 @@
  *   with reduced motion it starts off, so nothing moves until a play button is pressed.
  */
 import { playLength, type Animation } from '../lib/kalman-animation';
-import type { Figure, Mood, Pose } from '../lib/kalman-rig';
+import { FIGURES, isFigure, type Figure, type Mood, type Pose } from '../lib/kalman-rig';
 import { normaliseAngle, turntableFrame } from '../lib/kalman-turntable';
 import {
   animationDescription,
@@ -167,7 +167,7 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
   /** Shows one figure's pose buttons and sliders, and starts it at rest. */
   function chooseFigure(which: Figure): void {
     chosen = which;
-    for (const other of ['front', 'side'] as const) {
+    for (const other of FIGURES) {
       const hide = other !== which;
       poseGroup(other)?.toggleAttribute('hidden', hide);
       sliderGroup(other)?.toggleAttribute('hidden', hide);
@@ -187,11 +187,11 @@ function startPreview(root: HTMLElement, figure: SVGSVGElement): void {
 
   for (const choice of figureChoices) {
     choice.addEventListener('change', () => {
-      if (choice.checked) chooseFigure(choice.value === 'side' ? 'side' : 'front');
+      if (choice.checked) chooseFigure(isFigure(choice.value) ? choice.value : 'front');
     });
   }
 
-  for (const group of ['front', 'side'] as const) {
+  for (const group of FIGURES) {
     for (const button of poseGroup(group)?.querySelectorAll<HTMLButtonElement>(
       '[data-pose-button]',
     ) ?? []) {

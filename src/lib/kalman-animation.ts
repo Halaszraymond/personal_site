@@ -9,7 +9,9 @@
  * nor a browser and is unit-tested on its own.
  */
 import {
+  FIGURES,
   figureOf,
+  isFigure,
   type Figure,
   type LayerPose,
   type Pair,
@@ -356,13 +358,10 @@ function animationErrors(value: unknown, index: number, names: FigureNames): str
   const errors: string[] = [];
   if (typeof name !== 'string' || name === '') errors.push(`${title} needs a "name".`);
   if (typeof label !== 'string' || label === '') errors.push(`${title} needs a "label".`);
-  if (figure !== 'front' && figure !== 'side')
-    errors.push(`${title} needs "figure" as "front" or "side".`);
+  if (!isFigure(figure)) errors.push(`${title} needs "figure" as one of ${FIGURES.join(', ')}.`);
   if (typeof loop !== 'boolean') errors.push(`${title} needs "loop" as true or false.`);
   if (follow !== undefined && follow !== 'head') errors.push(`${title} can only follow "head".`);
-  if (figure === 'front' || figure === 'side') {
-    errors.push(...lagErrors(title, lag, names.layers(figure)));
-  }
+  if (isFigure(figure)) errors.push(...lagErrors(title, lag, names.layers(figure)));
   if (fade !== undefined && (typeof fade !== 'number' || !Number.isFinite(fade) || fade < 0)) {
     errors.push(`${title} needs "fade" as 0 or more seconds.`);
   }
@@ -370,9 +369,8 @@ function animationErrors(value: unknown, index: number, names: FigureNames): str
     errors.push(`${title} needs a list of "keyframes".`);
     return errors;
   }
-  const hasFigure = figure === 'front' || figure === 'side';
-  const known = hasFigure ? names.poses(figure) : new Set<string>();
-  const drawnKnown = hasFigure ? names.drawn(figure) : new Set<string>();
+  const known = isFigure(figure) ? names.poses(figure) : new Set<string>();
+  const drawnKnown = isFigure(figure) ? names.drawn(figure) : new Set<string>();
   let previous: number | undefined;
   keyframes.forEach((keyframe: unknown, k) => {
     if (!isRecord(keyframe)) {

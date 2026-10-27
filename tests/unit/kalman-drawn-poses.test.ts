@@ -25,7 +25,7 @@ describe('drawnPoseErrors', () => {
       'Drawn pose "bow" is listed twice.',
       'Drawn pose 3 needs a "name".',
       'Drawn pose 3 needs a "professional" image with "image", "size" and "position".',
-      'Drawn pose "nod" needs "figure" as "front" or "side".',
+      'Drawn pose "nod" needs "figure" as one of front, side, swim.',
       'Drawn pose "nod" needs a "goofy" image with "image", "size" and "position".',
       'Drawn pose "nod" needs a "professional" image with "image", "size" and "position".',
     ]);

@@ -133,7 +133,11 @@ const rigOf = (...names: string[]): Rig => ({
     rotate: [-10, 10],
   })),
 });
-const RIGS: Rigs = { front: rigOf('body', 'head'), side: rigOf('body', 'tail') };
+const RIGS: Rigs = {
+  front: rigOf('body', 'head'),
+  side: rigOf('body', 'tail'),
+  swim: rigOf('body', 'flipper'),
+};
 /** One drawn pose, the front figure's bow. */
 const DRAWN = [{ name: 'bow', figure: 'front' as const }];
 

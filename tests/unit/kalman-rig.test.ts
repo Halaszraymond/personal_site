@@ -390,7 +390,7 @@ describe('poses per figure', () => {
       layer({ name: 'flipper', order: 30, rotate: [-90, 90] }),
     ],
   };
-  const RIGS = { front: RIG, side: SIDE };
+  const RIGS = { front: RIG, side: SIDE, swim: SIDE };
 
   it('checks a front pose against the front rig, also when it doesn’t say its figure', () => {
     const data = { name: 'nod', label: 'Nod', layers: { head: { rotate: 10 } } };
@@ -419,7 +419,7 @@ describe('poses per figure', () => {
   it('rejects an unknown figure', () => {
     expect(
       errorsOf(validateFigurePose({ name: 'x', label: 'X', figure: 'top', layers: {} }, RIGS)),
-    ).toEqual(['Pose "x" needs "figure" as "front" or "side".']);
+    ).toEqual(['Pose "x" needs "figure" as one of front, side, swim.']);
   });
 });
 

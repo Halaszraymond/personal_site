@@ -16,7 +16,7 @@ function repoRig(figure: Figure): Rig {
   if (!result.ok) throw new Error(result.errors.join('\n'));
   return result.value;
 }
-const RIGS = { front: repoRig('front'), side: repoRig('side') };
+const RIGS = { front: repoRig('front'), side: repoRig('side'), swim: repoRig('swim') };
 
 describe('the animations in the repo', () => {
   it('are valid against the repo’s poses and include all six', () => {
@@ -32,7 +32,7 @@ describe('the animations in the repo', () => {
       bow: 'front',
       'head-follow': 'front',
       dive: 'side',
-      swim: 'side',
+      swim: 'swim',
       launch: 'side',
     });
   });

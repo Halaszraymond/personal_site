@@ -194,8 +194,9 @@ const figures = FIGURES.map((figure) => {
   }
 
   /* Only the chosen figure's pivots show (CSS beats the SVG `display` attribute, so this is CSS). */
-  .kalman-figure[data-figure='front'] .pivots[data-figure='side'],
-  .kalman-figure[data-figure='side'] .pivots[data-figure='front'] {
+  .kalman-figure:not([data-figure='front']) .pivots[data-figure='front'],
+  .kalman-figure:not([data-figure='side']) .pivots[data-figure='side'],
+  .kalman-figure:not([data-figure='swim']) .pivots[data-figure='swim'] {
     display: none;
   }
 

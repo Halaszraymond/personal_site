@@ -59,8 +59,8 @@
 ## 8. The drawn swim figure
 
 - [x] 8.1 Add prompts 11–13 (swimming, goofy; its professional edit; without the near flipper) to `docs/kalman-layers.md`; verify the prompts name `swim-goofy.png`, `swim-professional.png` and `swim-no-flipper.png`
-- [ ] 8.2 Check Raymond's three swim images (same size, lined up, white background) and save them; verify with the alignment check and a side-by-side
-- [ ] 8.3 Add the `swim` figure (`Figure`, `FIGURES`, rigs, poses, the figure switch and the player) and cut its rig in `scripts/cut-kalman-layers.ts` (body from the edit without the flipper, flipper along a traced outline, tie and glasses); verify `cut:kalman`, `check:kalman`, the data test for its four layers, and "A stroking flipper" in a screenshot
+- [x] 8.2 Check Raymond's three swim images (same size, lined up, white background) and save them; verify with the alignment check and a side-by-side
+- [x] 8.3 Add the `swim` figure (`Figure`, `FIGURES`, rigs, poses, the figure switch and the player) and cut its rig in `scripts/cut-kalman-layers.ts` (body from the edit without the flipper, flipper along a traced outline, tie and glasses); verify `cut:kalman`, `check:kalman`, the data test for its four layers, and "A stroking flipper" in a screenshot
 - [ ] 8.4 Move the swim animation to the swimming figure with its own poses (body pitch, flipper strokes with lag, a glance by tipping the body); verify with the updated swim scenario tests, the e2e test "Showing the swimming figure", and Raymond approves the swim
 
 ## 9. Wrap-up

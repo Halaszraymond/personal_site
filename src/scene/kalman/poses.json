@@ -276,33 +276,6 @@
     }
   },
   {
-    "name": "swimGlance",
-    "label": "Swim (glance at a fish)",
-    "figure": "side",
-    "layers": {
-      "body": {
-        "rotate": -91,
-        "offset": [0, 6],
-        "stretch": 0.97
-      },
-      "head": {
-        "rotate": 45
-      },
-      "flipper": {
-        "rotate": 40
-      },
-      "tail": {
-        "rotate": -8
-      },
-      "footBack": {
-        "rotate": 10
-      },
-      "footFront": {
-        "rotate": 10
-      }
-    }
-  },
-  {
     "name": "launchWindUp",
     "label": "Launch (wind-up)",
     "figure": "side",
@@ -488,6 +461,57 @@
       },
       "footFront": {
         "plant": 1
+      }
+    }
+  },
+  {
+    "name": "rest",
+    "label": "Rest",
+    "figure": "swim",
+    "layers": {}
+  },
+  {
+    "name": "strokeDown",
+    "label": "Stroke down",
+    "figure": "swim",
+    "layers": {
+      "body": {
+        "rotate": -3,
+        "offset": [-20, 0],
+        "stretch": 1.04
+      },
+      "flipper": {
+        "rotate": 35
+      }
+    }
+  },
+  {
+    "name": "strokeUp",
+    "label": "Stroke up",
+    "figure": "swim",
+    "layers": {
+      "body": {
+        "rotate": 2,
+        "offset": [0, 4],
+        "stretch": 0.97
+      },
+      "flipper": {
+        "rotate": -30
+      }
+    }
+  },
+  {
+    "name": "swimGlance",
+    "label": "Swim (glance at a fish)",
+    "figure": "swim",
+    "layers": {
+      "body": {
+        "rotate": 10,
+        "offset": [0, -6],
+        "stretch": 0.97
+      },
+      "flipper": {
+        "rotate": -20
       }
     }
   }

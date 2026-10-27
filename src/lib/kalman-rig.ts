@@ -173,11 +173,19 @@ export interface LayerPose {
   readonly plant?: number;
 }
 
-/** Kálmán's two posable figures: seen from the front, and seen from the side (for swimming). */
-export type Figure = 'front' | 'side';
+/**
+ * Kálmán's posable figures: seen from the front, seen from the side (diving, launching), and
+ * drawn horizontally for swimming (kalman-animation-feel design §13).
+ */
+export type Figure = 'front' | 'side' | 'swim';
 
-/** Both figures, in a fixed order (the front first). */
-export const FIGURES: readonly Figure[] = ['front', 'side'];
+/** All figures, in a fixed order (the front first). */
+export const FIGURES: readonly Figure[] = ['front', 'side', 'swim'];
+
+/** True for one of the figure names, like `value in FIGURES` in Python. */
+export function isFigure(value: unknown): value is Figure {
+  return (FIGURES as readonly unknown[]).includes(value);
+}
 
 /** A named still pose. Layers it doesn't mention stay at rest. */
 export interface Pose {
@@ -630,7 +638,7 @@ export function spinMatrix(rig: Rig, degrees: number): Matrix {
 // Two figures: front and side
 // ---------------------------------------------------------------------------------------
 
-/** One rig per figure, like a Python dict {"front": rig, "side": rig}. */
+/** One rig per figure, like a Python dict {"front": rig, "side": rig, "swim": rig}. */
 export type Rigs = Readonly<Record<Figure, Rig>>;
 
 /** The figure a pose belongs to (front when the pose doesn't say). */
@@ -644,11 +652,11 @@ export function figureOf(pose: Pose): Figure {
  */
 export function validateFigurePose(data: unknown, rigs: Rigs): Validation<Pose> {
   const figure = (data as { figure?: unknown } | null)?.figure ?? 'front';
-  if (figure !== 'front' && figure !== 'side') {
+  if (!isFigure(figure)) {
     const name = (data as { name?: unknown } | null)?.name;
     return {
       ok: false,
-      errors: [`Pose "${String(name ?? '?')}" needs "figure" as "front" or "side".`],
+      errors: [`Pose "${String(name ?? '?')}" needs "figure" as one of ${FIGURES.join(', ')}.`],
     };
   }
   return validatePose(data, rigs[figure]);

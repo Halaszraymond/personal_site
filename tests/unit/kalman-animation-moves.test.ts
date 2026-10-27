@@ -149,12 +149,10 @@ describe('the swim (spec: "The swim moves like a stroke")', () => {
   const swim = animation('swim');
   const times = Array.from({ length: 73 }, (_, i) => (i / 72) * duration(swim));
 
-  it('lies close to horizontal, bill first, at every moment (scenario "Horizontal")', () => {
-    for (const time of times) {
-      const body = rotate(at('swim', time), 'body');
-      expect(body).toBeGreaterThan(-100);
-      expect(body).toBeLessThan(-80);
-    }
+  it('swims as the swimming figure, close to its drawn horizontal line (scenario "Horizontal")', () => {
+    expect(swim.figure).toBe('swim');
+    for (const time of times)
+      expect(Math.abs(rotate(at('swim', time), 'body'))).toBeLessThanOrEqual(12);
   });
 
   it('is further forward and stretched at the end of the down stroke (scenario "Surge on the down stroke")', () => {
@@ -165,25 +163,19 @@ describe('the swim (spec: "The swim moves like a stroke")', () => {
     expect(stretch(down, 'body')).toBeGreaterThan(1);
   });
 
-  it('lets the tail and feet reach a turning point after the body (scenario "Trailing")', () => {
+  it('lets the flipper reach a turning point of the stroke after the body (scenario "Trailing")', () => {
     const turn = keyframeAt('swim', 'strokeDown', 1);
-    const lag = swim.lag?.['tail'] ?? 0;
+    const lag = swim.lag?.['flipper'] ?? 0;
     expect(lag).toBeGreaterThan(0);
-    // When the body turns, the tail is still on its way; it gets there `lag` seconds later.
-    expect(rotate(at('swim', turn), 'tail')).toBeLessThan(rotate(at('swim', turn + lag), 'tail'));
-    const feetLag = swim.lag?.['footFront'] ?? 0;
-    expect(rotate(at('swim', turn), 'footFront')).toBeLessThan(
-      rotate(at('swim', turn + feetLag), 'footFront'),
+    // When the body reaches the end of the down stroke, the flipper is still on its way down.
+    expect(rotate(at('swim', turn), 'flipper')).toBeLessThan(
+      rotate(at('swim', turn + lag), 'flipper'),
     );
   });
 
-  it('glances aside once per loop and looks ahead again (scenario "A glance at a fish")', () => {
-    // While swimming the head is turned back so the bill points forward; a glance turns it
-    // away from that swimming position.
-    const swimming = poses.find((p) => p.figure === 'side' && p.name === 'strokeDown')?.layers;
-    const ahead = swimming?.['head']?.rotate ?? 0;
-    const glancing = times.map((time) => Math.abs(rotate(at('swim', time), 'head') - ahead) > 10);
-    // One stretch of glancing: it starts once (false → true) in the whole loop.
+  it('tips his body aside once per loop, as if at a fish, and back (scenario "A glance at a fish")', () => {
+    // The strokes pitch the body a few degrees; a glance tips it clearly further.
+    const glancing = times.map((time) => Math.abs(rotate(at('swim', time), 'body')) > 6);
     const starts = glancing.filter((now, i) => now && !glancing[i - 1]).length;
     expect(starts).toBe(1);
     expect(glancing[0]).toBe(false);

@@ -67,12 +67,12 @@ test('playing the bow marks it, and he ends at rest', async ({ page }) => {
   expect(await frontHead(page).getAttribute('transform')).toBe(restHead);
 });
 
-test('starting swim stops the idle loop and shows the side figure', async ({ page }) => {
+test('starting swim stops the idle loop and shows the swimming figure', async ({ page }) => {
   await expect(figure(page)).toHaveAttribute('data-animation', 'idle');
   await page.getByRole('button', { name: 'Play swim' }).click();
 
   await expect(figure(page)).toHaveAttribute('data-animation', 'swim');
-  await expect(figure(page)).toHaveAttribute('data-figure', 'side');
+  await expect(figure(page)).toHaveAttribute('data-figure', 'swim');
   await expect(page.getByRole('button', { name: 'Play idle' })).toHaveAttribute(
     'aria-pressed',
     'false',
@@ -191,6 +191,21 @@ test('the front/side switch shows the side figure with its own poses and sliders
   expect(JSON.parse(await page.getByLabel(/Pose JSON/).inputValue())).toMatchObject({
     name: 'strokeUp',
     figure: 'side',
+  });
+});
+
+test('the figure switch shows the swimming figure with its own poses and sliders', async ({
+  page,
+}) => {
+  await page.getByLabel('Swimming', { exact: true }).check();
+
+  await expect(figure(page)).toHaveAttribute('data-figure', 'swim');
+  await expect(page.getByLabel('Swimming: flipper')).toBeVisible();
+  await expect(page.getByLabel('Side: flipper')).toBeHidden();
+  await page.getByRole('button', { name: 'Stroke down' }).click();
+  expect(JSON.parse(await page.getByLabel(/Pose JSON/).inputValue())).toMatchObject({
+    name: 'strokeDown',
+    figure: 'swim',
   });
 });
 

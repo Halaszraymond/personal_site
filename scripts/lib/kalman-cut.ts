@@ -591,3 +591,40 @@ export function sideRegions(
     tie: (x, y) => yes(inside(settings.tie, x, y)),
   };
 }
+
+/** Where the swimming figure's parts are in its images (kalman-animation-feel design §13). */
+export interface SwimCutSettings {
+  /** The glasses, with the calm eye. */
+  readonly glasses: PixelBounds;
+  /** The tie: everything in these bounds right of `fromX`, or below `lowerFromY` (the tip). */
+  readonly tie: PixelBounds;
+  readonly tieFromX: number;
+  readonly tieLowerFromY: number;
+}
+
+/**
+ * The swimming figure's parts as regions. It is drawn as one piece (head, feet and tail in the
+ * body), so only the flipper (its traced outline, `flipper`, as for the side figure) and the
+ * professional extras are separate; `width` is the image width, to look the flipper up.
+ */
+export function swimRegions(
+  settings: SwimCutSettings,
+  flipper: AlphaMap,
+  width: number,
+): Record<string, PartRegion> {
+  const inside = (bounds: PixelBounds, x: number, y: number) =>
+    x >= bounds[0] && y >= bounds[1] && x <= bounds[2] && y < bounds[3];
+  const yes = (condition: boolean) => (condition ? 1 : 0);
+  return {
+    // Cut from the image without the flipper, so the body under the flipper is painted.
+    body: () => 1,
+    flipper: (x, y) => flipper[y * width + x] ?? 0,
+    glasses: (x, y) => yes(inside(settings.glasses, x, y)),
+    tie: (x, y) =>
+      yes(
+        inside(settings.tie, x, y) &&
+          (x >= settings.tieFromX || y >= settings.tieLowerFromY) &&
+          !inside(settings.glasses, x, y),
+      ),
+  };
+}

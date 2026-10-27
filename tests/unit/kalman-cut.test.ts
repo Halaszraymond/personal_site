@@ -24,6 +24,7 @@ import {
   ramp,
   restrictAlpha,
   sideRegions,
+  swimRegions,
   type FrontCutSettings,
   type SideCutSettings,
   type RawImage,
@@ -367,5 +368,29 @@ describe('restrictAlpha and blendImages (the eyes without pupils)', () => {
     };
     const mixed = blendImages(base, other, new Float32Array([0.5, 0]));
     expect([...mixed.data]).toEqual([100, 100, 100, 100, 100, 100]);
+  });
+});
+
+describe('swimRegions', () => {
+  // A 40-wide image with a flipper covering column 25 from row 10 to 19.
+  const flipper = new Float32Array(40 * 40);
+  for (let y = 10; y < 20; y++) flipper[y * 40 + 25] = 1;
+  const regions = swimRegions(
+    { glasses: [2, 2, 10, 6], tie: [8, 2, 20, 30], tieFromX: 12, tieLowerFromY: 10 },
+    flipper,
+    40,
+  );
+  const take = (part: string, x: number, y: number) => regions[part]?.(x, y);
+
+  it('takes the flipper from its outline, and the body under it as well (spec: "A stroking flipper")', () => {
+    expect([take('flipper', 25, 15), take('flipper', 24, 15), take('body', 25, 15)]).toEqual([
+      1, 0, 1,
+    ]);
+  });
+
+  it('keeps the glasses and the tie apart where their bounds overlap', () => {
+    expect([take('glasses', 9, 4), take('tie', 9, 4)]).toEqual([1, 0]);
+    // Right of `tieFromX` and below `tieLowerFromY` the tie; left of it, high up, nothing.
+    expect([take('tie', 14, 4), take('tie', 9, 20), take('tie', 9, 8)]).toEqual([1, 1, 0]);
   });
 });

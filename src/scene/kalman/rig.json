@@ -210,5 +210,53 @@
         "accessory": true
       }
     ]
+  },
+  "swim": {
+    "artboard": [1600, 1500],
+    "layers": [
+      {
+        "name": "body",
+        "image": "swim/body.png",
+        "size": [1247.5, 359.1],
+        "position": [177.6, 580.5],
+        "pivot": [622.4, 179.6],
+        "parent": null,
+        "order": 20,
+        "rotate": [-30, 30],
+        "stretch": [0.85, 1.15]
+      },
+      {
+        "name": "flipper",
+        "image": "swim/flipper.png",
+        "size": [372.4, 147.6],
+        "position": [746.8, 682.9],
+        "pivot": [39.9, 34.6],
+        "parent": "body",
+        "order": 40,
+        "rotate": [-60, 60]
+      },
+      {
+        "name": "tie",
+        "image": "swim/tie.png",
+        "size": [355.1, 415],
+        "position": [492.8, 600.4],
+        "pivot": [94.4, 93.1],
+        "parent": "body",
+        "order": 50,
+        "rotate": [-15, 15],
+        "accessory": true
+      },
+      {
+        "name": "glasses",
+        "image": "swim/glasses.png",
+        "size": [260.7, 97.1],
+        "position": [301.3, 603.1],
+        "pivot": [126.4, 50.5],
+        "parent": "body",
+        "order": 60,
+        "rotate": [-10, 10],
+        "accessory": true
+      }
+    ]
   }
 }
