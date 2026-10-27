@@ -652,31 +652,43 @@ const FOOTED: Rig = {
 };
 
 describe('planted feet', () => {
-  it('keeps a planted foot where it stands at rest while the body sinks and squashes (spec: "Crouching on planted feet")', () => {
-    const crouch = pose({
-      body: { offset: [0, 30], stretch: 0.85, rotate: -8 },
-      foot: { plant: 1 },
-    });
-    expect(resolved(FOOTED, crouch, 'foot').matrix).toEqual(
-      resolved(FOOTED, REST_POSE, 'foot').matrix,
-    );
-    // ...while the body above it really is lower: its top-left corner moved down.
+  const groundOf = (name: string, p: Pose) => {
+    const foot = resolved(FOOTED, p, name);
+    // The foot's lowest corner: 40 × 20 image, so its bottom edge.
+    return Math.max(applyToPoint(foot.matrix, [0, 20])[1], applyToPoint(foot.matrix, [40, 20])[1]);
+  };
+
+  it('keeps a planted foot on the ground while the body sinks and squashes (spec: "Crouching on planted feet")', () => {
+    const crouch = pose({ body: { offset: [0, 30], stretch: 0.85 }, foot: { plant: 1 } });
+    // On the ground, in the same spot (it squashes a little with the body, as children do).
+    expect(groundOf('foot', crouch)).toBeCloseTo(510, 9);
+    expect(resolved(FOOTED, crouch, 'foot').pivotOnArtboard[0]).toBeCloseTo(200, 9);
     const bodyTop = applyToPoint(resolved(FOOTED, crouch, 'body').matrix, [100, 0])[1];
     expect(bodyTop).toBeGreaterThan(200);
   });
 
-  it('lets an unplanted foot move up with the body (spec: "Feet that leave the ground")', () => {
-    const hop = pose({ body: { offset: [0, -50] } });
-    expect(resolved(FOOTED, hop, 'foot').pivotOnArtboard[1]).toBeCloseTo(490 - 50, 9);
+  it('keeps a planted foot attached when the body leans: it moves along, but not into the ground', () => {
+    const lean = pose({ body: { rotate: -20, offset: [0, 30] }, foot: { plant: 1 } });
+    expect(groundOf('foot', lean)).toBeCloseTo(510, 9);
+    // Sideways it goes where the body takes it, so it never comes loose.
+    const following = resolved(FOOTED, pose({ body: { rotate: -20, offset: [0, 30] } }), 'foot');
+    expect(resolved(FOOTED, lean, 'foot').matrix.e).toBeCloseTo(following.matrix.e, 9);
   });
 
-  it('follows the body halfway at plant 0.5, and still applies the foot’s own rotation', () => {
-    const half = pose({ body: { offset: [0, -40] }, foot: { plant: 0.5 } });
-    expect(resolved(FOOTED, half, 'foot').pivotOnArtboard[1]).toBeCloseTo(490 - 20, 9);
-    const tilted = pose({ body: { offset: [0, -40] }, foot: { plant: 1, rotate: 15 } });
+  it('lets a foot come along when the body rises, planted or not (spec: "Feet that leave the ground")', () => {
+    for (const plant of [0, 1]) {
+      const hop = pose({ body: { offset: [0, -50] }, foot: { plant } });
+      expect(resolved(FOOTED, hop, 'foot').pivotOnArtboard[1]).toBeCloseTo(490 - 50, 9);
+    }
+  });
+
+  it('pushes a half-planted foot halfway back up, and still applies the foot’s own rotation', () => {
+    const half = pose({ body: { offset: [0, 40] }, foot: { plant: 0.5 } });
+    expect(resolved(FOOTED, half, 'foot').pivotOnArtboard[1]).toBeCloseTo(490 + 20, 9);
+    const tilted = pose({ foot: { plant: 1, rotate: 15 } });
     const foot = resolved(FOOTED, tilted, 'foot');
-    expectPointClose(foot.pivotOnArtboard, [200, 490]);
     expect((Math.atan2(foot.matrix.b, foot.matrix.a) * 180) / Math.PI).toBeCloseTo(15, 9);
+    expect(groundOf('foot', tilted)).toBeLessThanOrEqual(510 + 1e-9);
   });
 
   it('rejects a plant outside 0–1, and clamps one there', () => {

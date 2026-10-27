@@ -114,11 +114,15 @@ The front figure's head and its professional eyes SHALL be cut from Raymond's ed
 - **THEN** where they were at rest the eye shows painted white, not a copy of the pupil
 
 ### Requirement: Feet can stay on the ground
-A pose SHALL be able to plant the feet, by an amount from 0 to 1: at 1 the feet stay where they stand at rest, on the ground, while the body above them sinks, rises, leans or squashes (his knees, which are hidden in his body, bend); at 0 they move with the body as before; in between they follow the body partly. Between keyframes the amount blends like any other value. A foot's own rotation SHALL still apply when it is planted.
+A pose SHALL be able to plant the feet, by an amount from 0 (as before) to 1: a planted foot moves with the body, so it never comes loose, but never goes below the ground where it stands at rest. When the body sinks or leans the feet stay on the ground under it (his hidden knees bend); when it rises they come along. The amount blends between keyframes, and a foot's own rotation still applies.
 
 #### Scenario: Crouching on planted feet
 - **WHEN** a pose lowers and squashes the side body with the feet planted at 1
-- **THEN** the feet are exactly where they are at rest, and the body is lower
+- **THEN** the feet stand on the ground where they stand at rest, and the body is lower
+
+#### Scenario: Leaning on planted feet
+- **WHEN** a pose leans the side body forward with the feet planted at 1
+- **THEN** the feet stay attached to the body and their lowest point is on the ground
 
 #### Scenario: Feet that leave the ground
 - **WHEN** a pose lifts the body with the feet not planted

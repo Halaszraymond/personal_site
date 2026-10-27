@@ -92,23 +92,6 @@ export function stretchAround(stretch: number, [px, py]: Pair): Matrix {
   return compose(translate([px, py]), scale, translate([-px, -py]));
 }
 
-/**
- * `a` at 0, `b` at 1, each of the six numbers on a straight line in between. Not an exact way
- * to blend two transforms with very different angles, but right for what it's used for: a foot
- * between following a body that leans a little and staying on the ground.
- */
-export function mixMatrices(a: Matrix, b: Matrix, amount: number): Matrix {
-  const mix = (x: number, y: number) => x + (y - x) * amount;
-  return {
-    a: mix(a.a, b.a),
-    b: mix(a.b, b.b),
-    c: mix(a.c, b.c),
-    d: mix(a.d, b.d),
-    e: mix(a.e, b.e),
-    f: mix(a.f, b.f),
-  };
-}
-
 /** Where a point ends up after the transform. */
 export function applyToPoint(m: Matrix, [x, y]: Pair): Pair {
   return [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f];
@@ -181,10 +164,11 @@ export interface LayerPose {
   /** Squash (below 1) or stretch (above 1) around the pivot; missing means 1. */
   readonly stretch?: number;
   /**
-   * How firmly the layer stays where it is at rest instead of moving with its parent, from 0
-   * (moves with the parent, the default) to 1 (stays put). For the feet: penguins stand on bent
-   * knees hidden in the body, so when he crouches the body sinks over feet that stay on the
-   * ground. The layer's own rotation, offset and stretch still apply.
+   * How firmly the layer stays on the ground, from 0 (moves with its parent, the default) to 1:
+   * it still moves with its parent, but never lower than where it stands at rest. For the feet:
+   * penguins stand on bent knees hidden in the body, so when he crouches or leans the body
+   * sinks and the feet stay on the ground under it, still attached; when he jumps they come
+   * along. In between, the feet are pushed back up that part of the way.
    */
   readonly plant?: number;
 }
@@ -253,9 +237,21 @@ export function resolvePose(rig: Rig, pose: Pose, mood: Mood): ResolvedLayer[] {
     const parent = layer.parent === null ? undefined : byName.get(layer.parent);
     if (parent === undefined) return local;
     const following = multiply(movementOf(parent), local);
-    // A planted layer (a foot on the ground) mixes "following" with staying at rest.
+    // A planted layer (a foot) follows its parent but doesn't go into the ground: if its lowest
+    // point would be below where it is at rest, it is pushed back up (`plant` of the way).
     const plant = Math.min(1, Math.max(0, own.plant ?? 0));
-    return plant === 0 ? following : mixMatrices(following, local, plant);
+    if (plant === 0) return following;
+    const [w, h] = layer.size;
+    const corners: Pair[] = [
+      [0, 0],
+      [w, 0],
+      [0, h],
+      [w, h],
+    ];
+    const lowest = Math.max(...corners.map((corner) => applyToPoint(following, corner)[1]));
+    const ground = layer.position[1] + h;
+    const below = lowest - ground;
+    return below > 0 ? multiply(translate([0, -below * plant]), following) : following;
   }
 
   function movementOf(layer: RigLayer): Matrix {
