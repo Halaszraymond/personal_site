@@ -96,7 +96,9 @@ const MOMENTS = [
   { name: 'kalman-launch-rise', animation: 'launch', at: keyframe('launch', 'launchRise') },
   { name: 'kalman-launch-landing', animation: 'launch', at: keyframe('launch', 'landing') },
   { name: 'kalman-launch-wobble', animation: 'launch', at: keyframe('launch', 'landingWobble') },
-].map((moment) => ({ ...moment, at: moment.at.toFixed(2) }));
+  // Rounded to the slider's step, as a plain number: the browser turns "0.60" into "0.6", and
+  // Playwright refuses a value the slider doesn't keep exactly.
+].map((moment) => ({ ...moment, at: String(Math.round(moment.at * 100) / 100) }));
 
 for (const { name, animation, at } of MOMENTS) {
   test(`${name} looks the same as the baseline`, async ({ page }) => {
