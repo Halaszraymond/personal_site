@@ -15,12 +15,23 @@ const frontHead = (page: Page) =>
   page.locator('[data-layers][data-figure="front"] [data-layer="head"]');
 const scrub = (page: Page) => page.getByLabel('Position in the animation');
 
+const timeNow = async (page: Page) => Number(await figure(page).getAttribute('data-time'));
+
 /** The figure's time in seconds, read twice with a pause in between. */
 async function timeAdvances(page: Page, waitMs = 400): Promise<boolean> {
-  const before = Number(await figure(page).getAttribute('data-time'));
+  const before = await timeNow(page);
   await page.waitForTimeout(waitMs);
-  const after = Number(await figure(page).getAttribute('data-time'));
-  return after !== before;
+  return (await timeNow(page)) !== before;
+}
+
+/**
+ * Waits until the figure's time moves on. Polling, not one fixed pause: on a busy CI machine
+ * WebKit can skip frames for a while, so a single 400 ms look can see the time unchanged
+ * although the animation plays (like `while` with a timeout in Python, not one `sleep`).
+ */
+async function expectTimeToAdvance(page: Page): Promise<void> {
+  const before = await timeNow(page);
+  await expect.poll(() => timeNow(page)).not.toBe(before);
 }
 
 test.beforeEach(async ({ page }) => {
@@ -36,7 +47,7 @@ test('there is one play button per animation', async ({ page }) => {
 test('the idle loop plays by default', async ({ page }) => {
   await expect(page.getByRole('switch', { name: /Idle when nothing else plays/ })).toBeChecked();
   await expect(figure(page)).toHaveAttribute('data-animation', 'idle');
-  expect(await timeAdvances(page)).toBe(true);
+  await expectTimeToAdvance(page);
 });
 
 test('playing the bow marks it, and he ends at rest', async ({ page }) => {
@@ -126,7 +137,7 @@ test('a hidden tab stops the animation until it is visible again', async ({ page
     Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
     document.dispatchEvent(new Event('visibilitychange'));
   });
-  expect(await timeAdvances(page)).toBe(true);
+  await expectTimeToAdvance(page);
 });
 
 test.describe('with reduced motion', () => {
