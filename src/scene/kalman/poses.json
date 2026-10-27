@@ -179,7 +179,7 @@
     "layers": {
       "body": {
         "rotate": -70,
-        "offset": [-250, 250]
+        "offset": [-120, 180]
       },
       "flipper": {
         "rotate": -40
@@ -198,13 +198,16 @@
     "figure": "side",
     "layers": {
       "body": {
-        "rotate": 75
-      },
-      "flipper": {
-        "rotate": -50
+        "rotate": 15
       },
       "head": {
-        "rotate": 10
+        "rotate": 30
+      },
+      "flipper": {
+        "rotate": -80
+      },
+      "tail": {
+        "rotate": -10
       }
     }
   },
@@ -214,17 +217,17 @@
     "figure": "side",
     "layers": {
       "body": {
-        "rotate": 80,
-        "offset": [0, -350]
-      },
-      "flipper": {
-        "rotate": -70
+        "rotate": 15,
+        "offset": [0, -300]
       },
       "head": {
-        "rotate": 10
+        "rotate": 30
+      },
+      "flipper": {
+        "rotate": -90
       },
       "tail": {
-        "rotate": -10
+        "rotate": -15
       }
     }
   }
