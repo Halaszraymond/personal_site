@@ -2,8 +2,8 @@
 
 ## 1. Lighter images
 
-- [ ] 1.1 Give `KalmanFigure.astro` the props `turntable` and `drawnPoses` (default off) and pass both on in the dev preview; verify the preview's e2e tests and Kálmán snapshots still pass, and a unit or e2e check that a page without them has no turntable or drawn-pose `<image>`
-- [ ] 1.2 Build the figure's images as WebP through Astro's `getImage()` at twice their width on a 480 px stage (design §7); verify in the build output that the layer images are `.webp` and no wider than that, and that the existing Kálmán snapshots stay within their tolerance
+- [x] 1.1 Give `KalmanFigure.astro` the props `turntable` and `drawnPoses` (default off) and pass both on in the dev preview; verify the preview's e2e tests and Kálmán snapshots still pass, and a unit or e2e check that a page without them has no turntable or drawn-pose `<image>`
+- [x] 1.2 Build the figure's images as WebP through Astro's `getImage()` at twice their width on a 480 px stage (design §7); verify in the build output that the layer images are `.webp` and no wider than that, and that the existing Kálmán snapshots stay within their tolerance
 - [x] 1.3 Let a figure be drawn with deferred images (`data-href`, filled in after `load` or on demand) for the side and swimming figures; verify with an e2e test that on a home page their images only load after the page has loaded
 - [x] 1.4 Update `docs/architecture.md` (images per page, WebP, deferred figures) and `src/scene/README.md`; verify they match the code
 
@@ -30,8 +30,8 @@
 
 ## 5. Wrap-up
 
-- [ ] 5.1 Make new visual baselines for the home pages in both modes with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
-- [ ] 5.2 Measure with `npm run size` (home pages within 50 KB) and Lighthouse on the home pages (at least 90 on mobile for performance, "Lighthouse on mobile"); log both in `PLANNING_LOG.md`
+- [x] 5.1 Make new visual baselines for the home pages in both modes with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
+- [x] 5.2 Measure with `npm run size` (home pages within 50 KB) and Lighthouse on the home pages (at least 90 on mobile for performance, "Lighthouse on mobile"); log both in `PLANNING_LOG.md`
 - [ ] 5.3 Tick the dive in README §7 (Phase 2), update `docs/making-of.md`, and let CI pass on the branch; verify everything is green and Raymond has judged the dive
 
 ## Workflow follow-up
