@@ -32,7 +32,7 @@
 
 - [x] 5.1 Make new visual baselines for the home pages in both modes with "Update visual baselines"; verify the images look right and the `visual` project passes in CI
 - [x] 5.2 Measure with `npm run size` (home pages within 50 KB) and Lighthouse on the home pages (at least 90 on mobile for performance, "Lighthouse on mobile"); log both in `PLANNING_LOG.md`
-- [ ] 5.3 Tick the dive in README §7 (Phase 2), update `docs/making-of.md`, and let CI pass on the branch; verify everything is green and Raymond has judged the dive
+- [x] 5.3 Tick the dive in README §7 (Phase 2), update `docs/making-of.md`, and let CI pass on the branch; verify everything is green and Raymond has judged the dive
 
 ## Workflow follow-up
 
