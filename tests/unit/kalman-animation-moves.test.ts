@@ -25,7 +25,6 @@ import {
   validateRig,
   type Figure,
   type LayerPose,
-  type Pair,
   type Pose,
   type Rig,
 } from '../../src/lib/kalman-rig';
@@ -197,31 +196,29 @@ describe('the launch (spec: "The launch is professional, the landing goofy")', (
     expect(rotate(layers, 'body')).toBeGreaterThan(-100);
     expect(rotate(layers, 'body')).toBeLessThan(-75);
     expect(stretch(layers, 'body')).toBeLessThan(1);
-    // Ground level: the lowest point of his body is on the ground line (where his feet stand at
-    // rest), within a few pixels of the drawing.
+    // Ground level: his belly touches the ground line (where his feet stand at rest). Lying on
+    // his front, the belly is the side of the body image the bill faces (x = 0), widest about
+    // halfway down; that point must be on the ground.
     const rig = rigOf('side');
     const ground = Math.max(...rig.layers.map((l) => l.position[1] + l.size[1]));
     const body = resolvePose(rig, { name: 'x', label: 'x', figure: 'side', layers }, 'goofy').find(
       (l) => l.name === 'body',
     );
-    const size = rig.layers.find((l) => l.name === 'body')?.size ?? [0, 0];
-    const corners: Pair[] = [
-      [0, 0],
-      [size[0], 0],
-      [0, size[1]],
-      [size[0], size[1]],
-    ];
-    // The image's box corners overshoot the round belly a little, so allow a margin.
-    const lowest = Math.max(...corners.map((c) => (body ? applyToPoint(body.matrix, c)[1] : 0)));
-    expect(Math.abs(lowest - ground)).toBeLessThanOrEqual(120);
+    const height = rig.layers.find((l) => l.name === 'body')?.size[1] ?? 0;
+    const belly = body ? applyToPoint(body.matrix, [0, height * 0.55])[1] : 0;
+    expect(Math.abs(belly - ground)).toBeLessThanOrEqual(25);
   });
 
   it('pushes himself up on planted feet with the flipper out, then ends at rest (scenario "Standing up")', () => {
     const layers = at('launch', keyframeAt('launch', 'pushUp'));
     expect(rotate(layers, 'body')).toBeGreaterThan(-80);
     expect(rotate(layers, 'body')).toBeLessThan(-10);
-    // Firmly planted: the feet have a lag, so they are still settling onto the ground.
-    expect(layers['footFront']?.plant).toBeGreaterThan(0.9);
+    // Planted once the trailing feet have caught up with the pose.
+    const caughtUp = at(
+      'launch',
+      keyframeAt('launch', 'pushUp') + (launch.lag?.['footFront'] ?? 0),
+    );
+    expect(caughtUp['footFront']?.plant).toBeCloseTo(1, 6);
     expect(Math.abs(rotate(layers, 'flipper'))).toBeGreaterThan(30);
     for (const layer of Object.values(at('launch', playLength(launch)))) {
       expect(layer.rotate ?? 0).toBeCloseTo(0, 6);

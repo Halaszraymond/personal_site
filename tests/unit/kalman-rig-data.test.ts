@@ -45,7 +45,7 @@ const PARTS: Record<Figure, string[]> = {
 /** The poses each figure must have (spec: "Poses are data"). */
 const REQUIRED_POSES: Record<Figure, string[]> = {
   front: ['rest', 'bow', 'flippersUp', 'headTiltLeft', 'headTiltRight'],
-  side: ['rest', 'strokeUp', 'strokeDown', 'dive'],
+  side: ['rest', 'crouch', 'dive'],
   swim: ['rest', 'strokeUp', 'strokeDown'],
 };
 

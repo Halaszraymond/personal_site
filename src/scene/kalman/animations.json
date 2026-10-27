@@ -65,7 +65,8 @@
       "flipperLeft": 0.08,
       "flipperRight": 0.08,
       "tie": 0.06
-    }
+    },
+    "smooth": true
   },
   {
     "name": "head-follow",
@@ -173,7 +174,8 @@
     ],
     "lag": {
       "flipper": 0.06
-    }
+    },
+    "smooth": true
   },
   {
     "name": "launch",

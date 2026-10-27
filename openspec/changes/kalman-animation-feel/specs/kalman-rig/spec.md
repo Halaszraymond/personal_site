@@ -10,7 +10,7 @@ Kálmán's layers SHALL be described in one rig config: for each layer its name,
 - **THEN** the figure shows the illustration, with no code changed
 
 ### Requirement: Poses are data
-Named poses SHALL be stored as data per figure, each giving per-layer rotations, offsets and stretches relative to the rest position. Layers a pose does not mention SHALL stay at rest. The repo SHALL contain at least the front poses rest, bow, flippers up, head tilt left and head tilt right, and the side poses rest, stroke up, stroke down and dive.
+Named poses SHALL be stored as data per figure, each giving per-layer rotations, offsets and stretches relative to the rest position. Layers a pose does not mention SHALL stay at rest. The repo SHALL contain at least the front poses rest, bow, flippers up, head tilt left and head tilt right, the side poses rest, crouch and dive, and the swimming poses rest, stroke up and stroke down.
 
 #### Scenario: Partial pose
 - **WHEN** a pose mentions only the head

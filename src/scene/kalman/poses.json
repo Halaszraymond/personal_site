@@ -131,60 +131,6 @@
     "layers": {}
   },
   {
-    "name": "strokeUp",
-    "label": "Stroke up",
-    "figure": "side",
-    "layers": {
-      "body": {
-        "rotate": -91,
-        "offset": [0, 6],
-        "stretch": 0.97
-      },
-      "flipper": {
-        "rotate": 40
-      },
-      "tail": {
-        "rotate": -8
-      },
-      "footBack": {
-        "rotate": 10
-      },
-      "footFront": {
-        "rotate": 10
-      },
-      "head": {
-        "rotate": 65
-      }
-    }
-  },
-  {
-    "name": "strokeDown",
-    "label": "Stroke down",
-    "figure": "side",
-    "layers": {
-      "body": {
-        "rotate": -85,
-        "offset": [-20, -6],
-        "stretch": 1.04
-      },
-      "flipper": {
-        "rotate": -60
-      },
-      "tail": {
-        "rotate": 8
-      },
-      "footBack": {
-        "rotate": 15
-      },
-      "footFront": {
-        "rotate": 15
-      },
-      "head": {
-        "rotate": 65
-      }
-    }
-  },
-  {
     "name": "dive",
     "label": "Dive",
     "figure": "side",
@@ -361,7 +307,7 @@
     "layers": {
       "body": {
         "rotate": -88,
-        "offset": [-100, 330],
+        "offset": [-100, 290],
         "stretch": 0.88
       },
       "head": {
@@ -430,7 +376,7 @@
     "layers": {
       "body": {
         "rotate": -86,
-        "offset": [-160, 330]
+        "offset": [-160, 318]
       },
       "head": {
         "rotate": 35

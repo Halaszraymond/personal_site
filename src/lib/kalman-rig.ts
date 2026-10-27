@@ -165,7 +165,8 @@ export interface LayerPose {
   readonly stretch?: number;
   /**
    * How firmly the layer stays on the ground, from 0 (moves with its parent, the default) to 1:
-   * it still moves with its parent, but never lower than where it stands at rest. For the feet:
+   * it still moves with its parent, but stays level (its parent's turn is taken out) and never
+   * lower than where it stands at rest. For the feet:
    * penguins stand on bent knees hidden in the body, so when he crouches or leans the body
    * sinks and the feet stay on the ground under it, still attached; when he jumps they come
    * along. In between, the feet are pushed back up that part of the way.
@@ -244,11 +245,19 @@ export function resolvePose(rig: Rig, pose: Pose, mood: Mood): ResolvedLayer[] {
     // A child takes the parent's whole movement, its stretch included: it stays attached.
     const parent = layer.parent === null ? undefined : byName.get(layer.parent);
     if (parent === undefined) return local;
-    const following = multiply(movementOf(parent), local);
-    // A planted layer (a foot) follows its parent but doesn't go into the ground: if its lowest
-    // point would be below where it is at rest, it is pushed back up (`plant` of the way).
+    const parentMovement = movementOf(parent);
     const plant = Math.min(1, Math.max(0, own.plant ?? 0));
-    if (plant === 0) return following;
+    if (plant === 0) return multiply(parentMovement, local);
+    // A planted layer (a foot) follows its parent but stays flat and out of the ground. Flat:
+    // the parent's turn is taken out again (`plant` of it), so only its own rotation is left;
+    // the extra turn is around its pivot, in its own coordinates, so it stays attached there.
+    const parentTurn = (Math.atan2(parentMovement.b, parentMovement.a) * 180) / Math.PI;
+    const following = multiply(
+      multiply(parentMovement, local),
+      rotateAround(-parentTurn * plant, layer.pivot),
+    );
+    // Out of the ground: if its lowest point would be below where it is at rest, it is pushed
+    // back up (`plant` of the way).
     const [w, h] = layer.size;
     const corners: Pair[] = [
       [0, 0],

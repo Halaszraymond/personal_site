@@ -672,7 +672,19 @@ describe('planted feet', () => {
     expect(groundOf('foot', lean)).toBeCloseTo(510, 9);
     // Sideways it goes where the body takes it, so it never comes loose.
     const following = resolved(FOOTED, pose({ body: { rotate: -20, offset: [0, 30] } }), 'foot');
-    expect(resolved(FOOTED, lean, 'foot').matrix.e).toBeCloseTo(following.matrix.e, 9);
+    expect(resolved(FOOTED, lean, 'foot').pivotOnArtboard[0]).toBeCloseTo(
+      following.pivotOnArtboard[0],
+      9,
+    );
+  });
+
+  it('keeps a planted foot level when the body leans, and only its own rotation', () => {
+    const lean = pose({ body: { rotate: -20 }, foot: { plant: 1, rotate: 5 } });
+    const foot = resolved(FOOTED, lean, 'foot');
+    expect((Math.atan2(foot.matrix.b, foot.matrix.a) * 180) / Math.PI).toBeCloseTo(5, 9);
+    // Still attached: its pivot is where the leaning body takes it.
+    const following = resolved(FOOTED, pose({ body: { rotate: -20 } }), 'foot');
+    expect(foot.pivotOnArtboard[0]).toBeCloseTo(following.pivotOnArtboard[0], 9);
   });
 
   it('lets a foot come along when the body rises, planted or not (spec: "Feet that leave the ground")', () => {

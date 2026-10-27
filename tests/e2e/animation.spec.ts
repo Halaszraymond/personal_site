@@ -177,19 +177,17 @@ test('the front/side switch shows the side figure with its own poses and sliders
   await page.getByLabel('Side', { exact: true }).check();
 
   await expect(figure(page)).toHaveAttribute('data-figure', 'side');
-  await expect(page.getByRole('button', { name: 'Stroke up' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Crouch' })).toBeVisible();
   await expect(page.getByLabel('Side: flipper')).toBeVisible();
   await expect(page.getByLabel('Left flipper')).toBeHidden();
 
   // A side pose from its button, and its JSON says it is a side pose.
-  await page.getByRole('button', { name: 'Stroke up' }).click();
-  const strokeUp = poses.find((p) => p.figure === 'side' && p.name === 'strokeUp');
-  const flipper = (strokeUp?.layers as Record<string, { rotate?: number }> | undefined)?.[
-    'flipper'
-  ];
+  await page.getByRole('button', { name: 'Crouch' }).click();
+  const crouch = poses.find((p) => p.figure === 'side' && p.name === 'crouch');
+  const flipper = (crouch?.layers as Record<string, { rotate?: number }> | undefined)?.['flipper'];
   await expect(page.getByLabel('Side: flipper')).toHaveValue(String(flipper?.rotate ?? 0));
   expect(JSON.parse(await page.getByLabel(/Pose JSON/).inputValue())).toMatchObject({
-    name: 'strokeUp',
+    name: 'crouch',
     figure: 'side',
   });
 });
