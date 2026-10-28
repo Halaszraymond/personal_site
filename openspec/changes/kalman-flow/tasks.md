@@ -24,5 +24,5 @@
 ## 5. Wrap-up
 
 - [x] 5.1 Update `docs/architecture.md`, `docs/making-of.md` (with a film strip) and `PLANNING_LOG.md`; run the full check (lint, type check, unit, build, size, e2e in four browsers, Lighthouse); verify everything is green
-- [ ] 5.2 Make new animation baselines with "Update visual baselines", check them by eye, and let CI pass on the branch; verify the `visual` project passes
+- [x] 5.2 Make new animation baselines with "Update visual baselines", check them by eye, and let CI pass on the branch; verify the `visual` project passes
 - [ ] 5.3 Raymond judges the flow in the browser (dive, swim, launch, climbing out, tempo); verify his approval before archiving
