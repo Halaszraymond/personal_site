@@ -1,7 +1,9 @@
 ---
 /**
  * The frame around every page: <html>, <head> (title, canonical, language links)
- * and the header with the language switcher. Pages put their content in the <slot />.
+ * and the header with the language switcher. Pages put their content in the <slot />,
+ * extra `<head>` tags in `slot="head"`, and an animated scene for full mode in `slot="scene"`
+ * (it goes into the scene slot of RenderModeSwitch; the dive puts Kálmán there).
  */
 import type { Locale } from '../i18n/locales';
 import { UI } from '../i18n/ui';
@@ -20,10 +22,19 @@ interface Props {
   showLanguageSwitcher?: boolean;
   /** A page-specific title for the browser tab; defaults to the site title. */
   title?: string;
+  /** `dive` for the home pages' full-width dive layout; plain pages keep one narrow column. */
+  layout?: 'page' | 'dive';
 }
 
 // `= true` is a default value, like `def f(show_language_switcher=True)` in Python.
-const { locale, currentLocale, canonicalPath, showLanguageSwitcher = true, title } = Astro.props;
+const {
+  locale,
+  currentLocale,
+  canonicalPath,
+  showLanguageSwitcher = true,
+  title,
+  layout = 'page',
+} = Astro.props;
 
 // `Astro.site` comes from `site` in astro.config.ts. It is always set there,
 // but TypeScript cannot know that, so we check instead of assuming.
@@ -33,8 +44,8 @@ if (Astro.site === undefined) {
 const site = Astro.site;
 const indexable = canonicalPath !== undefined;
 
-// Pages start in fallback mode (`data-render-mode="fallback"` below); the client switches
-// to `full` only after its checks pass (see RenderModeSwitch.astro).
+// Pages are built in fallback mode (`data-render-mode="fallback"` below); public/render-mode.js
+// switches to `full` in <head>, before the first paint, only when its checks pass.
 ---
 
 <!doctype html>
@@ -45,20 +56,25 @@ const indexable = canonicalPath !== undefined;
     <title>{title ?? UI[locale].siteTitle}</title>
     <meta name="description" content={UI[locale].description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {/* Full or fallback, decided before the body is drawn (see public/render-mode.js). */}
+    <script is:inline src="/render-mode.js"></script>
     {indexable && <link rel="canonical" href={new URL(canonicalPath, site).href} />}
     {indexable &&
       homeAlternates(site).map(({ hreflang, href }) => (
         <link rel="alternate" hreflang={hreflang} href={href} />
       ))}
     {!indexable && <meta name="robots" content="noindex" />}
+    <slot name="head" />
   </head>
-  <body>
+  <body data-layout={layout}>
     {showLanguageSwitcher && (
       <header>
         <LanguageSwitcher currentLocale={currentLocale} labelLocale={locale} />
       </header>
     )}
-    <RenderModeSwitch />
+    <RenderModeSwitch>
+      <slot name="scene" />
+    </RenderModeSwitch>
     <main>
       <slot />
     </main>
@@ -85,7 +101,8 @@ const indexable = canonicalPath !== undefined;
 </script>
 
 <style is:global>
-  /* Minimal readable defaults. The real design (fonts, depth colours) comes in Phase 1 and 2. */
+  /* Minimal readable defaults; the dive (DivePage.astro) brings its own layout and colours.
+     The font choice is still open (README §8), so this is the system font stack. */
   body {
     font-family: system-ui, sans-serif;
     line-height: 1.5;

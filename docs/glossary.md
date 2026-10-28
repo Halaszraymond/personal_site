@@ -149,3 +149,29 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 **Planted (feet)**: a foot that stays on the ground while the body above it sinks or leans, as a penguin's hidden knees bend; it still moves with the body, so it never comes loose.
 
 **Smooth curve (spline)**: one flowing line through all the keyframes instead of separate pieces. It only slows down where a movement turns around, so he doesn't pause at every keyframe.
+
+## The dive
+
+**Depth mapping**: turning the scroll position into a depth in metres. Each section's start is an **anchor** with its depth (Work at 100 m), and in between the depth runs in a straight line, like `numpy.interp(probe, positions, depths)`. The **probe** is the point on the page that is read: the middle of the viewport, sliding to the bottom of the page over the last half screen so Contact is always reached.
+
+**The ascent**: the stretch between the bottom of The catch (564 m) and Contact, where the visitor keeps scrolling down while the depth counts back to 0 m and Kálmán launches onto the ice.
+
+**Depth gauge**: the fixed scale at the side of the dive that shows the current depth and lists the sections as links. It is the dive's navigation.
+
+**Express dive**: choosing a section in the depth gauge: the page takes the visitor there in about a second (instantly with reduced motion), and focus moves to the section's heading.
+
+**OKLab**: a colour space built so that equal steps look equally different to the eye. Blending the water between two colour stops in OKLab stays a clean blue, where blending the red, green and blue numbers directly turns muddy grey halfway.
+
+**Colour stop**: a fixed colour at a fixed depth (ice blue at 0 m, ink black at 564 m); the water at any depth is the blend of the two stops around it.
+
+**Contrast ratio**: how much lighter one colour is than another, from 1:1 (the same) to 21:1 (black on white). WCAG AA asks at least 4.5:1 for text; a unit test checks the text and the accent against the water at every metre.
+
+**Dive states**: what Kálmán is doing in the dive, as a small state machine (`diveState()`): *on the ice* (idle), *diving* (the dive, once), *swimming* (the swim loop), *launching* (the launch, once, with the belly landing) and *ashore* (idle at Contact). The state only changes with the zone and the scroll direction, so animations play whole instead of being scrubbed by the scroll.
+
+**One-shot animation**: an animation that plays once and then hands over (the dive becomes the swim, the launch becomes standing ashore), unlike a loop. Reversing the scroll direction cuts it short.
+
+**Still dive**: the fallback of the dive: every section with its own fixed water colour and a still Kálmán in a fitting pose, with nothing moving.
+
+**WebP**: an image format that is much smaller than PNG for the same look, with transparency. Kálmán's layers are built as WebP at the size they are shown at.
+
+**Deferred image**: an image whose address waits in `data-href` and is only filled in (as `href`) after the page has loaded, so it never slows down the first paint. The side and swimming figures load this way.

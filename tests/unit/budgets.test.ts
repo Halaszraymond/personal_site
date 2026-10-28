@@ -79,6 +79,11 @@ describe('per-page budgets', () => {
     expect(importsInChunk(code)).toEqual(['./x.js', './y.js', './z.js']);
   });
 
+  it('finds a lazy import written with backticks, as Vite writes them', () => {
+    const code = 'async()=>{let{s:e}=await import(`./dive-scene.Cx.js`);return e}';
+    expect(importsInChunk(code)).toEqual(['./dive-scene.Cx.js']);
+  });
+
   it('follows imports through chunks and counts each chunk once', () => {
     // a imports b and c; b imports c; c imports nothing: a small diamond-shaped graph.
     const graph: Record<string, string[]> = {

@@ -233,3 +233,34 @@ Raymond tried each round in the preview, and every round found what still frames
 
 Raymond approved the result. The agreement that he must be able to explain every line was dropped along the way: the highest quality and user experience come first.
 
+## 2026-10-28 · Phase 2 starts: the dive
+
+### The plan
+
+Phase 2 is split into small changes; the first, `dive-scroll`, lays the foundation everything else in the phase builds on: the home page becomes the dive. Scrolling is diving, from the ice down to 564 m (an emperor penguin's record) and back up to Contact on the ice. Six sections with placeholder text in three languages, a depth gauge that is also the navigation, water that darkens with depth, and Kálmán diving along.
+
+![Full mode at Work: the water at 175 m, Kálmán swimming as a guide beside the text, the depth gauge on the right](images/phase-2/dive-full-mode.png)
+
+### How it works
+
+- **Scrolling stays the browser's own.** No scroll hijacking: the page is long HTML, and a script only reads the scroll position, at most once per frame. Each section's start is an anchor with its depth; in between the depth is a straight line, and after The catch it counts back to 0 m (the ascent).
+- **Every decision is a pure function** in `src/lib/dive.ts`: depth from scroll, colour from depth, and what Kálmán does. His animations are never scrubbed by the scroll: a small state machine (on the ice, diving, swimming, launching, ashore) only starts an animation when the state changes, so the dive and the launch play as whole performances.
+- **Colour with contrast built in.** The water blends between colour stops in OKLab, so it stays a clean blue instead of turning muddy. A unit test checks text and accent at every metre from 0 to 564 m.
+- **The express dive.** Every gauge entry is a plain link; with JavaScript it becomes a 0.8 s dive, with Kálmán swimming at double speed, or an instant jump with reduced motion. Focus lands on the heading.
+- **The still dive.** With reduced motion, Save-Data or no JavaScript, every section gets its own water colour and a still Kálmán in a fitting pose.
+
+![The still dive on a phone: a colour and a still Kálmán per section, the gauge on its own panel](images/phase-2/dive-still-phone.png)
+
+### What went wrong, and what it taught us
+
+- **1.6 MB of penguin.** The figure drew every image it had (turntable views, drawn poses) as large PNGs. Now pages draw only what they use, as WebP at the size it is shown: the front figure is about 90 KB, and the side and swimming figures load after the page.
+- **The security policy blocks inline styles,** so per-section colours can't go in `style="…"`. They are written at build time into a small stylesheet, `/dive.css`, from the same functions.
+- **No fixed accent survives every depth.** On mid-tone water no golden orange reaches 4.5:1 against the background, so the accent (and the text) is lightened or darkened just enough per depth.
+- **The size check counted too little.** Vite writes lazy imports with backticks, which the budget script didn't recognise, so the home pages looked like 4 KB instead of 40 KB.
+- **A jump Lighthouse saw and we didn't.** CI scored the home pages 78: the page painted in the fallback layout, then the mode script switched to full and the whole dive jumped (a layout shift of 0.58, in three runs out of five). The mode is now decided by a tiny classic script in `<head>`, before the first paint, kept in step with the tested function by a unit test that runs the real file. Back to 98–99.
+- **Same specificity, wrong winner.** On a phone, Kálmán's own `height: auto` beat the stage's sizing and he spilled over the language links, so they couldn't be tapped. The e2e tests in mobile browsers caught it.
+
+### Raymond's eye
+
+Raymond's verdict after trying it: Kálmán took up too much space. He should be a guide, not take the attention away from the content. The stage went from 30rem to 18rem (22% of a phone screen instead of 30%), and the sections got shorter, about a screen each, so there is less empty water until the real content and the fish arrive.
+

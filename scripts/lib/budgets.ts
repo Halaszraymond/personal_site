@@ -41,11 +41,12 @@ export function scriptsInHtml(html: string): string[] {
 
 /**
  * The files a JavaScript chunk imports, as written in its code: `./other.js`.
- * Covers `import â€¦ from"./x.js"`, side-effect `import"./x.js"` and lazy `import("./x.js")`
- * (counted too: a page that loads it later still downloads it).
+ * Covers `import … from"./x.js"`, side-effect `import"./x.js"` and lazy `import("./x.js")`
+ * (counted too: a page that loads it later still downloads it). Quotes may be backticks:
+ * Vite writes lazy imports as import(`./x.js`).
  */
 export function importsInChunk(code: string): string[] {
-  const pattern = /(?:from|import)\s*\(?\s*["'](\.{1,2}\/[^"']+\.js)["']/g;
+  const pattern = /(?:from|import)\s*\(?\s*["'`](\.{1,2}\/[^"'`]+\.js)["'`]/g;
   return [...code.matchAll(pattern)].map((match) => match[1] ?? '');
 }
 

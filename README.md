@@ -276,6 +276,7 @@ Format per case study: one-line pitch · problem · approach · result/impact ·
   - [x] The animations (idle, bow, head-follow, dive, swim, launch), with GSAP, on a front and a side figure (change `kalman-animations`).
   - [x] Follow-up after Raymond's review: more natural animations, with follow-through, overshoot and squash and stretch, a deeper bow, a natural dive, a swim with a real stroke and a launch with a landing (change `kalman-animation-feel`).
 - [ ] **Phase 2: the dive.** All sections with depth gauge, colour gradient, fish school, and fish turning into charts. Placeholder text first.
+  - [x] The dive: the sections, scroll → depth, the depth gauge with express dive, the water colour by depth, Kálmán diving along, and the still fallback; Kálmán's images as WebP (change `dive-scroll`).
 - [ ] **Phase 3: content.** Real texts in NL/HU/EN, the 3 case studies, the "more catch" cards and a CV download. **Then go live** (§6): content complete, CI green, fallback working.
 - [ ] **Phase 4: polish, on the live site.** Tuning and verifying, not building: performance, accessibility audit, mobile testing on real devices, SEO and Open Graph, and a review of the translations.
 - [ ] **Phase 5: extras.** Live Pi sonar, colony easter egg, 404 on the ice floe, sound, the visitor's dive profile.
