@@ -21,6 +21,8 @@ import {
   SECTION_IDS,
   SECTIONS,
   STILL_POSES,
+  SWIM_TEMPO,
+  swimTempo,
   TEXT_LIGHT,
   textFor,
   WATER_STOPS,
@@ -162,12 +164,33 @@ describe('the water', () => {
   });
 });
 
+describe('swimTempo (spec: "Kálmán’s tempo follows the scroll")', () => {
+  it('"Reading": slower than at an ordinary scroll when nothing scrolls', () => {
+    expect(swimTempo(0)).toBe(SWIM_TEMPO.reading);
+    expect(swimTempo(0)).toBeLessThan(swimTempo(SWIM_TEMPO.ordinarySpeed));
+    expect(swimTempo(SWIM_TEMPO.ordinarySpeed)).toBe(1);
+  });
+
+  it('"Scrolling fast": faster, up to the top of the range', () => {
+    expect(swimTempo(2000)).toBeGreaterThan(1);
+    expect(swimTempo(SWIM_TEMPO.fastSpeed)).toBe(SWIM_TEMPO.fastest);
+    expect(swimTempo(50_000)).toBe(SWIM_TEMPO.fastest);
+  });
+
+  it('is the same scrolling up or down, and changes gradually', () => {
+    expect(swimTempo(-1200)).toBe(swimTempo(1200));
+    for (let speed = 0; speed < 4000; speed += 10) {
+      expect(Math.abs(swimTempo(speed + 10) - swimTempo(speed))).toBeLessThan(0.01);
+    }
+  });
+});
+
 describe('diveState', () => {
   /** Scrolls down through `steps` from `start`; 'finish' ends the one-shot that plays. */
   function scrollDown(start: DiveState, steps: readonly (Zone | 'finish')[]): DiveState {
     let state = start;
     for (const step of steps) {
-      state = step === 'finish' ? afterOneShot(state) : diveState(state, step, 'down');
+      state = step === 'finish' ? afterOneShot(state, 'about') : diveState(state, step, 'down');
     }
     return state;
   }
@@ -182,7 +205,7 @@ describe('diveState', () => {
     expect(diveState('onIce', 'ice', 'down')).toBe('diving');
     // The dive goes on while the visitor keeps scrolling down, into the sections below.
     expect(diveState('diving', 'about', 'down')).toBe('diving');
-    expect(afterOneShot('diving')).toBe('swimming');
+    expect(afterOneShot('diving', 'about')).toBe('swimming');
     expect(diveState('swimming', 'work', 'down')).toBe('swimming');
   });
 
@@ -195,7 +218,7 @@ describe('diveState', () => {
     expect(diveState('swimming', 'ascent', 'down')).toBe('launching');
     expect(diveState('launching', 'ascent', 'down')).toBe('launching');
     expect(diveState('launching', 'contact', 'down')).toBe('launching');
-    expect(afterOneShot('launching')).toBe('ashore');
+    expect(afterOneShot('launching', 'contact')).toBe('ashore');
     expect(diveState('ashore', 'contact', 'down')).toBe('ashore');
     expect(diveState('ashore', 'contact', 'up')).toBe('ashore');
   });
@@ -205,9 +228,16 @@ describe('diveState', () => {
     expect(diveState('swimming', 'contact', 'down')).toBe('launching');
   });
 
-  it('"Scrolling back up": back up into The ice, he stands on it again', () => {
+  it('"Scrolling back up": back up into The ice, he climbs out and stands on it again', () => {
     expect(diveState('swimming', 'work', 'up')).toBe('swimming');
-    expect(diveState('swimming', 'ice', 'up')).toBe('onIce');
+    expect(diveState('swimming', 'ice', 'up')).toBe('launching');
+    expect(diveState('launching', 'ice', 'up')).toBe('launching');
+    expect(afterOneShot('launching', 'ice')).toBe('onIce');
+  });
+
+  it('dives again from the ice after climbing out, even mid-launch', () => {
+    expect(diveState('ashore', 'ice', 'down')).toBe('diving');
+    expect(diveState('launching', 'ice', 'down')).toBe('diving');
   });
 
   it('swims again when scrolling back up from Contact into the ascent', () => {
@@ -221,8 +251,8 @@ describe('diveState', () => {
   });
 
   it('leaves the steady states alone when a one-shot finishes', () => {
-    expect(afterOneShot('swimming')).toBe('swimming');
-    expect(afterOneShot('onIce')).toBe('onIce');
+    expect(afterOneShot('swimming', 'work')).toBe('swimming');
+    expect(afterOneShot('onIce', 'ice')).toBe('onIce');
   });
 
   it('follows a whole dive down and back up', () => {
@@ -236,6 +266,6 @@ describe('diveState', () => {
       'contact',
     ]);
     expect(state).toBe('launching');
-    expect(afterOneShot(state)).toBe('ashore');
+    expect(afterOneShot(state, 'contact')).toBe('ashore');
   });
 });

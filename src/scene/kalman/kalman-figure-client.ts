@@ -66,10 +66,39 @@ export function loadDeferredImages(figure: SVGSVGElement): void {
  */
 export function applyFigure(figure: SVGSVGElement, which: Figure): void {
   for (const group of figure.querySelectorAll<SVGGElement>('[data-layers]')) {
-    group.setAttribute('display', group.dataset['figure'] === which ? 'inline' : 'none');
+    const shown = group.dataset['figure'] === which;
+    group.setAttribute('display', shown ? 'inline' : 'none');
+    // A hidden figure forgets the opacity of an earlier cross-fade, so it is solid next time.
+    if (!shown) group.removeAttribute('opacity');
   }
   // `dataset.figure` writes `data-figure`; the CSS uses it to show the right pivot markers.
   figure.dataset['figure'] = which;
+}
+
+/**
+ * Shows two figures at once during a cross-fade between them (figureFade(), kalman-flow design
+ * §2): `outgoing` stays in the pose it was last drawn in, `incoming` is the one now playing.
+ * Call after applyFigure(), which has shown only the incoming one.
+ */
+export function applyFigureFade(
+  figure: SVGSVGElement,
+  outgoing: Figure,
+  incoming: Figure,
+  fade: { readonly incoming: number; readonly outgoing: number },
+): void {
+  const group = (which: Figure) =>
+    figure.querySelector<SVGGElement>(`[data-layers][data-figure="${which}"]`);
+  const round = (value: number) => String(Math.round(value * 1000) / 1000);
+  group(outgoing)?.setAttribute('display', 'inline');
+  group(outgoing)?.setAttribute('opacity', round(fade.outgoing));
+  group(incoming)?.setAttribute('opacity', round(fade.incoming));
+  // `dataset.fade` writes `data-fade`, so the tests can see a cross-fade happen.
+  figure.dataset['fade'] = `${outgoing}>${incoming}`;
+}
+
+/** Ends a cross-fade's bookkeeping (applyFigure() has already hidden the old figure). */
+export function clearFigureFade(figure: SVGSVGElement): void {
+  delete figure.dataset['fade'];
 }
 
 /**

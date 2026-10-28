@@ -175,3 +175,14 @@ Frontend, animation and tooling terms used in this repo, in plain language. Wher
 **WebP**: an image format that is much smaller than PNG for the same look, with transparency. Kálmán's layers are built as WebP at the size they are shown at.
 
 **Deferred image**: an image whose address waits in `data-href` and is only filled in (as `href`) after the page has loaded, so it never slows down the first paint. The side and swimming figures load this way.
+
+**Transition (between animations)**: the short blend (0.35 s) with which a newly started animation takes over from wherever Kálmán is, instead of making him jump back to rest first. Like easing from one song into the next instead of stopping in between.
+
+**Figure cross-fade**: a transition between two of Kálmán's drawings (front, side, swimming): the new one fades in while the old one stays solid, then the old one fades out under the solid new one, so he is never see-through.
+
+**Holding the last pose**: a finished animation leaves Kálmán in the pose of its last keyframe (the dive ends gliding), so the next animation can flow in from there.
+
+**Glide**: the side figure lying horizontally, bill forward, exactly where the swimming figure swims; the pose in which the dive hands over to the swim and the swim to the launch.
+
+**Tempo**: how fast an animation plays compared to how it was made (1 = as made). His swim's tempo follows the visitor's scroll speed; GSAP calls it `timeScale`.
+

@@ -228,25 +228,29 @@
     }
   },
   {
-    "name": "launchWindUp",
-    "label": "Launch (wind-up)",
+    "name": "launchTurn",
+    "label": "Launch turn",
     "figure": "side",
     "layers": {
       "body": {
-        "offset": [0, 25],
-        "stretch": 0.85
+        "rotate": -20,
+        "offset": [-40, 120],
+        "stretch": 1.12
       },
       "head": {
-        "rotate": 5
+        "rotate": 20
       },
       "flipper": {
-        "rotate": -20
+        "rotate": -5
+      },
+      "tail": {
+        "rotate": -5
       },
       "footBack": {
-        "plant": 1
+        "rotate": 15
       },
       "footFront": {
-        "plant": 1
+        "rotate": 15
       }
     }
   },
@@ -415,6 +419,32 @@
       },
       "footFront": {
         "plant": 1
+      }
+    }
+  },
+  {
+    "name": "glide",
+    "label": "Glide",
+    "figure": "side",
+    "layers": {
+      "body": {
+        "rotate": -90,
+        "offset": [134, -78]
+      },
+      "head": {
+        "rotate": 60
+      },
+      "flipper": {
+        "rotate": 5
+      },
+      "tail": {
+        "rotate": 10
+      },
+      "footBack": {
+        "rotate": 20
+      },
+      "footFront": {
+        "rotate": 20
       }
     }
   },

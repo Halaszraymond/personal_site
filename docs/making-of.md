@@ -264,3 +264,32 @@ Phase 2 is split into small changes; the first, `dive-scroll`, lays the foundati
 
 Raymond's verdict after trying it: Kálmán took up too much space. He should be a guide, not take the attention away from the content. The stage went from 30rem to 18rem (22% of a phone screen instead of 30%), and the sections got shorter, about a screen each, so there is less empty water until the real content and the fish arrive.
 
+## 2026-10-28 · Kálmán flows: one penguin instead of separate clips
+
+### The plan
+
+Raymond, after trying the dive: the dive, the swim and the launch looked like separate animations. They were: every animation started and ended standing at rest, the player reset him between them, and switching between his front, side and swimming drawings happened in one frame. Raymond chose to merge the dive as a foundation and fix this in its own change, `kalman-flow`, built overnight while he slept, with his trust to make the choices.
+
+### How it works
+
+- **Transitions.** The player remembers the pose it drew last. A new animation starts with a 0.35 s blend from there (same drawing) or a cross-fade (another drawing), with one drawing always solid.
+- **Holding instead of resetting.** A finished animation stays in its last pose. The dive now ends in a new pose, the *glide*: lying horizontally where the swimming figure swims. The launch starts from that glide and swoops up out of the water instead of crouching on the ice first.
+- **Climbing out.** Scrolling back up to The ice, he launches out of the water onto it instead of cutting from swimming to standing.
+- **A first bit of personality.** His swimming tempo follows the scroll: lazy (0.7) while the visitor reads, up to 1.8 when they scroll fast, always gliding from one tempo to the next.
+
+![The dive handing over to the swim, close up: the side drawing in its glide and the swimming drawing cross-fade in the same place](images/phase-2/kalman-flow-dive-to-swim.png)
+
+### What went wrong, and what it taught us
+
+- **Film strips earn their keep again.** A script photographed Kálmán's stage every 80 ms on the real page. The first strips showed problems no test had caught.
+- **A smaller penguin.** The swimming drawing turned out smaller than the side drawing, so he shrank at the hand-over. The cut script now places the swimming figure 15 % larger.
+- **Two penguins.** Matching the whole outlines left the side figure's belly 100 units below the swimming one, so the halfway frame of the cross-fade showed two penguins. Lining up the torso height and the bill fixed it. The launch now also holds the glide for the length of the cross-fade, because it was already turning upward while the swim faded out.
+- **A zombie animation.** In the launch, the swim kept drawing on top. The tempo glide animated the swim's speed, and in GSAP changing a stopped animation's speed wakes it up again. Stopping an animation now stops its tempo glide first.
+- **Measuring changes what you measure.** Playwright's element screenshot scrolls the element into view, which the dive read as the visitor scrolling down, so he dived on his own. The strips now photograph a fixed area of the page.
+
+![The swim handing over to the launch: the cross-fade happens while both lie in the glide, then he turns up and rises](images/phase-2/kalman-flow-swim-to-launch.png)
+
+### Still to judge
+
+The length of the transitions, the glide, the climb-out and the tempo range are starting points for Raymond to judge in the browser.
+
