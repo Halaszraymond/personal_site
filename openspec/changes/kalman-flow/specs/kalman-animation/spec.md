@@ -55,14 +55,14 @@ The dive SHALL be a little goofy but natural: he leans forward with his flippers
 
 #### Scenario: Levelling out
 - **WHEN** the dive has finished
-- **THEN** the body lies horizontally, head forward, with its middle within a few units of the swimming figure's body at rest
+- **THEN** the body lies horizontally, head forward, with its torso at the height of the swimming figure's body and its bill where the swimming figure's bill is
 
 ### Requirement: The launch is professional, the landing goofy
 The launch SHALL start from swimming: from a horizontal glide he swoops upward under the water until he is almost upright, then rises like a rocket with his flippers pressed to his body and stretched, and flies out at an angle with his feet trailing. The landing SHALL be goofy, as in Raymond's stills: he lands on his belly, slides forward a little, pushes himself up with his feet and flippers on bent knees, wobbles as if he almost loses his balance, and straightens up to rest.
 
 #### Scenario: From the swim
 - **WHEN** the launch is held at its start
-- **THEN** the body lies horizontally in the glide pose, where the swimming figure swims
+- **THEN** the body lies horizontally in the glide pose, where the swimming figure swims, and stays there until the cross-fade from the swim is over
 
 #### Scenario: Rising
 - **WHEN** the launch is held halfway up

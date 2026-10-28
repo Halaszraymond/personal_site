@@ -4,7 +4,7 @@
 
 See proposal.md (Why). The player (`kalman-player.ts`) plays one animation at a time: `play()` calls `stop()`, which puts the figure that was playing back at rest, and a finished animation also ends with `stop()`. Each animation therefore starts and ends at rest, and switching figures (`applyFigure()`) shows one `[data-layers]` group and hides the others in one step. The dive page drives the player from `diveState()`; its swim loop always runs at the same speed.
 
-Geometry (from `resolvePose()` on the repo's rigs): the swimming figure's body at rest is centred at (801, 760) and 1247 units long; the side body turned −90° (lying, head left) is centred at (782, 838) and 1011 long. With an offset of (20, −78) and a stretch of 1.12 the side figure lies where the swimming figure swims, so the two can cross-fade without a jump.
+Geometry (from `resolvePose()` on the repo's rigs): the swimming figure was drawn smaller than the side figure (its body 359 units thick against the side body's 481), so a hand-over between them would make him shrink. The cut script now places the swimming figure 15 % larger (`SWIM.scale`), and the side figure lying on his front (body −90°) lines up with it when its torso is at the swimming body's height and its bill where the swimming figure's bill is (the film strips showed that matching the whole outlines left the bellies 100 units apart).
 
 ## Goals / Non-Goals
 
@@ -29,13 +29,13 @@ Without a last pose (the first animation) or when scrubbing, there is no transit
 - *Alternative:* designing every animation to start and end at rest. Rejected: that is what makes them look like separate clips.
 
 ### 2. Cross-fading figures without seeing through
-Two drawings at 50 % each let the background show through (kalman-animation-feel). The rule from the drawn bow applies: whichever drawing lies underneath stays solid while the one on top fades. `figureFade(amount, incomingOnTop)` gives both opacities: if the incoming figure is drawn on top it fades in over the solid old one; if it lies underneath it is solid from the start and the old one fades out over it. The figures' DOM order (front, side, swim) decides which is on top.
+Two drawings at 50 % each let the background show through (kalman-animation-feel). The rule from the drawn bow applies: whichever drawing lies underneath stays solid while the one on top fades. `figureFade(amount)` gives both opacities with the drawn bow's `crossFade()`: the incoming figure fades in during the first half while the old one stays solid, and the old one fades out during the second half while the new one is solid. At every moment one of the two is fully opaque, whichever is drawn on top, so he is never see-through.
 
 ### 3. Finishing holds the last pose
 A finished non-looping animation leaves the figure in its last frame (its last keyframe's pose once the lags have settled) and clears `data-animation`; the next `play()` transitions from there. The bow and the launch end at rest, so they look the same as before; the dive now ends gliding.
 
 ### 4. The dive ends gliding, the launch starts from a glide
-A new side pose `glide`: body −90°, offset (20, −78), stretch 1.12, the head turned up so the bill points forward, flipper back along the body, feet and tail trailing. The dive's last keyframe becomes `glide` instead of `rest`, reached from the face-first entry as he levels out; the swim then cross-fades in at the same place. The launch's first keyframes become `glide` → `launchTurn` (body almost upright below the surface, stretched: swooping up) → `launchRise`; the wind-up crouch on the ice goes.
+A new side pose `glide`: body −90°, offset (134, −78), the head turned up 60° so the bill points forward, the flipper laid along the body, feet and tail trailing. It lies where the (rescaled) swimming figure swims, measured by the torso's height and the bill (unit-tested). The dive's last keyframe becomes `glide` instead of `rest`, reached from the face-first entry as he levels out; the swim then cross-fades in at the same place. The launch starts by holding `glide` for 0.3 s, so the cross-fade from the swim happens while both drawings lie the same way, then `launchTurn` (body almost upright below the surface, stretched: swooping up) → `launchRise`; the wind-up crouch on the ice goes.
 
 ### 5. The states
 `afterOneShot(state, zone)`: a launch that ends in The ice leaves him `onIce`, elsewhere `ashore`. `diveState()`: scrolling up into The ice from under water (`swimming`, `diving` cut short is still `onIce`) starts `launching`, so he climbs out; scrolling down from The ice dives from `onIce` and from `ashore` alike.
@@ -52,6 +52,7 @@ A scratch Playwright script scrolls the real dive page and photographs the stage
 - [Cross-fading front ↔ side looks like a dissolve, not a turn] → Short and accepted for now; a drawn ¾ view can replace it later.
 - [Changing the dive and launch changes their animation snapshots] → New baselines via "Update visual baselines", checked by eye.
 - [Tempo changes on every scroll frame cost work] → One GSAP tween per frame at most; measured in the e2e run, no layout reads.
+- [A tempo glide wakes up a stopped animation] → Found in the film strips: changing a killed GSAP tween's `timeScale` restarts it, so two animations drew at once. Stopping an animation now kills its tempo glide first.
 
 ## Migration Plan
 

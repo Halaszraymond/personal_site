@@ -362,6 +362,46 @@ export function crossFade(opacity: number): { readonly drawing: number; readonly
   return { drawing: Math.min(1, 2 * opacity), layers: Math.min(1, 2 * (1 - opacity)) };
 }
 
+// ---------------------------------------------------------------------------------------
+// Transitions: one animation flowing into the next (kalman-flow design §1–§2)
+// ---------------------------------------------------------------------------------------
+
+/** How long a transition into a newly started animation takes, in seconds. */
+export const TRANSITION = 0.35;
+
+/**
+ * The pose `elapsed` seconds into a transition of `length` seconds: from `from` (where the
+ * figure was when the new animation started) into `target` (the new animation's pose at this
+ * moment, which keeps moving), through the easing `ease`. At the end it is exactly `target`.
+ * Both poses must be of the same figure; between figures, figureFade() cross-fades instead.
+ */
+export function transitionPose(
+  from: Pose,
+  target: Pose,
+  elapsed: number,
+  length: number,
+  ease: (progress: number) => number,
+): Pose {
+  if (length <= 0 || elapsed >= length) return target;
+  const progress = Math.max(0, elapsed / length);
+  return blendPoses(from, target, ease(progress), target.name);
+}
+
+/**
+ * The opacities of two figures `amount` of the way through a cross-fade between them (0 = only
+ * the old one, 1 = only the new one). The same rule as the drawn bow (crossFade()): the new
+ * figure fades in while the old one stays solid, then the old one fades out while the new one is
+ * solid, so at every moment one of them is fully opaque, whichever is drawn on top.
+ */
+export function figureFade(amount: number): {
+  readonly incoming: number;
+  readonly outgoing: number;
+} {
+  const clamped = Math.min(1, Math.max(0, amount));
+  const { drawing, layers } = crossFade(clamped);
+  return { incoming: drawing, outgoing: layers };
+}
+
 /** 1 inside `[from, to]`, a straight ramp over `fade` seconds on both sides, 0 further out. */
 function spanOpacity(time: number, from: number, to: number, fade: number): number {
   if (time >= from && time <= to) return 1;

@@ -174,12 +174,59 @@ test('"The ascent": Kálmán launches and ends on the ice at Contact', async ({ 
   await expect(stageFigure(page)).toHaveAttribute('data-dive-state', 'ashore', { timeout: 8000 });
 });
 
-test('"Scrolling back up": back at The ice, Kálmán stands on it', async ({ page }) => {
+test('"Scrolling back up": Kálmán climbs out and stands on The ice', async ({ page }) => {
   await page.goto('/en/#work');
   await expect(stageFigure(page)).toHaveAttribute('data-dive-state', 'swimming');
   await scrollStepwise(page, 0);
-  await expect(stageFigure(page)).toHaveAttribute('data-dive-state', 'onIce');
+  await expect(stageFigure(page)).toHaveAttribute('data-dive-state', 'launching');
+  await expect(stageFigure(page)).toHaveAttribute('data-dive-state', 'onIce', { timeout: 8000 });
   await expect(stageFigure(page)).toHaveAttribute('data-animation', 'idle');
+});
+
+/** The figures (front, side, swim) the stage shows right now. */
+const shownFigures = (page: Page) =>
+  stageFigure(page)
+    .locator('[data-layers]:not([display="none"])')
+    .evaluateAll((groups) => groups.map((g) => g.getAttribute('data-figure')));
+
+test('"Another figure": the dive cross-fades into the swim, never see-through', async ({
+  page,
+}) => {
+  await page.goto('/en/');
+  await expect(stageFigure(page)).toHaveAttribute('data-dive-state', 'onIce');
+  await page.evaluate(() => window.scrollBy(0, 300));
+  // During the hand-over both figures are drawn, one of them fully opaque.
+  await expect(stageFigure(page)).toHaveAttribute('data-fade', 'side>swim', { timeout: 8000 });
+  const during = await stageFigure(page)
+    .locator('[data-layers]:not([display="none"])')
+    .evaluateAll((groups) => groups.map((g) => Number(g.getAttribute('opacity') ?? '1')));
+  expect(during.length).toBe(2);
+  expect(Math.max(...during)).toBe(1);
+  // Afterwards only the swimming figure, solid.
+  await expect(stageFigure(page)).not.toHaveAttribute('data-fade', /.+/);
+  expect(await shownFigures(page)).toEqual(['swim']);
+});
+
+test('"Reading": Kálmán swims more slowly while the visitor reads', async ({ page }) => {
+  await page.goto('/en/#work');
+  await expect(stageFigure(page)).toHaveAttribute('data-animation', 'swim');
+  // A little scroll sets the tempo going; then nothing scrolls, so he slows to the reading tempo.
+  await page.evaluate(() => window.scrollBy(0, 40));
+  await page.waitForTimeout(1200);
+  const clockAdvance = () =>
+    page.evaluate(async () => {
+      const figure = document.querySelector<SVGSVGElement>(
+        '[data-dive-stage] [data-kalman-figure]',
+      );
+      const read = () => Number(figure?.dataset['time'] ?? 0);
+      // Wait for the start of a loop round, so the clock doesn't wrap while it is measured.
+      while (read() > 1) await new Promise((resolve) => requestAnimationFrame(resolve));
+      const start = read();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return read() - start;
+    });
+  // One real second moves the swim's clock about 0.7 s, clearly less than at normal speed.
+  expect(await clockAdvance()).toBeLessThan(0.85);
 });
 
 test('"The dive without the turntable": no turntable views or drawn poses', async ({ page }) => {

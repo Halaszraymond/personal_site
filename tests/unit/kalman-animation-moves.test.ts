@@ -66,6 +66,49 @@ const stretch = (layers: Readonly<Record<string, LayerPose>>, layer: string) =>
 const offset = (layers: Readonly<Record<string, LayerPose>>, layer: string) =>
   layers[layer]?.offset ?? [0, 0];
 
+/**
+ * Where a figure lies on the artboard in `layers`: the front of its whole outline (the bill, the
+ * smallest x) and the vertical middle of its body (the torso). The glide must match the swimming
+ * figure on both, so the cross-fade between them never shows two penguins.
+ */
+function placement(
+  figure: Figure,
+  layers: Readonly<Record<string, LayerPose>>,
+): { front: number; bodyMiddle: number } {
+  const rig = rigOf(figure);
+  let front = Infinity;
+  let top = Infinity;
+  let bottom = -Infinity;
+  for (const layer of resolvePose(rig, { name: 'x', label: 'x', figure, layers }, 'goofy')) {
+    if (!layer.visible) continue;
+    const [width, height] = rig.layers.find((l) => l.name === layer.name)?.size ?? [0, 0];
+    for (const corner of [
+      [0, 0],
+      [width, 0],
+      [0, height],
+      [width, height],
+    ] as const) {
+      const [x, y] = applyToPoint(layer.matrix, corner);
+      front = Math.min(front, x);
+      if (layer.name === 'body') {
+        top = Math.min(top, y);
+        bottom = Math.max(bottom, y);
+      }
+    }
+  }
+  return { front, bodyMiddle: (top + bottom) / 2 };
+}
+
+/** Where the swimming figure lies at rest: where the glide must lie. */
+const SWIMMING = placement('swim', {});
+
+/** True when `layers` of the side figure lie where the swimming figure swims. */
+function expectWhereHeSwims(layers: Readonly<Record<string, LayerPose>>): void {
+  const side = placement('side', layers);
+  expect(Math.abs(side.bodyMiddle - SWIMMING.bodyMiddle)).toBeLessThanOrEqual(10);
+  expect(Math.abs(side.front - SWIMMING.front)).toBeLessThanOrEqual(40);
+}
+
 /** The moment of an animation's keyframe that uses `pose` (the first one, or the n-th). */
 function keyframeAt(name: string, pose: string, nth = 0): number {
   const times = animation(name)
@@ -142,6 +185,13 @@ describe('the dive (spec: "The dive moves like a dive")', () => {
     expect(rotate(layers, 'tail')).toBeLessThan(target?.['tail']?.rotate ?? 0);
     expect(rotate(layers, 'footFront')).toBeLessThan(target?.['footFront']?.rotate ?? 0);
   });
+
+  it('levels out into a glide where the swimming figure swims (scenario "Levelling out")', () => {
+    const end = at('dive', playLength(animation('dive')));
+    // Horizontal, head forward (−90° lies him on his front with the bill to the left).
+    expect(rotate(end, 'body')).toBeCloseTo(-90, 0);
+    expectWhereHeSwims(end);
+  });
 });
 
 describe('the swim (spec: "The swim moves like a stroke")', () => {
@@ -183,6 +233,21 @@ describe('the swim (spec: "The swim moves like a stroke")', () => {
 
 describe('the launch (spec: "The launch is professional, the landing goofy")', () => {
   const launch = animation('launch');
+
+  it('starts from the glide, where the swimming figure swims (scenario "From the swim")', () => {
+    const start = at('launch', 0);
+    expect(rotate(start, 'body')).toBeCloseTo(-90, 0);
+    expectWhereHeSwims(start);
+  });
+
+  it('swoops up almost upright under the water before he rises', () => {
+    const turn = at('launch', keyframeAt('launch', 'launchTurn'));
+    expect(Math.abs(rotate(turn, 'body'))).toBeLessThan(45);
+    // Lower than when he rises: still under the surface.
+    expect(offset(turn, 'body')[1]).toBeGreaterThan(
+      offset(at('launch', keyframeAt('launch', 'launchRise')), 'body')[1],
+    );
+  });
 
   it('rises stretched, with the flipper close to the body (scenario "Rising")', () => {
     const layers = at('launch', keyframeAt('launch', 'launchRise'));

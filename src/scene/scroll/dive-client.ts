@@ -39,6 +39,8 @@ const isFull = () => root.dataset['renderMode'] === 'full';
 let layout: DiveLayout | undefined;
 let anchors: Anchor[] = [];
 let lastProbe: number | undefined;
+// When the last frame was drawn (ms), for the scroll speed that sets Kálmán's swim tempo.
+let lastFrameTime: number | undefined;
 let lastCurrent: SectionId | undefined;
 let lastColour: string | undefined;
 let framePending = false;
@@ -77,7 +79,12 @@ function update(): void {
   const { probe, depth, zone } = position;
   const direction: Direction =
     lastProbe === undefined || probe === lastProbe ? 'none' : probe > lastProbe ? 'down' : 'up';
+  // The scroll speed in px per second, from how far the probe moved since the last frame.
+  const now = performance.now();
+  const seconds = lastFrameTime === undefined ? 0 : (now - lastFrameTime) / 1000;
+  const speed = seconds > 0 && lastProbe !== undefined ? Math.abs(probe - lastProbe) / seconds : 0;
   lastProbe = probe;
+  lastFrameTime = now;
 
   // The gauge: the depth as a number and as the marker's place on the scale.
   if (depthValue) depthValue.textContent = String(Math.round(depth));
@@ -104,7 +111,7 @@ function update(): void {
     }
   }
 
-  scene?.follow(zone, direction);
+  scene?.follow(zone, direction, speed);
 }
 
 /** Asks for one update in the next frame, however many scroll events arrive before it. */

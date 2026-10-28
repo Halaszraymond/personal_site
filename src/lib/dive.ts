@@ -258,9 +258,15 @@ export function diveState(previous: DiveState, zone: Zone, direction: Direction)
   const up = direction === 'up';
   switch (zone) {
     case 'ice':
-      // Scrolling back up into The ice puts him back on it; the first scroll down dives.
-      if (up) return 'onIce';
-      return previous === 'onIce' ? 'diving' : previous;
+      if (up) {
+        // Back up into The ice from under water, he climbs out onto it (the launch); a dive
+        // still playing is cut short, back onto the ice.
+        return previous === 'swimming' || previous === 'launching' ? 'launching' : 'onIce';
+      }
+      // Scrolling down from the ice dives, also when he has just climbed out.
+      return previous === 'onIce' || previous === 'ashore' || previous === 'launching'
+        ? 'diving'
+        : previous;
     case 'contact':
       // At Contact he ends on the ice; arriving any other way (an express dive) launches first.
       return previous === 'ashore' || previous === 'launching' ? previous : 'launching';
@@ -277,9 +283,43 @@ export function diveState(previous: DiveState, zone: Zone, direction: Direction)
   }
 }
 
-/** The state after a one-shot animation has finished: the dive becomes the swim, the launch the rest. */
-export function afterOneShot(state: DiveState): DiveState {
+/**
+ * The state after a one-shot animation has finished in `zone`: the dive becomes the swim, and
+ * the launch leaves him standing: on The ice when he climbed back out there, ashore elsewhere.
+ */
+export function afterOneShot(state: DiveState, zone: Zone): DiveState {
   if (state === 'diving') return 'swimming';
-  if (state === 'launching') return 'ashore';
+  if (state === 'launching') return zone === 'ice' ? 'onIce' : 'ashore';
   return state;
+}
+
+// -------------------------------------------------------------------------------------------
+// Personality: the swim follows the scroll (kalman-flow design §6)
+// -------------------------------------------------------------------------------------------
+
+/** The swim's tempo range: lazy while the visitor reads, a burst when they fly. */
+export const SWIM_TEMPO = {
+  /** While nothing scrolls. */
+  reading: 0.7,
+  /** At an ordinary scroll. */
+  ordinary: 1,
+  /** The fastest he swims. */
+  fastest: 1.8,
+  /** An ordinary scroll speed, in px per second. */
+  ordinarySpeed: 800,
+  /** The scroll speed at which he reaches his fastest, in px per second. */
+  fastSpeed: 3000,
+} as const;
+
+/**
+ * The swim's tempo (1 = as animated) at a scroll speed in px per second: straight lines from
+ * reading (standing still) to ordinary to fastest, and no faster beyond that. Continuous, so a
+ * small change of speed is a small change of tempo.
+ */
+export function swimTempo(speed: number): number {
+  const { reading, ordinary, fastest, ordinarySpeed, fastSpeed } = SWIM_TEMPO;
+  const pace = Math.abs(speed);
+  if (pace <= ordinarySpeed) return reading + (ordinary - reading) * (pace / ordinarySpeed);
+  const t = Math.min(1, (pace - ordinarySpeed) / (fastSpeed - ordinarySpeed));
+  return ordinary + (fastest - ordinary) * t;
 }

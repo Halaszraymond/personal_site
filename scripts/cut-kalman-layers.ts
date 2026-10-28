@@ -233,7 +233,8 @@ const SIDE = {
 /**
  * The swimming figure (kalman-animation-feel design §13): Kálmán drawn horizontally, its
  * professional edit, and an edit without the near flipper. Placed with its middle in the middle
- * of the stage, at the same scale as the other figures.
+ * of the stage, a little larger than the other figures (`scale`): Gemini drew him smaller in
+ * the swim image, and the dive's glide must cross-fade into him without shrinking (kalman-flow).
  */
 const SWIM = {
   goofy: `${DESIGN}/swim-goofy.png`,
@@ -242,6 +243,8 @@ const SWIM = {
   /** The middle of his body in the image, and where it lands on the artboard. */
   middle: [510, 350] as const,
   stage: [800, 760] as const,
+  /** How much larger than the other figures he is placed. */
+  scale: 1.15,
 };
 const SWIM_CUT: SwimCutSettings = {
   glasses: [135, 230, 330, 305],
@@ -602,7 +605,11 @@ const swimRegionsByName = swimRegions(
   polygonCoverage(SWIM_FLIPPER, swim.goofy.width, swim.goofy.height),
   swim.goofy.width,
 );
-const swimPlacement: Placement = { scale: PLACEMENT.scale, from: SWIM.middle, to: SWIM.stage };
+const swimPlacement: Placement = {
+  scale: PLACEMENT.scale * SWIM.scale,
+  from: SWIM.middle,
+  to: SWIM.stage,
+};
 mkdirSync(SWIM_OUT, { recursive: true });
 const swimLayers = [];
 for (const layer of SWIM_LAYERS) {

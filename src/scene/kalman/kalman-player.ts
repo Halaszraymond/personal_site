@@ -6,6 +6,12 @@
  * that time from the keyframes in animations.json, and `applyPose()` draws it. GSAP also gives
  * the easing curves (`gsap.parseEase`) and the smooth pointer following (`gsap.quickTo`).
  *
+ * Animations flow into each other (kalman-flow design §1–§3): the player remembers the pose it
+ * last drew, and a newly started animation begins with a short transition from there, a blend on
+ * the same figure (`transitionPose()`) or a cross-fade between figures (`figureFade()`). A
+ * finished animation holds its last pose for the next one to pick up. Scrubbing never
+ * transitions, so a held moment is always exact.
+ *
  * The figure says what it is doing: `data-animation` (the playing animation, if any) and
  * `data-time` (seconds into it), so the preview and the tests can read the state.
  */
@@ -13,9 +19,12 @@ import { gsap } from 'gsap';
 import {
   drawnFrame,
   eyeShift,
+  figureFade,
   followAngles,
   playLength,
   samplePose,
+  TRANSITION,
+  transitionPose,
   type Animation,
   type EaseOf,
 } from '../../lib/kalman-animation';
@@ -28,7 +37,13 @@ import {
   type Pair,
   type Pose,
 } from '../../lib/kalman-rig';
-import { applyDrawn, applyFigure, applyPose } from './kalman-figure-client';
+import {
+  applyDrawn,
+  applyFigure,
+  applyFigureFade,
+  applyPose,
+  clearFigureFade,
+} from './kalman-figure-client';
 import { poseNamed, posesFor, REPO_ANIMATIONS, REPO_RIGS } from './repo-rig';
 
 /** GSAP's own curves for the easing names in animations.json. */
@@ -42,23 +57,30 @@ const HEAD_LAG = 0.3;
 const EYES_LAG = 0.15;
 /** The body is slower than the head: it turns along last. */
 const BODY_LAG = 0.5;
+/** How long a change of tempo takes to glide in, in seconds: never a jerk. */
+const TEMPO_GLIDE = 0.5;
 /** The layers that hold the pupils (goofy and professional); each moves only if the rig has it. */
 const PUPIL_LAYERS = ['pupils', 'pupilsProfessional'] as const;
 
 /** What the player can do; created once per figure with `createPlayer()`. */
 export interface Player {
   /**
-   * Plays an animation from the start; stops the one that was playing. `speed` above 1 plays it
-   * faster (the dive's express dive plays at double speed).
+   * Plays an animation from the start, flowing in from the pose the figure is in; stops the one
+   * that was playing. `speed` above 1 plays it faster (the express dive plays at double speed).
    */
   play(name: string, speed?: number): void;
   /** Stops whatever plays and puts the current figure at rest. */
   stop(): void;
+  /**
+   * Changes the playing animation's tempo to `factor` times its speed (1 = as played), gliding
+   * there instead of jumping. Starting another animation resets it.
+   */
+  tempo(factor: number): void;
   /** Holds the current (or the named) animation still at `progress` (0 = start, 1 = end). */
   scrub(progress: number, name?: string): void;
   /** The animation that is playing or held, if any. */
   current(): Animation | undefined;
-  /** Called when a non-looping animation has finished. */
+  /** Called when a non-looping animation has finished; the figure holds its last pose. */
   onFinish(listener: (animation: Animation) => void): void;
   /** Called on every drawn frame, with the animation and the time in seconds. */
   onFrame(listener: (animation: Animation, time: number) => void): void;
@@ -73,6 +95,12 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   let playing: Animation | undefined;
   let tween: gsap.core.Tween | undefined;
   let pausedByHiddenTab = false;
+  // What was drawn last (figure and pose): where the next animation flows in from.
+  let last: { figure: Figure; pose: Pose } | undefined;
+  // The transition into the playing animation, while it lasts: where it started from.
+  let transitionFrom: { figure: Figure; pose: Pose } | undefined;
+  // The speed the playing animation was started at (an express dive plays at 2).
+  let baseSpeed = 1;
   const finishListeners: ((animation: Animation) => void)[] = [];
   const frameListeners: ((animation: Animation, time: number) => void)[] = [];
   const clock = { time: 0 };
@@ -81,30 +109,59 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   function draw(animation: Animation, time: number): void {
     const rig = REPO_RIGS[animation.figure];
     // Clamped, because an overshooting easing may ask a layer for a little more than its range.
-    const pose = clampToRig(
-      samplePose(animation, posesByName(animation.figure), time, easeOf),
-      rig,
-    );
+    let pose = clampToRig(samplePose(animation, posesByName(animation.figure), time, easeOf), rig);
+    const from = transitionFrom;
+    const inTransition = from !== undefined && time < TRANSITION;
+    if (inTransition && from.figure === animation.figure) {
+      // The same figure: blend from where he was into the animation, which is already moving.
+      pose = clampToRig(
+        transitionPose(from.pose, pose, time, TRANSITION, easeOf('sine.inOut')),
+        rig,
+      );
+    }
     applyFigure(figure, animation.figure);
     applyPose(figure, rig, pose, moodOf());
     applyDrawn(figure, animation.figure, drawnFrame(animation, time), moodOf());
+    if (inTransition && from.figure !== animation.figure) {
+      // Another figure: the old one stays in its last pose while the two cross-fade.
+      const amount = easeOf('sine.inOut')(time / TRANSITION);
+      applyFigureFade(figure, from.figure, animation.figure, figureFade(amount));
+    } else {
+      clearFigureFade(figure);
+    }
+    if (!inTransition) transitionFrom = undefined;
+    last = { figure: animation.figure, pose };
     figure.dataset['animation'] = animation.name;
     figure.dataset['time'] = time.toFixed(2);
     for (const listener of frameListeners) listener(animation, time);
   }
 
-  /** Stops the tween and head-follow, and puts the figure that was playing at rest. */
-  function stop(): void {
+  /** Stops the tween and head-follow, and leaves the figure as it was last drawn. */
+  function halt(): void {
+    // Kill a tempo glide on the tween first: changing a killed tween's timeScale would wake it
+    // up again, and two animations would draw on top of each other.
+    if (tween !== undefined) gsap.killTweensOf(tween);
     tween?.kill();
     tween = undefined;
     stopFollowing();
-    if (playing !== undefined) {
-      applyPose(figure, REPO_RIGS[playing.figure], poseNamed('rest', playing.figure), moodOf());
-      applyDrawn(figure, playing.figure, undefined, moodOf());
-    }
     playing = undefined;
+    transitionFrom = undefined;
     delete figure.dataset['animation'];
     delete figure.dataset['time'];
+  }
+
+  /** Stops whatever plays and puts the figure that was playing at rest. */
+  function stop(): void {
+    const was = playing;
+    halt();
+    if (was !== undefined) {
+      const rest = poseNamed('rest', was.figure);
+      applyFigure(figure, was.figure);
+      clearFigureFade(figure);
+      applyPose(figure, REPO_RIGS[was.figure], rest, moodOf());
+      applyDrawn(figure, was.figure, undefined, moodOf());
+      last = { figure: was.figure, pose: rest };
+    }
   }
 
   /** A paused or playing tween of the clock over `animation`, drawing every frame. */
@@ -119,7 +176,9 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
       repeat: animation.loop ? -1 : 0,
       onUpdate: () => draw(animation, clock.time),
       onComplete: () => {
-        stop();
+        // The figure holds its last frame (the last keyframe's pose), for the next animation
+        // to flow in from; it doesn't jump back to rest.
+        halt();
         for (const listener of finishListeners) listener(animation);
       },
     });
@@ -170,7 +229,9 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
       },
     };
     // Clamped, so neither pupil layer goes past its own limit.
-    applyPose(figure, frontRig, clampToRig(pose, frontRig), moodOf());
+    const clamped = clampToRig(pose, frontRig);
+    applyPose(figure, frontRig, clamped, moodOf());
+    last = { figure: 'front', pose: clamped };
   };
   // `quickTo` makes one reusable tween: calling it with a new value glides there in HEAD_LAG s.
   const turnHeadTo = gsap.quickTo(head, 'rotate', {
@@ -270,7 +331,11 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
   return {
     play(name, speed = 1) {
       const animation = animationNamed(name);
-      stop();
+      // Where the figure is now is where the new animation flows in from.
+      const from = last;
+      halt();
+      transitionFrom = from;
+      baseSpeed = speed;
       playing = animation;
       if (animation.follow === 'head') {
         figure.dataset['animation'] = animation.name;
@@ -283,6 +348,16 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
       draw(animation, 0);
     },
     stop,
+    tempo(factor) {
+      if (tween === undefined) return;
+      // GSAP can tween a tween's own `timeScale`, so the speed glides to the new tempo.
+      gsap.to(tween, {
+        timeScale: baseSpeed * factor,
+        duration: TEMPO_GLIDE,
+        ease: 'sine.inOut',
+        overwrite: true,
+      });
+    },
     scrub(progress, name) {
       const animation = name === undefined ? playing : animationNamed(name);
       if (animation === undefined || animation.follow === 'head') return;
@@ -291,6 +366,8 @@ export function createPlayer(figure: SVGSVGElement, moodOf: () => Mood): Player 
         playing = animation;
         tween = tweenFor(animation, true);
       }
+      // A held moment is exact: no transition into it.
+      transitionFrom = undefined;
       tween.pause();
       pausedByHiddenTab = false;
       // Setting the progress renders that moment, which calls onUpdate and so draws it.

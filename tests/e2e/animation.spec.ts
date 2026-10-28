@@ -93,24 +93,27 @@ test('the scrub slider holds a moment still and draws it', async ({ page }) => {
   await expect(body).not.toHaveAttribute('transform', /^matrix\(1 0 0 1 /);
 });
 
-test('lagging layers settle: the dive only ends once its tail is at rest', async ({ page }) => {
+test('lagging layers settle: the dive only ends once its head is in its last pose', async ({
+  page,
+}) => {
   await page.getByRole('switch', { name: /Idle when nothing else plays/ }).uncheck();
-  const tail = page.locator('[data-layers][data-figure="side"] [data-layer="tail"]');
-  const restTail = await tail.getAttribute('transform');
+  // The head lags behind the body and turns from the entry (50°) to the glide (60°); the tail
+  // lags more, but turns the same in both, so it would show nothing.
+  const head = page.locator('[data-layers][data-figure="side"] [data-layer="head"]');
   const lastKeyframe = animations.find((a) => a.name === 'dive')?.keyframes.at(-1)?.at ?? 0;
   await page.getByRole('button', { name: 'Play dive' }).click();
 
-  // The slider runs to the play length: past the last keyframe, by the tail's lag.
+  // The slider runs to the play length: past the last keyframe, by the largest lag.
   const end = Number(await scrub(page).getAttribute('max'));
   expect(end).toBeGreaterThan(lastKeyframe);
-  // At the last keyframe the body is at rest, but the tail is still catching up...
-  await scrub(page).fill(String(lastKeyframe));
-  await expect(figure(page)).toHaveAttribute('data-time', lastKeyframe.toFixed(2));
-  expect(await tail.getAttribute('transform')).not.toBe(restTail);
-  // ...and only at the end of the play length is it at rest too.
+  // Where the head ends up: the dive's last pose (the glide), once everything has settled.
   await scrub(page).fill(String(end));
   await expect(figure(page)).toHaveAttribute('data-time', end.toFixed(2));
-  expect(await tail.getAttribute('transform')).toBe(restTail);
+  const settled = await head.getAttribute('transform');
+  // At the last keyframe the body is there, but the head is still catching up.
+  await scrub(page).fill(String(lastKeyframe));
+  await expect(figure(page)).toHaveAttribute('data-time', lastKeyframe.toFixed(2));
+  expect(await head.getAttribute('transform')).not.toBe(settled);
 });
 
 test('head-follow turns the head towards the pointer', async ({ page }) => {
